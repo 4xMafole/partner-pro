@@ -35,12 +35,13 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    iosBundleId: 'com.mycompany.partnerpro',
+    apiKey: 'AIzaSyD0iWePyMafHYL2kL6uXcIe8MNPQABZP48',
+    appId: '1:59466540742:ios:3c51b6aa24ec783cda59c7',
+    messagingSenderId: '59466540742',
+    projectId: 'partnerpro-dev',
+    storageBucket: 'partnerpro-dev.firebasestorage.app',
+    iosClientId: '59466540742-5uoqp2jsg61p8bitss3ivapbbs43rfqf.apps.googleusercontent.com',
+    iosBundleId: 'com.automaterealestate.partnerpro.dev',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

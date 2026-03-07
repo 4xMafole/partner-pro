@@ -12,7 +12,12 @@
           "package_name": "com.automaterealestate.partnerpro.dev"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "59466540742-jo4doii9firgn17jfm3k5nttbv30j449.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCE-TFbVCtvQmig_VdkD5V7AhcLBQwA2W8"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59466540742-jo4doii9firgn17jfm3k5nttbv30j449.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
