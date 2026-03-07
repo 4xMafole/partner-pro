@@ -1,0 +1,22 @@
+﻿targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          include:
+            - lib/features/**/models/**
+            - lib/features/**/entities/**
+      json_serializable:
+        generate_for:
+          include:
+            - lib/features/**/models/**
+            - lib/features/**/entities/**
+            - lib/backend/schema/**
+      injectable_generator|injectable_builder:
+        generate_for:
+          include:
+            - lib/**
+      injectable_generator|injectable_config_builder:
+        generate_for:
+          include:
+            - lib/core/di/**
