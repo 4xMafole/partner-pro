@@ -27,11 +27,11 @@ class DefaultFirebaseOptions {
   // ── REPLACE THESE WITH YOUR FIREBASE PROJECT VALUES ──
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyCE-TFbVCtvQmig_VdkD5V7AhcLBQwA2W8',
+    appId: '1:59466540742:android:f1a80103bc185fd0da59c7',
+    messagingSenderId: '59466540742',
+    projectId: 'partnerpro-dev',
+    storageBucket: 'partnerpro-dev.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

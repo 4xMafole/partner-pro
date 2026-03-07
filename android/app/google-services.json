@@ -1,259 +1,26 @@
 {
   "project_info": {
-    "project_number": "992691290881",
-    "firebase_url": "https://iwriteoffers-default-rtdb.firebaseio.com",
-    "project_id": "iwriteoffers",
-    "storage_bucket": "iwriteoffers.appspot.com"
+    "project_number": "59466540742",
+    "project_id": "partnerpro-dev",
+    "storage_bucket": "partnerpro-dev.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:992691290881:android:5c8a3050bb2a7644465100",
-        "android_client_info": {
-          "package_name": "com.iwriteoffers.app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "992691290881-187hk1vaanoh7dgk9u5g8nf6njpm8v2d.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.iwriteoffers.app",
-            "certificate_hash": "aa59687bb46d5c677ccb28b9d21f39865ac8b471"
-          }
-        },
-        {
-          "client_id": "992691290881-1mbdm7lpu5esml3gr4nvtaqn9kdm7fbm.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.iwriteoffers.app",
-            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
-          }
-        },
-        {
-          "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBPNdd9zNegGOjIAX2nrKab2y99B4IbKtY"
-        },
-        {
-          "current_key": "AIzaSyC0A_OLq0trBYfUmoQwM6FYn6uKJH47cBg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "992691290881-cn3hshsvirf32ek43cos475ilhgo2lu0.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.mycompany.iwriteoffer"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:992691290881:android:a0481ec746799860465100",
-        "android_client_info": {
-          "package_name": "com.mycompany.iwriteoffer"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "992691290881-0jm93cl0bq1nbo73o6qprad0a9jc0ru3.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mycompany.iwriteoffer",
-            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
-          }
-        },
-        {
-          "client_id": "992691290881-1ga8uqbflhma7tudq02u9lhio4plrl6v.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mycompany.iwriteoffer",
-            "certificate_hash": "aa59687bb46d5c677ccb28b9d21f39865ac8b471"
-          }
-        },
-        {
-          "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBPNdd9zNegGOjIAX2nrKab2y99B4IbKtY"
-        },
-        {
-          "current_key": "AIzaSyC0A_OLq0trBYfUmoQwM6FYn6uKJH47cBg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "992691290881-cn3hshsvirf32ek43cos475ilhgo2lu0.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.mycompany.iwriteoffer"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:992691290881:android:097ac1736d38405f465100",
-        "android_client_info": {
-          "package_name": "com.mycompany.iwriteoffers"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "992691290881-ctehargf0spqsaae2bslehbhcs4egqpi.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mycompany.iwriteoffers",
-            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
-          }
-        },
-        {
-          "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBPNdd9zNegGOjIAX2nrKab2y99B4IbKtY"
-        },
-        {
-          "current_key": "AIzaSyC0A_OLq0trBYfUmoQwM6FYn6uKJH47cBg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "992691290881-cn3hshsvirf32ek43cos475ilhgo2lu0.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.mycompany.iwriteoffer"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:992691290881:android:c3a42035596af22a465100",
-        "android_client_info": {
-          "package_name": "com.mycompany.iwriteofferstc"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "992691290881-0is7da6us8b1s694v0odvnacs9ldaarf.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.mycompany.iwriteofferstc",
-            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
-          }
-        },
-        {
-          "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBPNdd9zNegGOjIAX2nrKab2y99B4IbKtY"
-        },
-        {
-          "current_key": "AIzaSyC0A_OLq0trBYfUmoQwM6FYn6uKJH47cBg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "992691290881-cn3hshsvirf32ek43cos475ilhgo2lu0.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.mycompany.iwriteoffer"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:992691290881:android:cad3b1b2f79c02ef465100",
+        "mobilesdk_app_id": "1:59466540742:android:f1a80103bc185fd0da59c7",
         "android_client_info": {
           "package_name": "com.automaterealestate.partnerpro.dev"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "992691290881-2dvd76adbju09ofdmu09468hr524jl8t.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.automaterealestate.partnerpro.dev",
-            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
-          }
-        },
-        {
-          "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBPNdd9zNegGOjIAX2nrKab2y99B4IbKtY"
-        },
-        {
-          "current_key": "AIzaSyC0A_OLq0trBYfUmoQwM6FYn6uKJH47cBg"
+          "current_key": "AIzaSyCE-TFbVCtvQmig_VdkD5V7AhcLBQwA2W8"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "992691290881-4mbdr369deicuqjgqc30djd7dc7rltbp.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "992691290881-cn3hshsvirf32ek43cos475ilhgo2lu0.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.mycompany.iwriteoffer"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

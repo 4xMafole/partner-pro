@@ -8,9 +8,9 @@ Future initFirebase() async {
     await Firebase.initializeApp(
         options: FirebaseOptions(
             apiKey: EnvConfig.firebaseWebApiKey,
-            authDomain: "iwriteoffers.firebaseapp.com",
-            projectId: "iwriteoffers",
-            storageBucket: "iwriteoffers.appspot.com",
+            authDomain: "partnerpro-dev.firebaseapp.com",
+            projectId: "partnerpro-dev",
+            storageBucket: "partnerpro-dev.firebasestorage.app",
             messagingSenderId: EnvConfig.firebaseWebMessagingSenderId,
             appId: EnvConfig.firebaseWebAppId,
             measurementId: EnvConfig.firebaseMeasurementId));
