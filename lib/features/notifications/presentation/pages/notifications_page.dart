@@ -79,12 +79,11 @@ class NotificationsPage extends StatelessWidget {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (notif.description != null)
-                      Text(notif.description!,
-                          style: AppTypography.bodySmall
-                              .copyWith(color: AppColors.textSecondary),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
+                    Text(notif.description,
+                        style: AppTypography.bodySmall
+                            .copyWith(color: AppColors.textSecondary),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
                     if (notif.createdAt != null)
                       Padding(
                         padding: EdgeInsets.only(top: 4.h),
@@ -107,7 +106,7 @@ class NotificationsPage extends StatelessWidget {
                       )
                     : null,
                 onTap: () {
-                  if (isUnread && notif.id != null) {
+                  if (isUnread) {
                     context.read<NotificationBloc>().add(MarkAsRead(notif.id));
                   }
                 },

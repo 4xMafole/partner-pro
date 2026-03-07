@@ -151,10 +151,12 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   String _formatNumber(int n) {
-    if (n >= 1000000)
+    if (n >= 1000000) {
       return '${(n / 1000000).toStringAsFixed(n % 1000000 == 0 ? 0 : 1)}M';
-    if (n >= 1000)
+    }
+    if (n >= 1000) {
       return '${(n / 1000).toStringAsFixed(n % 1000 == 0 ? 0 : 1)}K';
+    }
     return n.toString();
   }
 
@@ -234,17 +236,19 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
         ),
         Expanded(child:
             BlocBuilder<PropertyBloc, PropertyState>(builder: (context, state) {
-          if (state.isLoading && state.allProperties.isEmpty)
+          if (state.isLoading && state.allProperties.isEmpty) {
             return const Center(child: CircularProgressIndicator());
+          }
           final raw = state.isFilterActive
               ? state.filteredProperties
               : state.allProperties;
           final properties = PropertySortUtil.sortDataClass(raw, _sortType);
-          if (properties.isEmpty)
+          if (properties.isEmpty) {
             return const AppEmptyState(
                 icon: LucideIcons.search,
                 title: 'No properties found',
                 subtitle: 'Try adjusting your search or filters.');
+          }
 
           if (_isMapView) {
             return PropertyMap(

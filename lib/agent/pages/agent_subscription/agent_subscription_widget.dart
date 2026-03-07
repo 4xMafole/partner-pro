@@ -6,15 +6,11 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'agent_subscription_model.dart';
 export 'agent_subscription_model.dart';
 
@@ -22,7 +18,7 @@ class AgentSubscriptionWidget extends StatefulWidget {
   const AgentSubscriptionWidget({
     super.key,
     bool? isPopup,
-  }) : this.isPopup = isPopup ?? false;
+  }) : isPopup = isPopup ?? false;
 
   final bool isPopup;
 
@@ -219,17 +215,16 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                               '${valueOrDefault<String>(
                                                 (int? var1) {
                                                   return var1 != null
-                                                      ? '\$' +
-                                                          (var1 / 100.0)
+                                                      ? '\$${(var1 / 100.0)
                                                               .toStringAsFixed(
-                                                                  2)
+                                                                  2)}'
                                                       : null;
                                                 }(_model
                                                     .subscriptionDoc
                                                     ?.items
-                                                    ?.firstOrNull
+                                                    .firstOrNull
                                                     ?.plan
-                                                    ?.amount),
+                                                    .amount),
                                                 '\$49.99',
                                               )}/monthly',
                                               style:
@@ -544,12 +539,11 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                       amount: valueOrDefault<String>(
                                         (int? var1) {
                                           return var1 != null
-                                              ? '\$' +
-                                                  (var1 / 100.00)
-                                                      .toStringAsFixed(2)
+                                              ? '\$${(var1 / 100.00)
+                                                      .toStringAsFixed(2)}'
                                               : null;
                                         }(listViewSubscriptionsRecord
-                                            .items.firstOrNull?.plan?.amount),
+                                            .items.firstOrNull?.plan.amount),
                                         '\$0.00',
                                       ),
                                       date: listViewSubscriptionsRecord
@@ -613,7 +607,7 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                             ),
                           ),
                         ),
-                      if (!widget!.isPopup && _model.isActive)
+                      if (!widget.isPopup && _model.isActive)
                         Expanded(
                           child: FFButtonWidget(
                             onPressed: () async {

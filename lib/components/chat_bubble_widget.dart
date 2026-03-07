@@ -1,13 +1,8 @@
 import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/offers/components/user1_message/user1_message_widget.dart';
 import '/seller/offers/user_message/user_message_widget.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'chat_bubble_model.dart';
 export 'chat_bubble_model.dart';
 
@@ -52,12 +47,12 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
       children: [
         Builder(
           builder: (context) {
-            if (widget!.message?.isSeller ?? false) {
+            if (widget.message?.isSeller ?? false) {
               return wrapWithModel(
                 model: _model.userMessageModel,
                 updateCallback: () => safeSetState(() {}),
                 child: UserMessageWidget(
-                  message: widget!.message,
+                  message: widget.message,
                 ),
               );
             } else {
@@ -65,7 +60,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                 model: _model.user1MessageModel,
                 updateCallback: () => safeSetState(() {}),
                 child: User1MessageWidget(
-                  message: widget!.message,
+                  message: widget.message,
                 ),
               );
             }

@@ -1,12 +1,8 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'contact_popup_model.dart';
 export 'contact_popup_model.dart';
 
@@ -77,7 +73,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                 children: [
                   Text(
                     valueOrDefault<String>(
-                      widget!.majorlabel,
+                      widget.majorlabel,
                       'Label',
                     ),
                     style: FlutterFlowTheme.of(context).headlineSmall.override(
@@ -109,7 +105,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                       ),
                       Text(
                         valueOrDefault<String>(
-                          widget!.majorInfo?.name,
+                          widget.majorInfo?.name,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -143,7 +139,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                       ),
                       Text(
                         valueOrDefault<String>(
-                          widget!.majorInfo?.phoneNumber,
+                          widget.majorInfo?.phoneNumber,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -178,7 +174,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                       Expanded(
                         child: Text(
                           valueOrDefault<String>(
-                            widget!.majorInfo?.email,
+                            widget.majorInfo?.email,
                             'N/A',
                           ),
                           style: FlutterFlowTheme.of(context)
@@ -196,7 +192,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                       ),
                     ].divide(SizedBox(width: 8.0)),
                   ),
-                  if (widget!.choice != null && widget!.choice != '')
+                  if (widget.choice != null && widget.choice != '')
                     Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -219,7 +215,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                         ),
                         Text(
                           valueOrDefault<String>(
-                            widget!.choice,
+                            widget.choice,
                             'N/A',
                           ),
                           style: FlutterFlowTheme.of(context)
@@ -238,7 +234,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                     ),
                 ].divide(SizedBox(height: 12.0)),
               ),
-              if (widget!.minorInfo != null)
+              if (widget.minorInfo != null)
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Container(
@@ -256,7 +252,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                         children: [
                           Text(
                             valueOrDefault<String>(
-                              widget!.minorLabel,
+                              widget.minorLabel,
                               'Label',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -293,7 +289,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.minorInfo?.name,
+                                  widget.minorInfo?.name,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -335,7 +331,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.minorInfo?.phoneNumber,
+                                  widget.minorInfo?.phoneNumber,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -377,7 +373,7 @@ class _ContactPopupWidgetState extends State<ContactPopupWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.minorInfo?.email,
+                                  widget.minorInfo?.email,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)

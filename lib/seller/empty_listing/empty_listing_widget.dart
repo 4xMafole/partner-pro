@@ -1,14 +1,8 @@
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'empty_listing_model.dart';
 export 'empty_listing_model.dart';
 
@@ -19,8 +13,8 @@ class EmptyListingWidget extends StatefulWidget {
     String? description,
     this.icon,
     this.onTap,
-  })  : this.title = title ?? 'Warning title',
-        this.description = description ?? 'Warning description';
+  })  : title = title ?? 'Warning title',
+        description = description ?? 'Warning description';
 
   final String title;
   final String description;
@@ -90,7 +84,7 @@ class _EmptyListingWidgetState extends State<EmptyListingWidget>
               mainAxisSize: MainAxisSize.max,
               children: [
                 Text(
-                  widget!.title,
+                  widget.title,
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).headlineMedium.override(
                         fontFamily:
@@ -108,7 +102,7 @@ class _EmptyListingWidgetState extends State<EmptyListingWidget>
                   color: FlutterFlowTheme.of(context).alternate,
                 ),
                 Text(
-                  widget!.description,
+                  widget.description,
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily:
@@ -125,7 +119,7 @@ class _EmptyListingWidgetState extends State<EmptyListingWidget>
                 ),
               ].divide(SizedBox(height: 10.0)),
             ),
-            if (widget!.icon != null)
+            if (widget.icon != null)
               InkWell(
                 splashColor: Colors.transparent,
                 focusColor: Colors.transparent,
@@ -141,7 +135,7 @@ class _EmptyListingWidgetState extends State<EmptyListingWidget>
                     color: FlutterFlowTheme.of(context).alternate,
                     shape: BoxShape.circle,
                   ),
-                  child: widget!.icon!,
+                  child: widget.icon!,
                 ),
               ).animateOnPageLoad(
                   animationsMap['containerOnPageLoadAnimation']!),

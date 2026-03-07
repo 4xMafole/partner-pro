@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'range_filter_item_model.dart';
 export 'range_filter_item_model.dart';
 
@@ -59,7 +55,7 @@ class _RangeFilterItemWidgetState extends State<RangeFilterItemWidget> {
             padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 8.0),
             child: Text(
               valueOrDefault<String>(
-                widget!.label,
+                widget.label,
                 'Label',
               ),
               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -79,7 +75,7 @@ class _RangeFilterItemWidgetState extends State<RangeFilterItemWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Container(
+              child: SizedBox(
                 width: 120.0,
                 child: TextFormField(
                   controller: _model.minTextFieldTextController,

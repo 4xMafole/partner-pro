@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'document_upload_model.dart';
 export 'document_upload_model.dart';
 
@@ -16,8 +11,8 @@ class DocumentUploadWidget extends StatefulWidget {
     String? label,
     this.onTap,
     Color? color,
-  })  : this.label = label ?? 'Label',
-        this.color = color ?? const Color(0xFF003087);
+  })  : label = label ?? 'Label',
+        color = color ?? const Color(0xFF003087);
 
   final Widget? icon;
   final String label;
@@ -64,10 +59,10 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
         width: double.infinity,
         height: 90.0,
         decoration: BoxDecoration(
-          color: widget!.color.withOpacity(0.2),
+          color: widget.color.withOpacity(0.2),
           borderRadius: BorderRadius.circular(15.0),
           border: Border.all(
-            color: widget!.color,
+            color: widget.color,
             width: 1.0,
           ),
         ),
@@ -75,12 +70,12 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            widget!.icon!,
+            widget.icon!,
             Text(
-              widget!.label,
+              widget.label,
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                     fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
-                    color: widget!.color,
+                    color: widget.color,
                     fontSize: 16.0,
                     letterSpacing: 0.0,
                     useGoogleFonts:

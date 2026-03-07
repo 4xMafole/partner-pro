@@ -2,14 +2,10 @@ import '/app_components/sale_label/sale_label_widget.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'share_details_page_model.dart';
 export 'share_details_page_model.dart';
@@ -144,9 +140,9 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                     child: Builder(
                       builder: (context) {
-                        final images = widget!.property?.images?.toList() ?? [];
+                        final images = widget.property?.images.toList() ?? [];
 
-                        return Container(
+                        return SizedBox(
                           width: double.infinity,
                           height: MediaQuery.sizeOf(context).height * 0.333,
                           child: CarouselSlider.builder(
@@ -201,7 +197,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                   model: _model.saleLabelModel,
                                   updateCallback: () => safeSetState(() {}),
                                   child: SaleLabelWidget(
-                                    isActiveSale: widget!.property?.isActive,
+                                    isActiveSale: widget.property?.isActive,
                                   ),
                                 ),
                               ],
@@ -209,7 +205,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                             Text(
                               valueOrDefault<String>(
                                 formatNumber(
-                                  widget!.property?.price,
+                                  widget.property?.price,
                                   formatType: FormatType.decimal,
                                   decimalType: DecimalType.automatic,
                                   currency: '\$',
@@ -235,7 +231,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                               children: [
                                 Text(
                                   valueOrDefault<String>(
-                                    widget!.property?.title,
+                                    widget.property?.title,
                                     'title',
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -263,7 +259,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                     Expanded(
                                       child: Text(
                                         valueOrDefault<String>(
-                                          widget!.property?.location?.name,
+                                          widget.property?.location.name,
                                           'location',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -332,7 +328,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                           ),
                                           Text(
                                             valueOrDefault<String>(
-                                              widget!.property?.sqft,
+                                              widget.property?.sqft,
                                               '0',
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -385,7 +381,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                           ),
                                           Text(
                                             valueOrDefault<String>(
-                                              widget!.property?.beds,
+                                              widget.property?.beds,
                                               '0',
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -438,7 +434,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                           ),
                                           Text(
                                             valueOrDefault<String>(
-                                              widget!.property?.baths,
+                                              widget.property?.baths,
                                               '0',
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -487,7 +483,7 @@ class _ShareDetailsPageWidgetState extends State<ShareDetailsPageWidget> {
                                 ),
                                 Text(
                                   valueOrDefault<String>(
-                                    widget!.property?.description,
+                                    widget.property?.description,
                                     'description',
                                   ),
                                   style: FlutterFlowTheme.of(context)

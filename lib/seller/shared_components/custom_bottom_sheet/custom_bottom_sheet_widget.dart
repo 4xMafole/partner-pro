@@ -2,13 +2,8 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'custom_bottom_sheet_model.dart';
 export 'custom_bottom_sheet_model.dart';
 
@@ -99,14 +94,14 @@ class _CustomBottomSheetWidgetState extends State<CustomBottomSheetWidget>
                 color: FlutterFlowTheme.of(context).alternate,
                 shape: BoxShape.circle,
               ),
-              child: widget!.icon!,
+              child: widget.icon!,
             ).animateOnPageLoad(animationsMap['containerOnPageLoadAnimation']!),
             Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 Text(
                   valueOrDefault<String>(
-                    widget!.label,
+                    widget.label,
                     'N/A',
                   ),
                   style: FlutterFlowTheme.of(context).headlineMedium.override(
@@ -122,7 +117,7 @@ class _CustomBottomSheetWidgetState extends State<CustomBottomSheetWidget>
                 ),
                 Text(
                   valueOrDefault<String>(
-                    widget!.value,
+                    widget.value,
                     ' N/A',
                   ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -139,7 +134,7 @@ class _CustomBottomSheetWidgetState extends State<CustomBottomSheetWidget>
               onPressed: () async {
                 await widget.onDone?.call();
               },
-              text: widget!.buttonLabel!,
+              text: widget.buttonLabel!,
               options: FFButtonOptions(
                 width: double.infinity,
                 height: 60.0,

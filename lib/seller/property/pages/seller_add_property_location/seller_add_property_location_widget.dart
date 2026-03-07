@@ -8,16 +8,11 @@ import '/flutter_flow/flutter_flow_place_picker.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/place.dart';
 import '/seller/property/components/seller_property_item/seller_property_item_widget.dart';
-import 'dart:io';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_add_property_location_model.dart';
 export 'seller_add_property_location_model.dart';
 
@@ -150,7 +145,7 @@ class _SellerAddPropertyLocationWidgetState
                 child: Stack(
                   children: [
                     Builder(builder: (context) {
-                      final _googleMapMarker = _model.placePickerValue.latLng;
+                      final googleMapMarker = _model.placePickerValue.latLng;
                       return FlutterFlowGoogleMap(
                         controller: _model.googleMapsController,
                         onCameraIdle: (latLng) =>
@@ -158,11 +153,10 @@ class _SellerAddPropertyLocationWidgetState
                         initialLocation: _model.googleMapsCenter ??=
                             LatLng(38.9695, -77.3865),
                         markers: [
-                          if (_googleMapMarker != null)
-                            FlutterFlowMarker(
-                              _googleMapMarker.serialize(),
-                              _googleMapMarker,
-                            ),
+                          FlutterFlowMarker(
+                            googleMapMarker.serialize(),
+                            googleMapMarker,
+                          ),
                         ],
                         markerColor: GoogleMarkerColor.yellow,
                         markerImage: MarkerImage(
@@ -189,8 +183,7 @@ class _SellerAddPropertyLocationWidgetState
                   ],
                 ),
               ),
-              if (_model.placePickerValue.zipCode != null &&
-                  _model.placePickerValue.zipCode != '')
+              if (_model.placePickerValue.zipCode != '')
                 SafeArea(
                   child: Container(
                     width: double.infinity,
@@ -514,7 +507,7 @@ class _SellerAddPropertyLocationWidgetState
                                                               ?.jsonBody ??
                                                           ''))
                                                   ?.address
-                                                  ?.streetName,
+                                                  .streetName,
                                           latlong: functions.doubleToLatLong(
                                               PropertyModelStruct.maybeFromMap(
                                                       (_model.apiResultpk5
@@ -532,14 +525,14 @@ class _SellerAddPropertyLocationWidgetState
                                                               ?.jsonBody ??
                                                           ''))
                                                   ?.address
-                                                  ?.zip,
+                                                  .zip,
                                           city:
                                               PropertyModelStruct.maybeFromMap(
                                                       (_model.apiResultpk5
                                                               ?.jsonBody ??
                                                           ''))
                                                   ?.address
-                                                  ?.city,
+                                                  .city,
                                         ),
                                         listDate: dateTimeFormat(
                                           "yMMMd",

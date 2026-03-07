@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'sale_label_model.dart';
 export 'sale_label_model.dart';
 
@@ -12,7 +8,7 @@ class SaleLabelWidget extends StatefulWidget {
   const SaleLabelWidget({
     super.key,
     bool? isActiveSale,
-  }) : this.isActiveSale = isActiveSale ?? true;
+  }) : isActiveSale = isActiveSale ?? true;
 
   final bool isActiveSale;
 
@@ -48,7 +44,7 @@ class _SaleLabelWidgetState extends State<SaleLabelWidget> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (!widget!.isActiveSale)
+        if (!widget.isActiveSale)
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).accent2,
@@ -69,7 +65,7 @@ class _SaleLabelWidgetState extends State<SaleLabelWidget> {
               ),
             ),
           ),
-        if (widget!.isActiveSale)
+        if (widget.isActiveSale)
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).success,

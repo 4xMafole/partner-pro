@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'dash_overview_item_model.dart';
 export 'dash_overview_item_model.dart';
 
@@ -15,8 +11,8 @@ class DashOverviewItemWidget extends StatefulWidget {
     required this.color,
     String? label,
     String? value,
-  })  : this.label = label ?? 'label',
-        this.value = value ?? '0';
+  })  : label = label ?? 'label',
+        value = value ?? '0';
 
   final Widget? icon;
   final Color? color;
@@ -68,12 +64,12 @@ class _DashOverviewItemWidgetState extends State<DashOverviewItemWidget> {
               width: 40.0,
               height: 40.0,
               decoration: BoxDecoration(
-                color: widget!.color,
+                color: widget.color,
                 shape: BoxShape.circle,
               ),
               child: Visibility(
                 visible: false,
-                child: widget!.icon!,
+                child: widget.icon!,
               ),
             ),
             Column(
@@ -82,7 +78,7 @@ class _DashOverviewItemWidgetState extends State<DashOverviewItemWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget!.label,
+                  widget.label,
                   style: FlutterFlowTheme.of(context).labelSmall.override(
                         fontFamily:
                             FlutterFlowTheme.of(context).labelSmallFamily,
@@ -93,7 +89,7 @@ class _DashOverviewItemWidgetState extends State<DashOverviewItemWidget> {
                       ),
                 ),
                 Text(
-                  widget!.value,
+                  widget.value,
                   style: FlutterFlowTheme.of(context).headlineSmall.override(
                         fontFamily:
                             FlutterFlowTheme.of(context).headlineSmallFamily,

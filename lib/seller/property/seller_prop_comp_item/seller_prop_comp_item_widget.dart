@@ -2,13 +2,9 @@ import '/app_components/sale_label/sale_label_widget.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_prop_comp_item_model.dart';
 export 'seller_prop_comp_item_model.dart';
 
@@ -18,7 +14,7 @@ class SellerPropCompItemWidget extends StatefulWidget {
     this.onTap,
     required this.property,
     bool? hasUrl,
-  }) : this.hasUrl = hasUrl ?? false;
+  }) : hasUrl = hasUrl ?? false;
 
   final Future Function()? onTap;
   final PropertyStruct? property;
@@ -96,11 +92,11 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                             children: [
                               Builder(
                                 builder: (context) {
-                                  if (!widget!.hasUrl) {
+                                  if (!widget.hasUrl) {
                                     return Image.memory(
                                       functions
-                                              .base64ToImage(widget!.property
-                                                  ?.images?.firstOrNull)
+                                              .base64ToImage(widget.property
+                                                  ?.images.firstOrNull)
                                               ?.bytes ??
                                           Uint8List.fromList([]),
                                       width: double.infinity,
@@ -109,8 +105,8 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                     );
                                   } else {
                                     return Image.network(
-                                      functions.stringToImagePath(widget!
-                                          .property?.images?.firstOrNull)!,
+                                      functions.stringToImagePath(widget
+                                          .property?.images.firstOrNull)!,
                                       width: double.infinity,
                                       height: double.infinity,
                                       fit: BoxFit.cover,
@@ -127,7 +123,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                     model: _model.saleLabelModel,
                                     updateCallback: () => safeSetState(() {}),
                                     child: SaleLabelWidget(
-                                      isActiveSale: widget!.property?.isActive,
+                                      isActiveSale: widget.property?.isActive,
                                     ),
                                   ),
                                 ),
@@ -150,7 +146,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                 children: [
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.property?.title,
+                                      widget.property?.title,
                                       'Title',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -168,7 +164,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                   ),
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.property?.location?.name,
+                                      widget.property?.location.name,
                                       'Location',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -188,7 +184,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                               Text(
                                 valueOrDefault<String>(
                                   formatNumber(
-                                    widget!.property?.price,
+                                    widget.property?.price,
                                     formatType: FormatType.decimal,
                                     decimalType: DecimalType.automatic,
                                     currency: '\$',
@@ -225,7 +221,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.beds,
+                                            widget.property?.beds,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -280,7 +276,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.baths,
+                                            widget.property?.baths,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -335,7 +331,7 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.sqft,
+                                            widget.property?.sqft,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)

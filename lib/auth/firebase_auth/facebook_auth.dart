@@ -47,18 +47,16 @@ Future<UserCredential> facebookSignIn() async {
   }
 
   // Trigger the sign-in flow
-  final LoginResult loginToken = await FacebookAuth.instance.login(
-    nonce: nonce,
-  );
+  final LoginResult loginToken = await FacebookAuth.instance.login();
   final AccessToken? result = loginToken.accessToken;
 
   // Create a credential from the access token
   final OAuthCredential facebookAuthCredential = Platform.isAndroid
-      ? FacebookAuthProvider.credential(result!.tokenString)
+      ? FacebookAuthProvider.credential(result!.token)
       : OAuthProvider(
           'facebook.com',
         ).credential(
-          idToken: result!.tokenString,
+          idToken: result!.token,
           rawNonce: rawNonce,
         );
   // Once signed in, return the UserCredential

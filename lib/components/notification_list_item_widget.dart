@@ -1,11 +1,7 @@
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'notification_list_item_model.dart';
 export 'notification_list_item_model.dart';
 
@@ -52,7 +48,7 @@ class _NotificationListItemWidgetState
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: widget!.notification!.isRead
+          color: widget.notification!.isRead
               ? FlutterFlowTheme.of(context).secondaryBackground
               : FlutterFlowTheme.of(context).alternate,
           boxShadow: [
@@ -83,7 +79,7 @@ class _NotificationListItemWidgetState
                     children: [
                       Text(
                         valueOrDefault<String>(
-                          widget!.notification?.notificationTitle,
+                          widget.notification?.notificationTitle,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(
@@ -99,7 +95,7 @@ class _NotificationListItemWidgetState
                             EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
                         child: Text(
                           valueOrDefault<String>(
-                            widget!.notification?.notificationBody,
+                            widget.notification?.notificationBody,
                             'N/A',
                           ),
                           style: FlutterFlowTheme.of(context)
@@ -120,7 +116,7 @@ class _NotificationListItemWidgetState
                           valueOrDefault<String>(
                             dateTimeFormat(
                               "relative",
-                              widget!.notification?.createdTime,
+                              widget.notification?.createdTime,
                               locale: FFLocalizations.of(context).languageCode,
                             ),
                             'N/A',
@@ -141,7 +137,7 @@ class _NotificationListItemWidgetState
                   ),
                 ),
               ),
-              if (widget!.notification?.isRead ?? true)
+              if (widget.notification?.isRead ?? true)
                 Container(
                   width: 24.0,
                   height: 24.0,

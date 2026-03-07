@@ -2,13 +2,8 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'custom_dialog_model.dart';
 export 'custom_dialog_model.dart';
 
@@ -21,7 +16,7 @@ class CustomDialogWidget extends StatefulWidget {
     required this.description,
     this.buttonLabel,
     Color? iconBackgroundColor,
-  }) : this.iconBackgroundColor =
+  }) : iconBackgroundColor =
             iconBackgroundColor ?? const Color(0xFFEE8B60);
 
   final Future Function()? onDone;
@@ -101,11 +96,11 @@ class _CustomDialogWidgetState extends State<CustomDialogWidget>
                 width: 80.0,
                 height: 80.0,
                 decoration: BoxDecoration(
-                  color: widget!.iconBackgroundColor,
+                  color: widget.iconBackgroundColor,
                   shape: BoxShape.circle,
                 ),
                 alignment: AlignmentDirectional(0.0, 0.0),
-                child: widget!.icon!,
+                child: widget.icon!,
               ).animateOnPageLoad(
                   animationsMap['containerOnPageLoadAnimation']!),
               Column(
@@ -115,7 +110,7 @@ class _CustomDialogWidgetState extends State<CustomDialogWidget>
                     alignment: AlignmentDirectional(0.0, 0.0),
                     child: Text(
                       valueOrDefault<String>(
-                        widget!.title,
+                        widget.title,
                         'Congratulations!',
                       ),
                       textAlign: TextAlign.center,
@@ -136,7 +131,7 @@ class _CustomDialogWidgetState extends State<CustomDialogWidget>
                     alignment: AlignmentDirectional(0.0, 0.0),
                     child: Text(
                       valueOrDefault<String>(
-                        widget!.description,
+                        widget.description,
                         'Your property listed successfully',
                       ),
                       textAlign: TextAlign.center,
@@ -157,7 +152,7 @@ class _CustomDialogWidgetState extends State<CustomDialogWidget>
                   await widget.onDone?.call();
                 },
                 text: valueOrDefault<String>(
-                  widget!.buttonLabel,
+                  widget.buttonLabel,
                   'Done',
                 ),
                 options: FFButtonOptions(

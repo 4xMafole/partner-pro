@@ -2,11 +2,8 @@ import '/components/conventional_dropdown_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'downpayment_component_model.dart';
 export 'downpayment_component_model.dart';
 
@@ -42,17 +39,17 @@ class _DownpaymentComponentWidgetState
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if ((widget!.initialValue == 'Conventional 5%') ||
-          (widget!.initialValue == 'Conventional 10%') ||
-          (widget!.initialValue == 'Conventional 15%') ||
-          (widget!.initialValue == 'Conventional 20%')) {
+      if ((widget.initialValue == 'Conventional 5%') ||
+          (widget.initialValue == 'Conventional 10%') ||
+          (widget.initialValue == 'Conventional 15%') ||
+          (widget.initialValue == 'Conventional 20%')) {
         _model.updateTypesAtIndex(
           2,
-          (_) => widget!.initialValue!,
+          (_) => widget.initialValue!,
         );
         safeSetState(() {});
       }
-      _model.selectedType = widget!.initialValue;
+      _model.selectedType = widget.initialValue;
       safeSetState(() {});
     });
   }
@@ -250,11 +247,11 @@ class _DownpaymentComponentWidgetState
                                             percentegeDouble) async {
                                           _model.updateTypesAtIndex(
                                             2,
-                                            (_) => 'Conventional ${percentage}',
+                                            (_) => 'Conventional $percentage',
                                           );
                                           safeSetState(() {});
                                           _model.selectedType =
-                                              'Conventional ${percentage}';
+                                              'Conventional $percentage';
                                           safeSetState(() {});
                                         },
                                       ),

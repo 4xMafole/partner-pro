@@ -1,11 +1,7 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'user1_message_model.dart';
 export 'user1_message_model.dart';
 
@@ -87,7 +83,7 @@ class _User1MessageWidgetState extends State<User1MessageWidget> {
                 padding: EdgeInsets.all(8.0),
                 child: Text(
                   valueOrDefault<String>(
-                    widget!.message?.text,
+                    widget.message?.text,
                     'value',
                   ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -103,7 +99,7 @@ class _User1MessageWidgetState extends State<User1MessageWidget> {
             Text(
               dateTimeFormat(
                 "relative",
-                widget!.message!.createdTime!,
+                widget.message!.createdTime!,
                 locale: FFLocalizations.of(context).languageShortCode ??
                     FFLocalizations.of(context).languageCode,
               ),

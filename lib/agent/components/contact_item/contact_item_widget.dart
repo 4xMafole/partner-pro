@@ -1,17 +1,9 @@
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'contact_item_model.dart';
 export 'contact_item_model.dart';
 
@@ -25,9 +17,9 @@ class ContactItemWidget extends StatefulWidget {
     bool? isSuggest,
     this.onSuggest,
     Color? suggestionIconColor,
-  })  : this.hasCheck = hasCheck ?? false,
-        this.isSuggest = isSuggest ?? false,
-        this.suggestionIconColor =
+  })  : hasCheck = hasCheck ?? false,
+        isSuggest = isSuggest ?? false,
+        suggestionIconColor =
             suggestionIconColor ?? const Color(0xFF57636C);
 
   final Future Function(bool value)? onSelected;
@@ -92,7 +84,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                 borderRadius: BorderRadius.circular(40.0),
                 child: Image.network(
                   valueOrDefault<String>(
-                    functions.stringToImagePath(widget!.member?.photoUrl),
+                    functions.stringToImagePath(widget.member?.photoUrl),
                     'https://placehold.co/800@2x.png?text=U',
                   ),
                   width: 60.0,
@@ -109,7 +101,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                     children: [
                       Text(
                         valueOrDefault<String>(
-                          widget!.member?.fullName,
+                          widget.member?.fullName,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(
@@ -127,7 +119,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                             valueOrDefault<String>(
                               functions
                                   .normalizePhoneNumber(valueOrDefault<String>(
-                                widget!.member?.phoneNumber,
+                                widget.member?.phoneNumber,
                                 'N/A',
                               )),
                               'N/A',
@@ -153,7 +145,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                             Expanded(
                               child: Text(
                                 valueOrDefault<String>(
-                                  widget!.member?.email,
+                                  widget.member?.email,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -173,15 +165,15 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                           ],
                         ),
                       ),
-                      if (widget!.member?.status != null)
+                      if (widget.member?.status != null)
                         Container(
                           decoration: BoxDecoration(
-                            color: widget!.member?.status == Status.Accepted
+                            color: widget.member?.status == Status.Accepted
                                 ? Color(0x34249689)
                                 : Color(0x3257636C),
                             borderRadius: BorderRadius.circular(8.0),
                             border: Border.all(
-                              color: widget!.member?.status == Status.Accepted
+                              color: widget.member?.status == Status.Accepted
                                   ? FlutterFlowTheme.of(context).success
                                   : FlutterFlowTheme.of(context).secondaryText,
                             ),
@@ -193,7 +185,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                                   8.0, 4.0, 8.0, 4.0),
                               child: Text(
                                 valueOrDefault<String>(
-                                  widget!.member?.status?.name,
+                                  widget.member?.status?.name,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -201,7 +193,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                                     .override(
                                       fontFamily: FlutterFlowTheme.of(context)
                                           .bodySmallFamily,
-                                      color: widget!.member?.status ==
+                                      color: widget.member?.status ==
                                               Status.Accepted
                                           ? FlutterFlowTheme.of(context).success
                                           : FlutterFlowTheme.of(context)
@@ -219,7 +211,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                   ),
                 ),
               ),
-              if (widget!.hasCheck)
+              if (widget.hasCheck)
                 Theme(
                   data: ThemeData(
                     checkboxTheme: CheckboxThemeData(
@@ -249,15 +241,15 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                     side: (FlutterFlowTheme.of(context).alternate != null)
                         ? BorderSide(
                             width: 2,
-                            color: FlutterFlowTheme.of(context).alternate!,
+                            color: FlutterFlowTheme.of(context).alternate,
                           )
                         : null,
                     activeColor: FlutterFlowTheme.of(context).primary,
                     checkColor: FlutterFlowTheme.of(context).info,
                   ),
                 ),
-              if ((widget!.member?.status == Status.Pending) &&
-                  !widget!.hasCheck)
+              if ((widget.member?.status == Status.Pending) &&
+                  !widget.hasCheck)
                 InkWell(
                   splashColor: Colors.transparent,
                   focusColor: Colors.transparent,
@@ -272,7 +264,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                     size: 24.0,
                   ),
                 ),
-              if (widget!.isSuggest)
+              if (widget.isSuggest)
                 InkWell(
                   splashColor: Colors.transparent,
                   focusColor: Colors.transparent,
@@ -283,7 +275,7 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                   },
                   child: Icon(
                     Icons.lightbulb_rounded,
-                    color: widget!.suggestionIconColor,
+                    color: widget.suggestionIconColor,
                     size: 24.0,
                   ),
                 ),

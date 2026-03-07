@@ -6,18 +6,14 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/property/components/yard_sign/yard_sign_widget.dart';
 import '/seller/property/property_item_option/property_item_option_widget.dart';
 import '/seller/shared_components/warning_popup_card/warning_popup_card_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'seller_property_details_model.dart';
 export 'seller_property_details_model.dart';
@@ -98,7 +94,7 @@ class _SellerPropertyDetailsWidgetState
                           ),
                           Text(
                             valueOrDefault<String>(
-                              widget!.property?.location?.name,
+                              widget.property?.location.name,
                               'Title',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -138,7 +134,7 @@ class _SellerPropertyDetailsWidgetState
                                   padding: MediaQuery.viewInsetsOf(context),
                                   child: PropertyItemOptionWidget(
                                     propertyTitle:
-                                        widget!.property?.location?.name,
+                                        widget.property?.location.name,
                                     onEdit: () async {
                                       Navigator.pop(context);
 
@@ -150,7 +146,7 @@ class _SellerPropertyDetailsWidgetState
                                             ParamType.Enum,
                                           ),
                                           'editProperty': serializeParam(
-                                            widget!.property,
+                                            widget.property,
                                             ParamType.DataStruct,
                                           ),
                                         }.withoutNulls,
@@ -182,7 +178,7 @@ class _SellerPropertyDetailsWidgetState
                                                         .call(
                                                   userId: currentUserUid,
                                                   propertyId:
-                                                      widget!.property?.id,
+                                                      widget.property?.id,
                                                 );
 
                                                 if ((_model.apiResult85jCopy
@@ -239,7 +235,7 @@ class _SellerPropertyDetailsWidgetState
                                         SellerAppointmentPageWidget.routeName,
                                         queryParameters: {
                                           'property': serializeParam(
-                                            widget!.property?.location?.name,
+                                            widget.property?.location.name,
                                             ParamType.String,
                                           ),
                                         }.withoutNulls,
@@ -261,9 +257,9 @@ class _SellerPropertyDetailsWidgetState
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                   child: Builder(
                     builder: (context) {
-                      final images = widget!.property?.images?.toList() ?? [];
+                      final images = widget.property?.images.toList() ?? [];
 
-                      return Container(
+                      return SizedBox(
                         width: double.infinity,
                         height: MediaQuery.sizeOf(context).height * 0.333,
                         child: CarouselSlider.builder(
@@ -273,7 +269,7 @@ class _SellerPropertyDetailsWidgetState
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
                               child: Image.network(
-                                imagesItem != null && imagesItem != ''
+                                imagesItem != ''
                                     ? functions.stringToImagePath(imagesItem)!
                                     : 'https://placehold.co/400x400?text=Home',
                                 width: 300.0,
@@ -347,7 +343,7 @@ class _SellerPropertyDetailsWidgetState
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.sqft,
+                                            widget.property?.sqft,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -398,7 +394,7 @@ class _SellerPropertyDetailsWidgetState
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.beds,
+                                            widget.property?.beds,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -449,7 +445,7 @@ class _SellerPropertyDetailsWidgetState
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            widget!.property?.baths,
+                                            widget.property?.baths,
                                             '0',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -489,12 +485,12 @@ class _SellerPropertyDetailsWidgetState
                                       updateCallback: () => safeSetState(() {}),
                                       child: SaleLabelWidget(
                                         isActiveSale:
-                                            widget!.property?.isActive,
+                                            widget.property?.isActive,
                                       ),
                                     ),
-                                    if ((widget!.property?.yardSignStatus !=
+                                    if ((widget.property?.yardSignStatus !=
                                             null) &&
-                                        (widget!.property?.yardSignStatus !=
+                                        (widget.property?.yardSignStatus !=
                                             Status.Declined))
                                       Container(
                                         decoration: BoxDecoration(),
@@ -505,7 +501,7 @@ class _SellerPropertyDetailsWidgetState
                                             updateCallback: () =>
                                                 safeSetState(() {}),
                                             child: YardSignWidget(
-                                              status: widget!
+                                              status: widget
                                                   .property!.yardSignStatus!,
                                             ),
                                           ),
@@ -539,7 +535,7 @@ class _SellerPropertyDetailsWidgetState
                           Text(
                             valueOrDefault<String>(
                               formatNumber(
-                                widget!.property?.price,
+                                widget.property?.price,
                                 formatType: FormatType.decimal,
                                 decimalType: DecimalType.automatic,
                                 currency: '\$',
@@ -564,7 +560,7 @@ class _SellerPropertyDetailsWidgetState
                             children: [
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.property?.propertyType,
+                                  widget.property?.propertyType,
                                   'Title',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -601,8 +597,8 @@ class _SellerPropertyDetailsWidgetState
                                           Expanded(
                                             child: Text(
                                               valueOrDefault<String>(
-                                                widget!.property?.location
-                                                    ?.address,
+                                                widget.property?.location
+                                                    .address,
                                                 'Location',
                                               ),
                                               style:
@@ -626,7 +622,7 @@ class _SellerPropertyDetailsWidgetState
                                       ),
                                     ),
                                   ),
-                                  if (!widget!.property!.hasYardSignStatus())
+                                  if (!widget.property!.hasYardSignStatus())
                                     SingleChildScrollView(
                                       scrollDirection: Axis.horizontal,
                                       child: Row(
@@ -642,7 +638,7 @@ class _SellerPropertyDetailsWidgetState
                                               onTap: () async {
                                                 FFAppState()
                                                     .updateSellerListOfPropertiesAtIndex(
-                                                  widget!.itemIndex!,
+                                                  widget.itemIndex!,
                                                   (e) => e
                                                     ..yardSignStatus =
                                                         Status.Pending,
@@ -699,7 +695,7 @@ class _SellerPropertyDetailsWidgetState
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.property?.description,
+                                  widget.property?.description,
                                   'Description',
                                 ),
                                 style: FlutterFlowTheme.of(context)

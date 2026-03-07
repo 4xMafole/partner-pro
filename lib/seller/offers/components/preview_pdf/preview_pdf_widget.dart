@@ -1,10 +1,7 @@
 import '/flutter_flow/flutter_flow_pdf_viewer.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'preview_pdf_model.dart';
 export 'preview_pdf_model.dart';
 
@@ -49,7 +46,7 @@ class _PreviewPdfWidgetState extends State<PreviewPdfWidget> {
     return Stack(
       children: [
         FlutterFlowPdfViewer(
-          fileBytes: widget!.file?.bytes,
+          fileBytes: widget.file?.bytes,
           width: double.infinity,
           height: double.infinity,
           horizontalScroll: true,

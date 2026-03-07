@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'prop_item_type_model.dart';
 export 'prop_item_type_model.dart';
 
@@ -15,7 +11,7 @@ class PropItemTypeWidget extends StatefulWidget {
     required this.active,
     required this.inactive,
     required this.label,
-  }) : this.value = value ?? false;
+  }) : value = value ?? false;
 
   final bool value;
   final Widget? active;
@@ -52,7 +48,7 @@ class _PropItemTypeWidgetState extends State<PropItemTypeWidget> {
   Widget build(BuildContext context) {
     return Builder(
       builder: (context) {
-        if (widget!.value) {
+        if (widget.value) {
           return Container(
             height: 80.0,
             decoration: BoxDecoration(
@@ -69,10 +65,10 @@ class _PropItemTypeWidgetState extends State<PropItemTypeWidget> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  widget!.active!,
+                  widget.active!,
                   Text(
                     valueOrDefault<String>(
-                      widget!.label,
+                      widget.label,
                       'N/A',
                     ),
                     maxLines: 1,
@@ -105,10 +101,10 @@ class _PropItemTypeWidgetState extends State<PropItemTypeWidget> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  widget!.inactive!,
+                  widget.inactive!,
                   Text(
                     valueOrDefault<String>(
-                      widget!.label,
+                      widget.label,
                       'N/A',
                     ),
                     maxLines: 1,

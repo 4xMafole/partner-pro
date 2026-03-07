@@ -2,10 +2,7 @@ import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'delete_acc_sheet_model.dart';
 export 'delete_acc_sheet_model.dart';
 
@@ -111,7 +108,7 @@ class _DeleteAccSheetWidgetState extends State<DeleteAccSheetWidget> {
                 ),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 12.0),
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     child: TextFormField(
                       controller: _model.passwordTextController,

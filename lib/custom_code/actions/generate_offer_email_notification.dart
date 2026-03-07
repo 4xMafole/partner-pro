@@ -1,13 +1,7 @@
 // Automatic FlutterFlow imports
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -24,7 +18,7 @@ import 'package:flutter/material.dart';
 String generateOfferEmailNotification(
   EmailType emailType, // Type of email to generate
   dynamic newOfferData, // Current offer data
-  dynamic?
+  dynamic
       oldOfferData, // Previous offer data (null for creation, required for updates)
   String logoUrl, // Company logo URL
   String adminPanelUrl, // Link to view full offer
@@ -80,8 +74,9 @@ String generateOfferEmailNotification(
 
   // Build changes summary for updates
   String buildChangesSummary() {
-    if (oldOfferData == null || oldOfferData is! Map || oldOfferData.isEmpty)
+    if (oldOfferData == null || oldOfferData is! Map || oldOfferData.isEmpty) {
       return '';
+    }
 
     final oldPricing = oldOfferData['pricing'] ?? {};
     final oldFinancials = oldOfferData['financials'] ?? {};

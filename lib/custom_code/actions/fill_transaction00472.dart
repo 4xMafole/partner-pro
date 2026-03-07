@@ -1,19 +1,11 @@
 // Automatic FlutterFlow imports
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:internet_file/internet_file.dart';
-
-import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
@@ -21,7 +13,7 @@ Future<FFUploadedFile> fillTransaction00472(
     String txPath, String name01, String name02) async {
   // Step 1: Load the PDF document from the FFUploadedFile
   final PdfDocument document =
-      PdfDocument(inputBytes: await InternetFile.get(txPath));
+      PdfDocument(inputBytes: (await http.get(Uri.parse(txPath))).bodyBytes);
 
   // Access the form in the PDF
   PdfForm form = document.form;

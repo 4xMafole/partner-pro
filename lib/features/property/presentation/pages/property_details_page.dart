@@ -344,10 +344,12 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   }
 
   String _formatNumber(int n) {
-    if (n >= 1000000)
+    if (n >= 1000000) {
       return '${(n / 1000000).toStringAsFixed(n % 1000000 == 0 ? 0 : 1)}M';
-    if (n >= 1000)
+    }
+    if (n >= 1000) {
       return '${(n / 1000).toStringAsFixed(0)},${(n % 1000).toString().padLeft(3, '0')}';
+    }
     return n.toString();
   }
 }

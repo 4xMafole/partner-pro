@@ -1,9 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'walkthrough_tip_model.dart';
 export 'walkthrough_tip_model.dart';
 
@@ -52,7 +49,7 @@ class _WalkthroughTipWidgetState extends State<WalkthroughTipWidget> {
         padding: EdgeInsets.all(8.0),
         child: Text(
           valueOrDefault<String>(
-            widget!.tip,
+            widget.tip,
             'tip',
           ),
           style: FlutterFlowTheme.of(context).bodyMedium.override(

@@ -1,13 +1,6 @@
 // Automatic FlutterFlow imports
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -55,16 +48,16 @@ String generateInvitationEmailHtml(
     List<String> signatureLines = [];
     signatureLines.add('<strong>$inviterFullName</strong>');
 
-    if (inviterMLS != null && inviterMLS!.isNotEmpty) {
+    if (inviterMLS != null && inviterMLS.isNotEmpty) {
       signatureLines.add('Licensed Realtor<br>MLS# $inviterMLS');
     }
 
-    if (inviterContact != null && inviterContact!.isNotEmpty) {
-      signatureLines.add(inviterContact!);
+    if (inviterContact != null && inviterContact.isNotEmpty) {
+      signatureLines.add(inviterContact);
     }
 
-    if (brokerageName != null && brokerageName!.isNotEmpty) {
-      signatureLines.add(brokerageName!);
+    if (brokerageName != null && brokerageName.isNotEmpty) {
+      signatureLines.add(brokerageName);
     }
 
     signature = '''

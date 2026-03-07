@@ -1,13 +1,8 @@
 // Automatic FlutterFlow imports
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -159,9 +154,9 @@ class _CAPDFWidgetState extends State<CAPDFWidget> {
 
   void fillForm(PdfDocument pdfDocument) async {
     try {
-      final formFields = await _pdfViewerController.getFormFields();
+      final formFields = _pdfViewerController.getFormFields();
 
-      if (formFields == null || formFields.isEmpty) {
+      if (formFields.isEmpty) {
         print("Error: formFields is null or empty");
         return;
       }
@@ -207,7 +202,7 @@ class _CAPDFWidgetState extends State<CAPDFWidget> {
       };
 
       textFieldsToFill.forEach((fieldName, fieldValue) {
-        if (fieldValue != null && fieldValue.isNotEmpty) {
+        if (fieldValue.isNotEmpty) {
           final matchingFields = formFields
               .where((formField) => formField.name == fieldName)
               .toList();
@@ -223,8 +218,7 @@ class _CAPDFWidgetState extends State<CAPDFWidget> {
       });
 
       // Signature URL replacement logic
-      if (widget.signatureImageUrl != null &&
-          widget.signatureImageUrl.isNotEmpty) {
+      if (widget.signatureImageUrl.isNotEmpty) {
         await drawSignatureImage(pdfDocument, widget.signatureImageUrl);
       } else {
         print("No signature image URL provided");
@@ -248,11 +242,11 @@ class _CAPDFWidgetState extends State<CAPDFWidget> {
       };
 
       // Uncheck all checkboxes first
-      checkBoxFields.values.forEach((field) {
+      for (var field in checkBoxFields.values) {
         if (field != null) {
           field.isChecked = false;
         }
-      });
+      }
 
       // Check the appropriate checkbox based on widget values
       if (widget.isConventional) {
@@ -310,12 +304,12 @@ class _CAPDFWidgetState extends State<CAPDFWidget> {
   Future<void> getFormFields() async {
     try {
       // Get the list of form fields in the PDF
-      final formFields = await _pdfViewerController.getFormFields();
+      final formFields = _pdfViewerController.getFormFields();
 
       // Print the names of all fields
-      formFields.forEach((field) {
+      for (var field in formFields) {
         print('Field name: ${field.name}');
-      });
+      }
     } catch (e) {
       print("Error fetching form fields: $e");
     }

@@ -2,14 +2,10 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_offer_item_model.dart';
 export 'seller_offer_item_model.dart';
 
@@ -104,13 +100,14 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                           Align(
                             alignment: AlignmentDirectional(1.0, -1.0),
                             child: Image.network(
-                              widget!.offerItem?.property?.images?.length != 0
+                              widget.offerItem?.property.images.isNotEmpty ==
+                                      true
                                   ? valueOrDefault<String>(
-                                      functions.stringToImagePath(widget!
+                                      functions.stringToImagePath(widget
                                           .offerItem
                                           ?.property
-                                          ?.images
-                                          ?.firstOrNull),
+                                          .images
+                                          .firstOrNull),
                                       'https://placehold.co/400x400@2x.png?text=Home',
                                     )
                                   : 'https://placehold.co/400x400@2x.png?text=Home',
@@ -119,7 +116,7 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                               fit: BoxFit.cover,
                             ),
                           ),
-                          if (widget!.isAgent ?? true)
+                          if (widget.isAgent ?? true)
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   8.0, 8.0, 0.0, 0.0),
@@ -133,7 +130,7 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                   padding: EdgeInsets.all(5.0),
                                   child: Text(
                                     valueOrDefault<String>(
-                                      widget!.offerItem?.buyer?.name,
+                                      widget.offerItem?.buyer.name,
                                       'N/A',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -174,7 +171,7 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                   Text(
                                     valueOrDefault<String>(
                                       formatNumber(
-                                        widget!.offerItem?.purchasePrice,
+                                        widget.offerItem?.purchasePrice,
                                         formatType: FormatType.decimal,
                                         decimalType: DecimalType.automatic,
                                         currency: '\$',
@@ -188,12 +185,12 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                               FlutterFlowTheme.of(context)
                                                   .bodyMediumFamily,
                                           color: () {
-                                            if (widget!.status ==
+                                            if (widget.status ==
                                                 Status.Accepted) {
                                               return FlutterFlowTheme.of(
                                                       context)
                                                   .success;
-                                            } else if (widget!.status ==
+                                            } else if (widget.status ==
                                                 Status.Declined) {
                                               return FlutterFlowTheme.of(
                                                       context)
@@ -249,8 +246,8 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                                             .parseSquareFootage(
                                                                 valueOrDefault<
                                                                     String>(
-                                                          widget!.offerItem
-                                                              ?.property?.sqft,
+                                                          widget.offerItem
+                                                              ?.property.sqft,
                                                           '0',
                                                         )),
                                                         formatType:
@@ -337,8 +334,8 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                                     TextSpan(
                                                       text: valueOrDefault<
                                                           String>(
-                                                        widget!.offerItem
-                                                            ?.property?.beds,
+                                                        widget.offerItem
+                                                            ?.property.beds,
                                                         '0',
                                                       ),
                                                       style: FlutterFlowTheme
@@ -420,8 +417,8 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                                     TextSpan(
                                                       text: valueOrDefault<
                                                           String>(
-                                                        widget!.offerItem
-                                                            ?.property?.baths,
+                                                        widget.offerItem
+                                                            ?.property.baths,
                                                         '0',
                                                       ),
                                                       style: FlutterFlowTheme
@@ -471,7 +468,7 @@ class _SellerOfferItemWidgetState extends State<SellerOfferItemWidget> {
                                         0.0, 0.0, 0.0, 10.0),
                                     child: Text(
                                       valueOrDefault<String>(
-                                        widget!.offerItem?.property?.title,
+                                        widget.offerItem?.property.title,
                                         'N/A',
                                       ).maybeHandleOverflow(
                                         maxChars: 40,

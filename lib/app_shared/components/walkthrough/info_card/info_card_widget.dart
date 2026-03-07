@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'info_card_model.dart';
 export 'info_card_model.dart';
 
@@ -76,7 +72,7 @@ class _InfoCardWidgetState extends State<InfoCardWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      if (widget!.icon != null) widget!.icon!,
+                      if (widget.icon != null) widget.icon!,
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.all(8.0),
@@ -86,7 +82,7 @@ class _InfoCardWidgetState extends State<InfoCardWidget> {
                             children: [
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.text,
+                                  widget.text,
                                   'info text',
                                 ),
                                 textAlign: TextAlign.start,

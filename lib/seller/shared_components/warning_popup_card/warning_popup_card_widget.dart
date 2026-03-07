@@ -2,13 +2,8 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'warning_popup_card_model.dart';
 export 'warning_popup_card_model.dart';
 
@@ -19,9 +14,9 @@ class WarningPopupCardWidget extends StatefulWidget {
     String? title,
     String? description,
     String? buttonText,
-  })  : this.title = title ?? 'Warning title',
-        this.description = description ?? 'Warning description',
-        this.buttonText = buttonText ?? 'Confirm';
+  })  : title = title ?? 'Warning title',
+        description = description ?? 'Warning description',
+        buttonText = buttonText ?? 'Confirm';
 
   final Future Function()? onConfirm;
   final String title;
@@ -109,7 +104,7 @@ class _WarningPopupCardWidgetState extends State<WarningPopupCardWidget>
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Text(
-                      widget!.title,
+                      widget.title,
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
                                 fontFamily: FlutterFlowTheme.of(context)
@@ -123,7 +118,7 @@ class _WarningPopupCardWidgetState extends State<WarningPopupCardWidget>
                               ),
                     ),
                     Text(
-                      widget!.description,
+                      widget.description,
                       textAlign: TextAlign.center,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily:
@@ -139,7 +134,7 @@ class _WarningPopupCardWidgetState extends State<WarningPopupCardWidget>
                   onPressed: () async {
                     await widget.onConfirm?.call();
                   },
-                  text: widget!.buttonText,
+                  text: widget.buttonText,
                   options: FFButtonOptions(
                     width: double.infinity,
                     height: 60.0,

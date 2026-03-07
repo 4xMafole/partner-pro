@@ -2,15 +2,10 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'lender_popup_model.dart';
 export 'lender_popup_model.dart';
 
@@ -20,7 +15,7 @@ class LenderPopupWidget extends StatefulWidget {
     required this.onConfirm,
     this.onBypass,
     bool? isAgent,
-  }) : this.isAgent = isAgent ?? false;
+  }) : isAgent = isAgent ?? false;
 
   final Future Function(bool hasLender)? onConfirm;
   final Future Function()? onBypass;
@@ -154,7 +149,7 @@ class _LenderPopupWidgetState extends State<LenderPopupWidget>
                                         ? BorderSide(
                                             width: 2,
                                             color: FlutterFlowTheme.of(context)
-                                                .primary!,
+                                                .primary,
                                           )
                                         : null,
                                     activeColor:
@@ -223,7 +218,7 @@ class _LenderPopupWidgetState extends State<LenderPopupWidget>
                                         ? BorderSide(
                                             width: 2,
                                             color: FlutterFlowTheme.of(context)
-                                                .primary!,
+                                                .primary,
                                           )
                                         : null,
                                     activeColor:
@@ -295,7 +290,7 @@ class _LenderPopupWidgetState extends State<LenderPopupWidget>
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (widget!.isAgent)
+                        if (widget.isAgent)
                           Expanded(
                             child: FFButtonWidget(
                               onPressed: () async {

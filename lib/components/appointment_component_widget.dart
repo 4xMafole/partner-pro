@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'appointment_component_model.dart';
 export 'appointment_component_model.dart';
 
@@ -17,7 +12,7 @@ class AppointmentComponentWidget extends StatefulWidget {
     this.showingDate,
     this.address,
     required this.onTap,
-  }) : this.isOpened = isOpened ?? false;
+  }) : isOpened = isOpened ?? false;
 
   final bool isOpened;
   final String? photo;
@@ -63,10 +58,10 @@ class _AppointmentComponentWidgetState
           color: FlutterFlowTheme.of(context).primaryBackground,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
-            color: widget!.isOpened
+            color: widget.isOpened
                 ? FlutterFlowTheme.of(context).secondary
                 : Color(0x4A484848),
-            width: widget!.isOpened ? 2.0 : 1.0,
+            width: widget.isOpened ? 2.0 : 1.0,
           ),
         ),
         child: Row(
@@ -83,7 +78,7 @@ class _AppointmentComponentWidgetState
                 children: [
                   Text(
                     valueOrDefault<String>(
-                      widget!.address,
+                      widget.address,
                       'N/A',
                     ),
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -120,7 +115,7 @@ class _AppointmentComponentWidgetState
                           text: valueOrDefault<String>(
                             dateTimeFormat(
                               "dd MMM yyyy \'at\' h:mma",
-                              widget!.showingDate,
+                              widget.showingDate,
                               locale: FFLocalizations.of(context).languageCode,
                             ),
                             'N/A',
@@ -156,7 +151,7 @@ class _AppointmentComponentWidgetState
             ClipRRect(
               borderRadius: BorderRadius.circular(0.0),
               child: Image.network(
-                widget!.photo!,
+                widget.photo!,
                 width: 100.0,
                 height: 120.0,
                 fit: BoxFit.cover,

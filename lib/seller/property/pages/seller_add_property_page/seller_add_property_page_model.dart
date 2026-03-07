@@ -1,35 +1,15 @@
-import '/app_components/custom_dialog/custom_dialog_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/backend/firebase_storage/storage.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/components/title_label_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_toggle_icon.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/upload_data.dart';
 import '/seller/property/components/prop_detail_item/prop_detail_item_widget.dart';
-import '/seller/property/components/property_type_bottom_sheet/property_type_bottom_sheet_widget.dart';
 import '/seller/property/components/property_type_item/property_type_item_widget.dart';
 import '/seller/property/components/seller_add_prop_comp_item/seller_add_prop_comp_item_widget.dart';
-import '/seller/property/components/seller_preview_property/seller_preview_property_widget.dart';
 import '/seller/property/components/upload_image_item/upload_image_item_widget.dart';
-import '/seller/property/congrats_sheet/congrats_sheet_widget.dart';
 import '/seller/property/property_upload/property_upload_widget.dart';
-import 'dart:ui';
-import '/flutter_flow/custom_functions.dart' as functions;
-import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'seller_add_property_page_widget.dart' show SellerAddPropertyPageWidget;
-import 'package:easy_debounce/easy_debounce.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SellerAddPropertyPageModel
     extends FlutterFlowModel<SellerAddPropertyPageWidget> {

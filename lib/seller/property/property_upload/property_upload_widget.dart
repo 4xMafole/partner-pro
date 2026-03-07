@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'property_upload_model.dart';
 export 'property_upload_model.dart';
 
@@ -15,7 +10,7 @@ class PropertyUploadWidget extends StatefulWidget {
     required this.icon,
     String? label,
     this.onTap,
-  }) : this.label = label ?? 'Label';
+  }) : label = label ?? 'Label';
 
   final Widget? icon;
   final String label;
@@ -72,9 +67,9 @@ class _PropertyUploadWidgetState extends State<PropertyUploadWidget> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            widget!.icon!,
+            widget.icon!,
             Text(
-              widget!.label,
+              widget.label,
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                     fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
                     color: FlutterFlowTheme.of(context).secondaryText,

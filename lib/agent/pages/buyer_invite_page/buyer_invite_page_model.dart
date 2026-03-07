@@ -1,28 +1,12 @@
 import '/agent/components/contact_item/contact_item_widget.dart';
-import '/agent/components/invite_contact_sheet/invite_contact_sheet_widget.dart';
-import '/app_components/custom_dialog/custom_dialog_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
-import '/components/custom_loading_indicator_widget.dart';
-import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'buyer_invite_page_widget.dart' show BuyerInvitePageWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class BuyerInvitePageModel extends FlutterFlowModel<BuyerInvitePageWidget> {
   ///  Local state fields for this page.

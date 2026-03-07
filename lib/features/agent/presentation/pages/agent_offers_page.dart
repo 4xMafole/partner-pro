@@ -44,8 +44,9 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
   }
 
   String _formatNumber(int n) {
-    if (n >= 1000)
+    if (n >= 1000) {
       return '${(n / 1000).toStringAsFixed(n % 1000 == 0 ? 0 : 1)}K';
+    }
     return n.toString();
   }
 
@@ -54,19 +55,22 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Offers')),
       body: BlocBuilder<OfferBloc, OfferState>(builder: (context, state) {
-        if (state.isLoading && state.offers.isEmpty)
+        if (state.isLoading && state.offers.isEmpty) {
           return const Center(child: CircularProgressIndicator());
-        if (state.error != null && state.offers.isEmpty)
+        }
+        if (state.error != null && state.offers.isEmpty) {
           return AppEmptyState(
               icon: LucideIcons.alertCircle,
               title: 'Error loading offers',
               subtitle: state.error!);
-        if (state.offers.isEmpty)
+        }
+        if (state.offers.isEmpty) {
           return const AppEmptyState(
               icon: LucideIcons.fileText,
               title: 'No offers yet',
               subtitle:
                   'Offers from your clients will appear here.\nTrack status, counters, and addendums.');
+        }
         return RefreshIndicator(
           onRefresh: () async {
             final a = context.read<AuthBloc>().state;

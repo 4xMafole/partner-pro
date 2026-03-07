@@ -3,15 +3,10 @@ import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'app_logo_model.dart';
 export 'app_logo_model.dart';
 
@@ -21,7 +16,7 @@ class AppLogoWidget extends StatefulWidget {
     int? logoWidth,
     required this.onProfileTap,
     required this.isAuth,
-  }) : this.logoWidth = logoWidth ?? 200;
+  }) : logoWidth = logoWidth ?? 200;
 
   final int logoWidth;
   final Future Function()? onProfileTap;
@@ -58,7 +53,7 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
         _model.agentDoc = await queryUsersRecordOnce(
           queryBuilder: (usersRecord) => usersRecord.where(
             'uid',
-            isEqualTo: _model.buyerRelationDoc?.relationship?.agentUid,
+            isEqualTo: _model.buyerRelationDoc?.relationship.agentUid,
           ),
           singleRecord: true,
         ).then((s) => s.firstOrNull);
@@ -91,7 +86,7 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (widget!.isAuth ?? true)
+        if (widget.isAuth ?? true)
           InkWell(
             splashColor: Colors.transparent,
             focusColor: Colors.transparent,
@@ -132,7 +127,7 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
                         child: Image.network(
                           functions.stringToImagePath(_model
                               .agentDocument?.agentAppLogos
-                              ?.elementAtOrNull(0))!,
+                              .elementAtOrNull(0))!,
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -147,12 +142,12 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
                         child: Image.network(
                           functions.stringToImagePath(_model
                               .agentDocument?.agentAppLogos
-                              ?.elementAtOrNull((_model
+                              .elementAtOrNull((_model
                                               .agentDocument?.agentAppLogos
-                                              ?.elementAtOrNull(1)) !=
+                                              .elementAtOrNull(1)) !=
                                           null &&
                                       (_model.agentDocument?.agentAppLogos
-                                              ?.elementAtOrNull(1)) !=
+                                              .elementAtOrNull(1)) !=
                                           ''
                                   ? 1
                                   : 0))!,
@@ -193,7 +188,7 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
                             ),
                           Flexible(
                             child: Container(
-                              width: widget!.logoWidth.toDouble(),
+                              width: widget.logoWidth.toDouble(),
                               decoration: BoxDecoration(),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -234,7 +229,7 @@ class _AppLogoWidgetState extends State<AppLogoWidget> {
                             ),
                           Flexible(
                             child: Container(
-                              width: widget!.logoWidth.toDouble(),
+                              width: widget.logoWidth.toDouble(),
                               decoration: BoxDecoration(),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),

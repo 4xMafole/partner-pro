@@ -2,14 +2,10 @@ import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'property_item_model.dart';
 export 'property_item_model.dart';
 
@@ -80,14 +76,14 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget!.property?.media?.firstOrNull != null &&
-                    widget!.property?.media?.firstOrNull != '')
+                if (widget.property?.media.firstOrNull != null &&
+                    widget.property?.media.firstOrNull != '')
                   Align(
                     alignment: AlignmentDirectional(1.0, 0.0),
                     child: Image.network(
                       valueOrDefault<String>(
                         functions.stringToImagePath(
-                            widget!.property?.media?.firstOrNull),
+                            widget.property?.media.firstOrNull),
                         'https://placehold.co/400x400?text=Home',
                       ),
                       width: double.infinity,
@@ -109,12 +105,12 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget!.property?.listPrice != null)
+                      if (widget.property?.listPrice != null)
                         Text(
-                          widget!.property?.listPrice.toString() == '0'
+                          widget.property?.listPrice.toString() == '0'
                               ? 'Price Unknown'
                               : formatNumber(
-                                  widget!.property!.listPrice,
+                                  widget.property!.listPrice,
                                   formatType: FormatType.decimal,
                                   decimalType: DecimalType.automatic,
                                   currency: '\$',
@@ -153,7 +149,7 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                       size: 20.0,
                                     ),
                                   ),
-                                  if (widget!.property?.squareFootage != null)
+                                  if (widget.property?.squareFootage != null)
                                     RichText(
                                       textScaler:
                                           MediaQuery.of(context).textScaler,
@@ -162,7 +158,7 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                           TextSpan(
                                             text: valueOrDefault<String>(
                                               formatNumber(
-                                                widget!.property?.squareFootage,
+                                                widget.property?.squareFootage,
                                                 formatType: FormatType.decimal,
                                                 decimalType:
                                                     DecimalType.periodDecimal,
@@ -228,7 +224,7 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                       size: 14.0,
                                     ),
                                   ),
-                                  if (widget!.property?.bedrooms != null)
+                                  if (widget.property?.bedrooms != null)
                                     RichText(
                                       textScaler:
                                           MediaQuery.of(context).textScaler,
@@ -236,8 +232,8 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                         children: [
                                           TextSpan(
                                             text: valueOrDefault<String>(
-                                              widget!.property?.bedrooms
-                                                  ?.toString(),
+                                              widget.property?.bedrooms
+                                                  .toString(),
                                               'N/A',
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -295,7 +291,7 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                       size: 14.0,
                                     ),
                                   ),
-                                  if (widget!.property?.bathrooms != null)
+                                  if (widget.property?.bathrooms != null)
                                     RichText(
                                       textScaler:
                                           MediaQuery.of(context).textScaler,
@@ -303,8 +299,8 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                         children: [
                                           TextSpan(
                                             text: valueOrDefault<String>(
-                                              widget!.property?.bathrooms
-                                                  ?.toString(),
+                                              widget.property?.bathrooms
+                                                  .toString(),
                                               'N/A',
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -344,13 +340,13 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                           ].divide(SizedBox(width: 16.0)),
                         ),
                       ),
-                      if (widget!.property?.address != null)
+                      if (widget.property?.address != null)
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 10.0),
                           child: Text(
                             functions.formatAddressFromModel(
-                                widget!.property!.address, widget!.zipCode),
+                                widget.property!.address, widget.zipCode),
                             maxLines: 1,
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -366,8 +362,8 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                                 ),
                           ),
                         ),
-                      if (widget!.property?.listDate != null &&
-                          widget!.property?.listDate != '')
+                      if (widget.property?.listDate != null &&
+                          widget.property?.listDate != '')
                         RichText(
                           textScaler: MediaQuery.of(context).textScaler,
                           text: TextSpan(
@@ -389,7 +385,7 @@ class _PropertyItemWidgetState extends State<PropertyItemWidget> {
                               ),
                               TextSpan(
                                 text: valueOrDefault<String>(
-                                  widget!.property?.listDate,
+                                  widget.property?.listDate,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)

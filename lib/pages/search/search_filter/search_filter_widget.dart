@@ -8,12 +8,9 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'search_filter_model.dart';
 export 'search_filter_model.dart';
 
@@ -52,50 +49,50 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.filterData != null) {
+      if (widget.filterData != null) {
         safeSetState(() {
           _model.priceRangeItemModel.minTextFieldTextController?.text =
-              widget!.filterData!.minPrice;
+              widget.filterData!.minPrice;
         });
         safeSetState(() {
           _model.priceRangeItemModel.maxTextFieldTextController?.text =
-              widget!.filterData!.maxPrice;
+              widget.filterData!.maxPrice;
         });
         safeSetState(() {
           _model.bedsRangeItemModel.minTextFieldTextController?.text =
-              widget!.filterData!.minBeds;
+              widget.filterData!.minBeds;
         });
         safeSetState(() {
           _model.bedsRangeItemModel.maxTextFieldTextController?.text =
-              widget!.filterData!.maxBeds;
+              widget.filterData!.maxBeds;
         });
         safeSetState(() {
           _model.bathRangeItemModel.minTextFieldTextController?.text =
-              widget!.filterData!.minBaths;
+              widget.filterData!.minBaths;
         });
         safeSetState(() {
           _model.bathRangeItemModel.maxTextFieldTextController?.text =
-              widget!.filterData!.maxBaths;
+              widget.filterData!.maxBaths;
         });
         safeSetState(() {
           _model.sqftRangeItemModel.minTextFieldTextController?.text =
-              widget!.filterData!.minSqft;
+              widget.filterData!.minSqft;
         });
         safeSetState(() {
           _model.sqftRangeItemModel.maxTextFieldTextController?.text =
-              widget!.filterData!.maxSqft;
+              widget.filterData!.maxSqft;
         });
         safeSetState(() {
           _model.yearRangeItemModel.minTextFieldTextController?.text =
-              widget!.filterData!.minYearBuilt;
+              widget.filterData!.minYearBuilt;
         });
         safeSetState(() {
           _model.yearRangeItemModel.maxTextFieldTextController?.text =
-              widget!.filterData!.maxYearBuilt;
+              widget.filterData!.maxYearBuilt;
         });
         safeSetState(() {
           _model.choiceChipsValueController?.value =
-              widget!.filterData!.homeTypes;
+              widget.filterData!.homeTypes;
         });
       } else {
         return;
@@ -379,9 +376,9 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                           .getAllPropertiesCall
                           .call(
                         user: currentUserUid,
-                        city: widget!.propertyItems?.firstOrNull?.address?.city,
+                        city: widget.propertyItems?.firstOrNull?.address.city,
                         state:
-                            widget!.propertyItems?.firstOrNull?.address?.state,
+                            widget.propertyItems?.firstOrNull?.address.state,
                         homeType: (List<String> var1) {
                           return var1
                               .where((item) => item.trim().isNotEmpty)
@@ -451,7 +448,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                       } else {
                         _model.defaultFilteredItems =
                             await actions.filterProperties(
-                          widget!.propertyItems!.toList(),
+                          widget.propertyItems!.toList(),
                           int.tryParse(_model.priceRangeItemModel
                               .minTextFieldTextController.text),
                           int.tryParse(_model.priceRangeItemModel

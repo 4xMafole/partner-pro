@@ -1,12 +1,8 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'member_item_model.dart';
 export 'member_item_model.dart';
 
@@ -16,7 +12,7 @@ class MemberItemWidget extends StatefulWidget {
     bool? isBuyer,
     required this.onTap,
     required this.member,
-  }) : this.isBuyer = isBuyer ?? false;
+  }) : isBuyer = isBuyer ?? false;
 
   final bool isBuyer;
   final Future Function()? onTap;
@@ -99,7 +95,7 @@ class _MemberItemWidgetState extends State<MemberItemWidget> {
                   ),
                   child: Image.network(
                     valueOrDefault<String>(
-                      functions.stringToImagePath(widget!.member?.photoUrl),
+                      functions.stringToImagePath(widget.member?.photoUrl),
                       'https://placehold.co/800@2x.png?text=U',
                     ),
                     fit: BoxFit.cover,
@@ -116,7 +112,7 @@ class _MemberItemWidgetState extends State<MemberItemWidget> {
                     children: [
                       Text(
                         valueOrDefault<String>(
-                          widget!.member?.fullName,
+                          widget.member?.fullName,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(
@@ -132,7 +128,7 @@ class _MemberItemWidgetState extends State<MemberItemWidget> {
                             EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 12.0, 0.0),
                         child: Text(
                           valueOrDefault<String>(
-                            widget!.member?.email,
+                            widget.member?.email,
                             'N/A',
                           ),
                           style: FlutterFlowTheme.of(context)
@@ -153,7 +149,7 @@ class _MemberItemWidgetState extends State<MemberItemWidget> {
               ),
               Builder(
                 builder: (context) {
-                  if (widget!.isBuyer) {
+                  if (widget.isBuyer) {
                     return Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [

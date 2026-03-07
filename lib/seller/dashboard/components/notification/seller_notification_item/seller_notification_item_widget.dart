@@ -2,12 +2,9 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'seller_notification_item_model.dart';
 export 'seller_notification_item_model.dart';
@@ -59,7 +56,7 @@ class _SellerNotificationItemWidgetState
       highlightColor: Colors.transparent,
       onTap: () async {
         _model.indexOfNotification = await actions.indexOfNotification(
-          widget!.notification,
+          widget.notification,
           FFAppState().sellerNotifications.toList(),
         );
         FFAppState().updateSellerNotificationsAtIndex(
@@ -72,7 +69,7 @@ class _SellerNotificationItemWidgetState
       },
       child: Container(
         decoration: BoxDecoration(
-          color: !widget!.notification!.isRead
+          color: !widget.notification!.isRead
               ? FlutterFlowTheme.of(context).secondaryBackground
               : Color(0x00000000),
           borderRadius: BorderRadius.circular(10.0),
@@ -98,7 +95,7 @@ class _SellerNotificationItemWidgetState
                         children: [
                           Builder(
                             builder: (context) {
-                              if (widget!.notification?.type ==
+                              if (widget.notification?.type ==
                                   SellerNotification.Offer) {
                                 return Container(
                                   width: 44.0,
@@ -113,7 +110,7 @@ class _SellerNotificationItemWidgetState
                                     size: 24.0,
                                   ),
                                 );
-                              } else if (widget!.notification?.type ==
+                              } else if (widget.notification?.type ==
                                   SellerNotification.Property) {
                                 return Container(
                                   width: 44.0,
@@ -128,7 +125,7 @@ class _SellerNotificationItemWidgetState
                                     size: 24.0,
                                   ),
                                 );
-                              } else if (widget!.notification?.type ==
+                              } else if (widget.notification?.type ==
                                   SellerNotification.Appointment) {
                                 return Container(
                                   width: 44.0,
@@ -186,7 +183,7 @@ class _SellerNotificationItemWidgetState
                                             0.0, 4.0, 0.0, 0.0),
                                         child: Text(
                                           valueOrDefault<String>(
-                                            widget!.notification?.title,
+                                            widget.notification?.title,
                                             'title',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -210,7 +207,7 @@ class _SellerNotificationItemWidgetState
                                   Text(
                                     dateTimeFormat(
                                       "relative",
-                                      widget!.notification!.createdAt!,
+                                      widget.notification!.createdAt!,
                                       locale: FFLocalizations.of(context)
                                               .languageShortCode ??
                                           FFLocalizations.of(context)
@@ -237,7 +234,7 @@ class _SellerNotificationItemWidgetState
                                   children: [
                                     Builder(
                                       builder: (context) {
-                                        if (widget!.notification?.type ==
+                                        if (widget.notification?.type ==
                                             SellerNotification.Offer) {
                                           return Padding(
                                             padding:
@@ -264,7 +261,7 @@ class _SellerNotificationItemWidgetState
                                                   ),
                                             ),
                                           );
-                                        } else if (widget!.notification?.type ==
+                                        } else if (widget.notification?.type ==
                                             SellerNotification.Property) {
                                           return Padding(
                                             padding:
@@ -291,7 +288,7 @@ class _SellerNotificationItemWidgetState
                                                   ),
                                             ),
                                           );
-                                        } else if (widget!.notification?.type ==
+                                        } else if (widget.notification?.type ==
                                             SellerNotification.Appointment) {
                                           return Padding(
                                             padding:
@@ -355,7 +352,7 @@ class _SellerNotificationItemWidgetState
                                     0.0, 8.0, 0.0, 0.0),
                                 child: Text(
                                   valueOrDefault<String>(
-                                    widget!.notification?.description,
+                                    widget.notification?.description,
                                     'description',
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -378,7 +375,7 @@ class _SellerNotificationItemWidgetState
                   ),
                 ),
               ),
-              if (!widget!.notification!.isRead)
+              if (!widget.notification!.isRead)
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                   child: Container(

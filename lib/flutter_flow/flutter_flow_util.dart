@@ -13,8 +13,7 @@ import 'package:json_path/json_path.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../main.dart';
+import 'package:go_router/go_router.dart';
 
 import 'lat_lng.dart';
 
@@ -439,7 +438,7 @@ Future<LatLng?> queryCurrentUserLocation() async {
   }
 
   final position = await Geolocator.getCurrentPosition();
-  return position != null && position.latitude != 0 && position.longitude != 0
+  return position.latitude != 0 && position.longitude != 0
       ? LatLng(position.latitude, position.longitude)
       : null;
 }
@@ -471,18 +470,22 @@ extension StringDocRef on String {
   DocumentReference get ref => FirebaseFirestore.instance.doc(this);
 }
 
-void setAppLanguage(BuildContext context, String language) =>
-    MyApp.of(context).setLocale(language);
+void setAppLanguage(BuildContext context, String language) {
+  // No-op: locale management handled by new architecture
+}
 
-void setDarkModeSetting(BuildContext context, ThemeMode themeMode) =>
-    MyApp.of(context).setThemeMode(themeMode);
+void setDarkModeSetting(BuildContext context, ThemeMode themeMode) {
+  // No-op: theme management handled by new architecture
+}
 
-void setTextScaleFactorSetting(BuildContext context, double textScaleFactor) =>
-    MyApp.of(context).setTextScaleFactor(textScaleFactor);
+void setTextScaleFactorSetting(BuildContext context, double textScaleFactor) {
+  // No-op: text scale management handled by new architecture
+}
 
 void incrementTextScaleFactorSetting(
-        BuildContext context, double incrementValue) =>
-    MyApp.of(context).incrementTextScaleFactor(incrementValue);
+    BuildContext context, double incrementValue) {
+  // No-op: text scale management handled by new architecture
+}
 
 void showSnackbar(
   BuildContext context,
@@ -498,7 +501,7 @@ void showSnackbar(
           if (loading)
             Padding(
               padding: EdgeInsetsDirectional.only(end: 10.0),
-              child: Container(
+              child: SizedBox(
                 height: 20,
                 width: 20,
                 child: const CircularProgressIndicator(
@@ -677,7 +680,16 @@ extension ListUniqueExt<T> on Iterable<T> {
   }
 }
 
-String getCurrentRoute(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRoute() : '';
-List<String> getCurrentRouteStack(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRouteStack() : [];
+String getCurrentRoute(BuildContext context) {
+  if (!context.mounted) return '';
+  try {
+    return GoRouterState.of(context).uri.toString();
+  } catch (_) {
+    return '';
+  }
+}
+
+List<String> getCurrentRouteStack(BuildContext context) {
+  // Route stack not available without MyApp; return empty list
+  return [];
+}

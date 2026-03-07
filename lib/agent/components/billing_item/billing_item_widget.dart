@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'billing_item_model.dart';
 export 'billing_item_model.dart';
 
@@ -66,7 +62,7 @@ class _BillingItemWidgetState extends State<BillingItemWidget> {
                   Text(
                     dateTimeFormat(
                       "yMMMd",
-                      widget!.date,
+                      widget.date,
                       locale: FFLocalizations.of(context).languageCode,
                     ),
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -79,7 +75,7 @@ class _BillingItemWidgetState extends State<BillingItemWidget> {
                         ),
                   ),
                   Text(
-                    'Subscription ${widget!.status}',
+                    'Subscription ${widget.status}',
                     style: FlutterFlowTheme.of(context).labelMedium.override(
                           fontFamily:
                               FlutterFlowTheme.of(context).labelMediumFamily,
@@ -93,7 +89,7 @@ class _BillingItemWidgetState extends State<BillingItemWidget> {
               ),
               Text(
                 valueOrDefault<String>(
-                  widget!.amount,
+                  widget.amount,
                   'N/A',
                 ),
                 style: FlutterFlowTheme.of(context).bodyMedium.override(

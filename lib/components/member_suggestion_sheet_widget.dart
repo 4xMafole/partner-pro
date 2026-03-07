@@ -2,24 +2,17 @@ import '/agent/components/contact_suggest_item/contact_suggest_item_widget.dart'
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import 'dart:async';
-import 'dart:math';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:provider/provider.dart';
 import 'member_suggestion_sheet_model.dart';
 export 'member_suggestion_sheet_model.dart';
 
@@ -94,7 +87,7 @@ class _MemberSuggestionSheetWidgetState
               parent: _model.buyerDoc?.reference,
               queryBuilder: (suggestionsRecord) => suggestionsRecord.where(
                 'property_data.id',
-                isEqualTo: widget!.propertyID,
+                isEqualTo: widget.propertyID,
               ),
               singleRecord: true,
             ).then((s) => s.firstOrNull);

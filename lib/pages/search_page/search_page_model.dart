@@ -1,41 +1,17 @@
 import '/agent/components/agent_bottom_navbar/agent_bottom_navbar_widget.dart';
 import '/agent/components/app_logo/app_logo_widget.dart';
-import '/agent/components/notification_popup/notification_popup_widget.dart';
-import '/app_components/custom_dialog/custom_dialog_widget.dart';
 import '/app_components/navbar/buyer_bottom_navbar/buyer_bottom_navbar_widget.dart';
 import '/app_components/navbar/seller_bottom_navbar/seller_bottom_navbar_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
-import '/components/search_result_popup_widget.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import '/pages/search/search_components/filter_location_popup/filter_location_popup_widget.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
-import '/pages/search/search_filter/search_filter_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:math';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
-import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
-import 'package:badges/badges.dart' as badges;
 import 'search_page_widget.dart' show SearchPageWidget;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-import 'package:provider/provider.dart';
 
 class SearchPageModel extends FlutterFlowModel<SearchPageWidget> {
   ///  Local state fields for this page.

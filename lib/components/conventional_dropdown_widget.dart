@@ -1,13 +1,10 @@
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'conventional_dropdown_model.dart';
 export 'conventional_dropdown_model.dart';
 
@@ -44,8 +41,8 @@ class _ConventionalDropdownWidgetState
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       safeSetState(() {
-        _model.dropDownValueController?.value = widget!.initialValue!;
-        _model.dropDownValue = widget!.initialValue!;
+        _model.dropDownValueController?.value = widget.initialValue!;
+        _model.dropDownValue = widget.initialValue!;
       });
     });
   }
@@ -63,8 +60,8 @@ class _ConventionalDropdownWidgetState
       controller: _model.dropDownValueController ??=
           FormFieldController<String>(
         _model.dropDownValue ??=
-            widget!.initialValue != null && widget!.initialValue != ''
-                ? widget!.initialValue
+            widget.initialValue != null && widget.initialValue != ''
+                ? widget.initialValue
                 : '',
       ),
       options: ['5%', '10%', '15%', '20%'],

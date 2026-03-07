@@ -1,8 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_api_headers/google_api_headers.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:http/http.dart' as http;
 import 'package:collection/collection.dart';
 
 import 'flutter_flow_widgets.dart';
@@ -11,7 +10,7 @@ import 'place.dart';
 
 class FlutterFlowPlacePicker extends StatefulWidget {
   const FlutterFlowPlacePicker({
-    Key? key,
+    super.key,
     required this.iOSGoogleMapsApiKey,
     required this.androidGoogleMapsApiKey,
     required this.webGoogleMapsApiKey,
@@ -20,7 +19,7 @@ class FlutterFlowPlacePicker extends StatefulWidget {
     required this.buttonOptions,
     required this.onSelect,
     this.proxyBaseUrl,
-  }) : super(key: key);
+  });
 
   final String iOSGoogleMapsApiKey;
   final String androidGoogleMapsApiKey;
@@ -62,76 +61,141 @@ class _FFPlacePickerState extends State<FlutterFlowPlacePicker> {
       text: _selectedPlace ?? widget.defaultText ?? 'Search places',
       icon: widget.icon,
       onPressed: () async {
-        final p = await PlacesAutocomplete.show(
+        final result = await showSearch<_PlacePrediction?>(
           context: context,
-          apiKey: googleMapsApiKey,
-          onError: (response) =>
-              print('Error occured when getting places response:'
-                  '\n${response.errorMessage}'),
-          mode: Mode.overlay,
-          types: [],
-          components: [],
-          strictbounds: false,
-          proxyBaseUrl: widget.proxyBaseUrl,
-          language: languageCode,
+          delegate: _PlacesSearchDelegate(
+            apiKey: googleMapsApiKey,
+            language: languageCode,
+            proxyBaseUrl: widget.proxyBaseUrl,
+          ),
         );
-
-        await displayPrediction(p, languageCode);
+        if (result != null) {
+          await _fetchPlaceDetails(result.placeId, languageCode);
+        }
       },
       options: widget.buttonOptions,
     );
   }
 
-  Future displayPrediction(Prediction? p, String? languageCode) async {
-    if (p == null) {
-      return;
-    }
-    final placeId = p.placeId;
-    if (placeId == null) {
-      return;
-    }
-    GoogleMapsPlaces _places = GoogleMapsPlaces(
-      apiKey: googleMapsApiKey,
-      baseUrl: widget.proxyBaseUrl,
-      apiHeaders: await const GoogleApiHeaders().getHeaders(),
-    );
-    PlacesDetailsResponse detail =
-        await _places.getDetailsByPlaceId(placeId, language: languageCode);
+  Future<void> _fetchPlaceDetails(String placeId, String? languageCode) async {
+    final baseUrl =
+        widget.proxyBaseUrl ?? 'https://maps.googleapis.com/maps/api';
+    final uri =
+        Uri.parse('$baseUrl/place/details/json').replace(queryParameters: {
+      'place_id': placeId,
+      'key': googleMapsApiKey,
+      if (languageCode != null) 'language': languageCode,
+    });
+    final response = await http.get(uri);
+    if (response.statusCode != 200) return;
+    final json = jsonDecode(response.body);
+    final detail = json['result'];
+    if (detail == null) return;
+
     if (mounted) {
       setState(() {
-        _selectedPlace = detail.result.name;
+        _selectedPlace = detail['name'] as String?;
       });
     }
+
+    final geometry = detail['geometry']?['location'];
+    final components = (detail['address_components'] as List<dynamic>?) ?? [];
+
+    String component(String type) =>
+        (components.firstWhereOrNull(
+                (e) => (e['types'] as List<dynamic>).contains(type))
+            as Map<String, dynamic>?)?['short_name'] as String? ??
+        '';
 
     widget.onSelect(
       FFPlace(
         latLng: LatLng(
-          detail.result.geometry?.location.lat ?? 0,
-          detail.result.geometry?.location.lng ?? 0,
+          (geometry?['lat'] as num?)?.toDouble() ?? 0,
+          (geometry?['lng'] as num?)?.toDouble() ?? 0,
         ),
-        name: detail.result.name,
-        address: detail.result.formattedAddress ?? '',
-        city: detail.result.addressComponents
-                .firstWhereOrNull((e) => e.types.contains('locality'))
-                ?.shortName ??
-            detail.result.addressComponents
-                .firstWhereOrNull((e) => e.types.contains('sublocality'))
-                ?.shortName ??
-            '',
-        state: detail.result.addressComponents
-                .firstWhereOrNull(
-                    (e) => e.types.contains('administrative_area_level_1'))
-                ?.shortName ??
-            '',
-        country: detail.result.addressComponents
-                .firstWhereOrNull((e) => e.types.contains('country'))
-                ?.shortName ??
-            '',
-        zipCode: detail.result.addressComponents
-                .firstWhereOrNull((e) => e.types.contains('postal_code'))
-                ?.shortName ??
-            '',
+        name: detail['name'] as String? ?? '',
+        address: detail['formatted_address'] as String? ?? '',
+        city: component('locality').isNotEmpty
+            ? component('locality')
+            : component('sublocality'),
+        state: component('administrative_area_level_1'),
+        country: component('country'),
+        zipCode: component('postal_code'),
       ),
     );
+  }
+}
+
+class _PlacePrediction {
+  final String placeId;
+  final String description;
+  _PlacePrediction({required this.placeId, required this.description});
+}
+
+class _PlacesSearchDelegate extends SearchDelegate<_PlacePrediction?> {
+  final String apiKey;
+  final String? language;
+  final String? proxyBaseUrl;
+
+  _PlacesSearchDelegate({
+    required this.apiKey,
+    this.language,
+    this.proxyBaseUrl,
+  });
+
+  @override
+  List<Widget>? buildActions(BuildContext context) => [
+        IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+      ];
+
+  @override
+  Widget? buildLeading(BuildContext context) => IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, null));
+
+  @override
+  Widget buildResults(BuildContext context) => buildSuggestions(context);
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) return const SizedBox.shrink();
+    return FutureBuilder<List<_PlacePrediction>>(
+      future: _fetchSuggestions(query),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData)
+          return const Center(child: CircularProgressIndicator());
+        final predictions = snapshot.data!;
+        return ListView.builder(
+          itemCount: predictions.length,
+          itemBuilder: (context, index) {
+            final p = predictions[index];
+            return ListTile(
+              title: Text(p.description),
+              onTap: () => close(context, p),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<_PlacePrediction>> _fetchSuggestions(String input) async {
+    final baseUrl = proxyBaseUrl ?? 'https://maps.googleapis.com/maps/api';
+    final uri =
+        Uri.parse('$baseUrl/place/autocomplete/json').replace(queryParameters: {
+      'input': input,
+      'key': apiKey,
+      if (language != null) 'language': language!,
+    });
+    final response = await http.get(uri);
+    if (response.statusCode != 200) return [];
+    final json = jsonDecode(response.body);
+    final predictions = json['predictions'] as List<dynamic>? ?? [];
+    return predictions
+        .map((p) => _PlacePrediction(
+              placeId: p['place_id'] as String,
+              description: p['description'] as String,
+            ))
+        .toList();
   }
 }

@@ -60,8 +60,7 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
   bool includeDimensions = false,
   bool includeBlurHash = false,
 }) async {
-  final createUploadMediaListTile =
-      (String label, MediaSource mediaSource) => ListTile(
+  createUploadMediaListTile(String label, MediaSource mediaSource) => ListTile(
             title: Text(
               label,
               textAlign: TextAlign.center,
@@ -305,7 +304,7 @@ List<SelectedFile> selectedFilesFromUploadedFiles(
         final file = entry.value;
         return SelectedFile(
             storagePath: _getStoragePath(
-              storageFolderPath != null ? storageFolderPath : null,
+              storageFolderPath,
               file.name!,
               false,
               isMultiData ? index : null,

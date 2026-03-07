@@ -2,12 +2,8 @@ import '/app_components/navbar/navbar_item/navbar_item_widget.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_bottom_navbar_model.dart';
 export 'seller_bottom_navbar_model.dart';
 
@@ -64,7 +60,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    if (widget!.activeNav != SellerNavbar.Dashboard)
+                    if (widget.activeNav != SellerNavbar.Dashboard)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -93,7 +89,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                           ),
                         ),
                       ),
-                    if (widget!.activeNav == SellerNavbar.Dashboard)
+                    if (widget.activeNav == SellerNavbar.Dashboard)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -118,7 +114,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                   children: [
                     Builder(
                       builder: (context) {
-                        if (widget!.activeNav != SellerNavbar.Search) {
+                        if (widget.activeNav != SellerNavbar.Search) {
                           return Container(
                             decoration: BoxDecoration(),
                             child: wrapWithModel(
@@ -180,7 +176,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    if (widget!.activeNav != SellerNavbar.Properties)
+                    if (widget.activeNav != SellerNavbar.Properties)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -209,7 +205,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                           ),
                         ),
                       ),
-                    if (widget!.activeNav == SellerNavbar.Properties)
+                    if (widget.activeNav == SellerNavbar.Properties)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -232,7 +228,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    if (widget!.activeNav != SellerNavbar.Offers)
+                    if (widget.activeNav != SellerNavbar.Offers)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -261,7 +257,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                           ),
                         ),
                       ),
-                    if (widget!.activeNav == SellerNavbar.Offers)
+                    if (widget.activeNav == SellerNavbar.Offers)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -284,7 +280,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    if (widget!.activeNav != SellerNavbar.Profile)
+                    if (widget.activeNav != SellerNavbar.Profile)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(
@@ -313,7 +309,7 @@ class _SellerBottomNavbarWidgetState extends State<SellerBottomNavbarWidget> {
                           ),
                         ),
                       ),
-                    if (widget!.activeNav == SellerNavbar.Profile)
+                    if (widget.activeNav == SellerNavbar.Profile)
                       Container(
                         decoration: BoxDecoration(),
                         child: wrapWithModel(

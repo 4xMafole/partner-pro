@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'property_item_option_model.dart';
 export 'property_item_option_model.dart';
 
@@ -16,7 +12,7 @@ class PropertyItemOptionWidget extends StatefulWidget {
     this.onOffer,
     this.onAppointment,
     String? propertyTitle,
-  }) : this.propertyTitle = propertyTitle ?? 'Property Title';
+  }) : propertyTitle = propertyTitle ?? 'Property Title';
 
   final Future Function()? onEdit;
   final Future Function()? onDelete;
@@ -88,7 +84,7 @@ class _PropertyItemOptionWidgetState extends State<PropertyItemOptionWidget> {
                 highlightColor: Colors.transparent,
                 onTap: () async {
                   await widget.onOffer?.call(
-                    widget!.propertyTitle,
+                    widget.propertyTitle,
                   );
                 },
                 child: Row(
@@ -124,7 +120,7 @@ class _PropertyItemOptionWidgetState extends State<PropertyItemOptionWidget> {
                 highlightColor: Colors.transparent,
                 onTap: () async {
                   await widget.onAppointment?.call(
-                    widget!.propertyTitle,
+                    widget.propertyTitle,
                   );
                 },
                 child: Row(

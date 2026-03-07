@@ -1,13 +1,7 @@
 // Automatic FlutterFlow imports
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -92,12 +86,7 @@ class _TexasPDFWidgetState extends State<TexasPDFWidget> {
   // Function to fill form fields in the PDF
   void fillForm() async {
     try {
-      final formFields = await _pdfViewerController.getFormFields();
-
-      if (formFields == null) {
-        print("Error: formFields is null");
-        return;
-      }
+      final formFields = _pdfViewerController.getFormFields();
 
       for (int i = 1; i <= 8; i++) {
         // Seller fields
@@ -176,7 +165,7 @@ class _TexasPDFWidgetState extends State<TexasPDFWidget> {
       };
 
       fieldsToFill.forEach((fieldName, fieldValue) {
-        if (fieldValue != null && fieldValue.isNotEmpty) {
+        if (fieldValue.isNotEmpty) {
           var field =
               formFields.where((formField) => formField.name == fieldName);
           if (field.isNotEmpty) {

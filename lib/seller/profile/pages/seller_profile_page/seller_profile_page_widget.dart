@@ -5,12 +5,8 @@ import '/components/profile_list_item_widget.dart';
 import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_profile_page_model.dart';
 export 'seller_profile_page_model.dart';
 
@@ -88,8 +84,7 @@ class _SellerProfilePageWidgetState extends State<SellerProfilePageWidget> {
                                     children: [
                                       Builder(
                                         builder: (context) {
-                                          if (currentUserPhoto != null &&
-                                              currentUserPhoto != '') {
+                                          if (currentUserPhoto != '') {
                                             return ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(40.0),

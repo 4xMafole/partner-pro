@@ -1,11 +1,7 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_add_prop_comp_item_model.dart';
 export 'seller_add_prop_comp_item_model.dart';
 
@@ -95,7 +91,7 @@ class _SellerAddPropCompItemWidgetState
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.property?.title,
+                              widget.property?.title,
                               'title',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -115,7 +111,7 @@ class _SellerAddPropCompItemWidgetState
                         Text(
                           valueOrDefault<String>(
                             formatNumber(
-                              widget!.property?.price,
+                              widget.property?.price,
                               formatType: FormatType.decimal,
                               decimalType: DecimalType.automatic,
                               currency: '\$',
@@ -148,7 +144,7 @@ class _SellerAddPropCompItemWidgetState
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.property?.location?.name,
+                              widget.property?.location.name,
                               'location',
                             ),
                             style: FlutterFlowTheme.of(context)

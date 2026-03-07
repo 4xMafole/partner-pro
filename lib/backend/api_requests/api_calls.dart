@@ -1,7 +1,5 @@
 import '../../core/config/env_config.dart';
 import 'dart:convert';
-import 'dart:typed_data';
-import '../schema/structs/index.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -48,10 +46,10 @@ class GetPropertiesByZipIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getPropertiesByZipId',
-      apiUrl: '${baseUrl}/properties/${zpId}',
+      apiUrl: '$baseUrl/properties/$zpId',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
       },
       params: {
         'user_id': userId,
@@ -74,7 +72,7 @@ class GetPropertiesByZipIdCall {
         response,
         r'''$.id''',
       ));
-  dynamic? address(dynamic response) => getJsonField(
+  dynamic address(dynamic response) => getJsonField(
         response,
         r'''$.address''',
       );
@@ -197,10 +195,10 @@ class GetAllPropertiesCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllProperties',
-      apiUrl: '${baseUrl}/properties/user',
+      apiUrl: '$baseUrl/properties/user',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${user}',
+        'requester-id': '$user',
       },
       params: {
         'zip': zip,
@@ -251,10 +249,10 @@ class GetSellerPropertiesCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getSellerProperties',
-      apiUrl: '${baseUrl}/properties/seller',
+      apiUrl: '$baseUrl/properties/seller',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
       },
       params: {
         'zillowProperties': zillowProperties,
@@ -275,20 +273,19 @@ class GetSellerPropertiesCall {
 class InsertSellerPropertyCall {
   Future<ApiCallResponse> call({
     String? generated = '',
-    dynamic? bodyJson,
+    dynamic bodyJson,
     String? userId = '',
   }) async {
     final baseUrl = IwoSellerPropertiesApiGroup.getBaseUrl();
 
     final body = _serializeJson(bodyJson);
-    final ffApiRequestBody = '''
-${body}''';
+    final ffApiRequestBody = body;
     return ApiManager.instance.makeApiCall(
       callName: 'insertSellerProperty',
-      apiUrl: '${baseUrl}/properties/seller',
+      apiUrl: '$baseUrl/properties/seller',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
       },
       params: {},
       body: ffApiRequestBody,
@@ -311,7 +308,7 @@ class UpdateSellerPropertyCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'updateSellerProperty',
-      apiUrl: '${baseUrl}/properties/seller',
+      apiUrl: '$baseUrl/properties/seller',
       callType: ApiCallType.PATCH,
       headers: {},
       params: {},
@@ -335,14 +332,14 @@ class DeleteSellerPropertyCall {
 
     final ffApiRequestBody = '''
 {
-  "id": "${propertyId}"
+  "id": "$propertyId"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'deleteSellerProperty',
-      apiUrl: '${baseUrl}/properties/seller',
+      apiUrl: '$baseUrl/properties/seller',
       callType: ApiCallType.DELETE,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
         'Content-Type': 'application/json',
       },
       params: {},
@@ -370,10 +367,10 @@ class GetAllPropertiesAdminCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllPropertiesAdmin',
-      apiUrl: '${baseUrl}/properties/admin',
+      apiUrl: '$baseUrl/properties/admin',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${admin}',
+        'requester-id': '$admin',
       },
       params: {
         'zillowProperties': zillowProperties,
@@ -399,7 +396,7 @@ class InsertSellerPropertyAdminCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'insertSellerPropertyAdmin',
-      apiUrl: '${baseUrl}/properties/admin',
+      apiUrl: '$baseUrl/properties/admin',
       callType: ApiCallType.POST,
       headers: {},
       params: {},
@@ -422,7 +419,7 @@ class UpdateSellerPropertyAdminCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'updateSellerPropertyAdmin',
-      apiUrl: '${baseUrl}/properties/admin',
+      apiUrl: '$baseUrl/properties/admin',
       callType: ApiCallType.PATCH,
       headers: {},
       params: {},
@@ -445,7 +442,7 @@ class DeleteSellerPropertyAdminCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'deleteSellerPropertyAdmin',
-      apiUrl: '${baseUrl}/properties/admin',
+      apiUrl: '$baseUrl/properties/admin',
       callType: ApiCallType.DELETE,
       headers: {},
       params: {},
@@ -494,7 +491,7 @@ class FetchsAllThePropertiesListedInTheTableThatAreOfAnyStatusFilteredOnGivenPar
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetchs all the properties listed in the table that are of any status filtered on given parameters by user',
-      apiUrl: '${baseUrl}/account/user',
+      apiUrl: '$baseUrl/account/user',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -520,7 +517,7 @@ class InsertUserSingleRecordCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'insertUserSingleRecord',
-      apiUrl: '${baseUrl}/account/user',
+      apiUrl: '$baseUrl/account/user',
       callType: ApiCallType.POST,
       headers: {},
       params: {},
@@ -544,7 +541,7 @@ class ThisMethodIsUsedToMakeUpdatesOnTheExistingRecordOfTheTableInitiatedByUserC
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to make updates on the existing record of the table initiated by user',
-      apiUrl: '${baseUrl}/account/user',
+      apiUrl: '$baseUrl/account/user',
       callType: ApiCallType.PATCH,
       headers: {},
       params: {},
@@ -568,7 +565,7 @@ class ThisMethodIsUsedToMakeThePropertyStatusAsInactiveSoTheOtherUsersUnableToSe
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to make the property status as inactive so the other users unable to see them',
-      apiUrl: '${baseUrl}/account/user',
+      apiUrl: '$baseUrl/account/user',
       callType: ApiCallType.DELETE,
       headers: {},
       params: {},
@@ -593,7 +590,7 @@ class FetchsAllThePropertiesListedInTheTableThatAreActiveAndAvailbleToSellByTheS
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetchs all the properties listed in the table that are active and availble to sell by the seller',
-      apiUrl: '${baseUrl}/account/admin',
+      apiUrl: '$baseUrl/account/admin',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -744,10 +741,10 @@ class InsertSingleFavoritePropertyCall {
     final ffApiRequestBody = '''
 {
   "status": true,
-  "created_by": "${createdBy}",
-  "property_id": "${propertyId}",
-  "user_id": "${userId}",
-  "notes": "${note}"
+  "created_by": "$createdBy",
+  "property_id": "$propertyId",
+  "user_id": "$userId",
+  "notes": "$note"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'insertSingleFavoriteProperty',
@@ -779,10 +776,10 @@ class UpdateSingleFavoritePropertyCall {
     final ffApiRequestBody = '''
 {
   "status": true,
-  "property_id": "${propertyId}",
-  "user_id": "${userId}",
-  "created_by": "${createdBy}",
-  "notes": "${note}"
+  "property_id": "$propertyId",
+  "user_id": "$userId",
+  "created_by": "$createdBy",
+  "notes": "$note"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'updateSingleFavoriteProperty',
@@ -834,7 +831,6 @@ class GetFavoritePropertyCall {
     String? userId = '',
     String? propertyId,
   }) async {
-    propertyId ??= null!;
     final baseUrl = IwoUsersFavoritesApiGroup.getBaseUrl();
 
     return ApiManager.instance.makeApiCall(
@@ -872,16 +868,15 @@ class IwoAccountGroup {
 
 class AddUserCall {
   Future<ApiCallResponse> call({
-    dynamic? bodyJson,
+    dynamic bodyJson,
   }) async {
     final baseUrl = IwoAccountGroup.getBaseUrl();
 
     final body = _serializeJson(bodyJson);
-    final ffApiRequestBody = '''
-${body}''';
+    final ffApiRequestBody = body;
     return ApiManager.instance.makeApiCall(
       callName: 'addUser',
-      apiUrl: '${baseUrl}/user',
+      apiUrl: '$baseUrl/user',
       callType: ApiCallType.POST,
       headers: {},
       params: {},
@@ -899,16 +894,15 @@ ${body}''';
 
 class UpdateUserCall {
   Future<ApiCallResponse> call({
-    dynamic? bodyJson,
+    dynamic bodyJson,
   }) async {
     final baseUrl = IwoAccountGroup.getBaseUrl();
 
     final body = _serializeJson(bodyJson);
-    final ffApiRequestBody = '''
-${body}''';
+    final ffApiRequestBody = body;
     return ApiManager.instance.makeApiCall(
       callName: 'updateUser',
-      apiUrl: '${baseUrl}/user',
+      apiUrl: '$baseUrl/user',
       callType: ApiCallType.PATCH,
       headers: {},
       params: {},
@@ -932,10 +926,10 @@ class DeleteUserCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'deleteUser',
-      apiUrl: '${baseUrl}/user',
+      apiUrl: '$baseUrl/user',
       callType: ApiCallType.DELETE,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
       },
       params: {
         'user_id': userId,
@@ -958,7 +952,7 @@ class GetUserCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getUser',
-      apiUrl: '${baseUrl}/user',
+      apiUrl: '$baseUrl/user',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -1035,18 +1029,18 @@ class InsertSavedSearchCall {
     String? userId = '',
     String? inputField = '',
     bool? status = true,
-    dynamic? propertyJson,
+    dynamic propertyJson,
   }) async {
     final baseUrl = IwoUsersSavedSearchApiGroup.getBaseUrl();
 
     final property = _serializeJson(propertyJson);
     final ffApiRequestBody = '''
 {
-  "user_id": "${userId}",
-  "status": ${status},
+  "user_id": "$userId",
+  "status": $status,
   "search": {
-    "input_field": "${inputField}",
-    "property": ${property}
+    "input_field": "$inputField",
+    "property": $property
   }
 }''';
     return ApiManager.instance.makeApiCall(
@@ -1189,31 +1183,31 @@ class InsertShowPropertyCall {
     final ffApiRequestBody = '''
 {
   "showing_request": {
-    "showing_type": ${showingType},
-    "user_name": "${userName}",
-    "user_id": "${userId}",
-    "phone": "${phone}",
-    "buyer_type": ${buyerType},
-    "met_buyer": ${metBuyer},
-    "price": ${price},
-    "notes": "${notes}",
-    "public_notes": "${publicNotes}",
-    "nar_buyer_agreement": ${narBuyerAgreement},
-    "preferred_agent_1_email": "${preferredAgent1Emai}",
-    "access_information": "${accessInformation}",
-    "time_zone": "${timeZone}",
+    "showing_type": $showingType,
+    "user_name": "$userName",
+    "user_id": "$userId",
+    "phone": "$phone",
+    "buyer_type": $buyerType,
+    "met_buyer": $metBuyer,
+    "price": $price,
+    "notes": "$notes",
+    "public_notes": "$publicNotes",
+    "nar_buyer_agreement": $narBuyerAgreement,
+    "preferred_agent_1_email": "$preferredAgent1Emai",
+    "access_information": "$accessInformation",
+    "time_zone": "$timeZone",
     "showing_request_properties_attributes": {
-      "showing_date": "${showingDate}",
-      "duration": ${duration},
-      "mls": "${mls}",
-      "line1": "${line1}",
-      "line2": "${line2}",
-      "city": "${city}",
-      "state": "${state}",
-      "zip": "${zip}",
-      "who_schedules": ${whoSchedules},
-      "schedule_details": "${scheduleDetails}",
-      "external_id": "${externalId}"
+      "showing_date": "$showingDate",
+      "duration": $duration,
+      "mls": "$mls",
+      "line1": "$line1",
+      "line2": "$line2",
+      "city": "$city",
+      "state": "$state",
+      "zip": "$zip",
+      "who_schedules": $whoSchedules,
+      "schedule_details": "$scheduleDetails",
+      "external_id": "$externalId"
     }
   }
 }''';
@@ -1314,10 +1308,10 @@ class GetAscOffersCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAscOffers',
-      apiUrl: '${baseUrl}/offers/user',
+      apiUrl: '$baseUrl/offers/user',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {
         'property_id': propertyId,
@@ -1423,10 +1417,10 @@ class InsertOfferSingleRecordCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'insertOfferSingleRecord',
-      apiUrl: '${baseUrl}/offers/user',
+      apiUrl: '$baseUrl/offers/user',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       body: ffApiRequestBody,
@@ -1476,10 +1470,10 @@ class ThisMethodIsUsedToFetchAllTheEnteriesMadeByTheSellerInAscendingOrderCall {
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to fetch all the enteries made by the seller in ascending order.',
-      apiUrl: '${baseUrl}/offers/seller',
+      apiUrl: '$baseUrl/offers/seller',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {
         'property_id': propertyId,
@@ -1516,10 +1510,10 @@ class ThisMethodIsUsedToInsertASingleRecordIntoTheObjectIntiatedBySellerCall {
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to insert a single record into the object, intiated by seller',
-      apiUrl: '${baseUrl}/offers/seller',
+      apiUrl: '$baseUrl/offers/seller',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -1555,10 +1549,10 @@ class ThisMethodIsUsedToFetchAllTheEnteriesMadeByTheAdminInAscendingOrderCall {
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to fetch all the enteries made by the admin in ascending order.',
-      apiUrl: '${baseUrl}/offers/admin',
+      apiUrl: '$baseUrl/offers/admin',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {
         'property_id': propertyId,
@@ -1595,10 +1589,10 @@ class ThisMethodIsUsedToInsertASingleRecordIntoTheObjectIntiatedByAdminCall {
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to insert a single record into the object, intiated by admin',
-      apiUrl: '${baseUrl}/offers/admin',
+      apiUrl: '$baseUrl/offers/admin',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -1680,7 +1674,7 @@ class GetDocumentsCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getDocuments',
-      apiUrl: '${baseUrl}/documents/${documentId}',
+      apiUrl: '$baseUrl/documents/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -1702,10 +1696,10 @@ class GetDocumentsByUserCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getDocumentsByUser',
-      apiUrl: '${baseUrl}/documents/user',
+      apiUrl: '$baseUrl/documents/user',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       returnBody: true,
@@ -1754,10 +1748,10 @@ class PostDocumentsByUserCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'postDocumentsByUser',
-      apiUrl: '${baseUrl}/documents/user',
+      apiUrl: '$baseUrl/documents/user',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       body: ffApiRequestBody,
@@ -1782,10 +1776,10 @@ class ThisMethodIsUsedToUpdateASingleRecordIntoTheDocumentsCollectionIntiatedByU
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to update a single record into the documents collection, intiated by user',
-      apiUrl: '${baseUrl}/documents/user',
+      apiUrl: '$baseUrl/documents/user',
       callType: ApiCallType.PATCH,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -1808,7 +1802,7 @@ class FetchListOfEntriesFromDocumentsCollectionWhereTheUserIdEqualsToTheRequeste
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch list of entries from documents collection where the user_id equals to the requester id and property_id=given id.',
-      apiUrl: '${baseUrl}/documents/user/${propertyId}',
+      apiUrl: '$baseUrl/documents/user/$propertyId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -1832,7 +1826,7 @@ class FetchAnEntryFromDocumentsCollectionWhereTheUserIdrequesterIdAndPropertyIdI
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch an entry from documents collection where the user_id=requester_id and property_id is given uri param',
-      apiUrl: '${baseUrl}/documents/user/${propertyId}/${documentId}',
+      apiUrl: '$baseUrl/documents/user/$propertyId/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -1855,10 +1849,10 @@ class ThisMethodIsUsedToFetchAllTheEnteriesInvolvingTheSellerInAscendingOrderFil
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to fetch all the enteries involving the seller in ascending order filtered by property id.',
-      apiUrl: '${baseUrl}/documents/seller',
+      apiUrl: '$baseUrl/documents/seller',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       returnBody: true,
@@ -1881,10 +1875,10 @@ class ThisMethodIsUsedToInsertASingleRecordIntoTheDocumentsCollectionIntiatedByS
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to insert a single record into the documents collection, intiated by seller',
-      apiUrl: '${baseUrl}/documents/seller',
+      apiUrl: '$baseUrl/documents/seller',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -1908,10 +1902,10 @@ class ThisMethodIsUsedToUpdateASingleRecordIntoTheDocumentsCollectionIntiatedByS
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to update a single record into the documents collection, intiated by seller',
-      apiUrl: '${baseUrl}/documents/seller',
+      apiUrl: '$baseUrl/documents/seller',
       callType: ApiCallType.PATCH,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -1934,7 +1928,7 @@ class FetchListOfEntriesFromDocumentsCollectionWhereTheSellerIdEqualsToTheReques
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch list of entries from documents collection where the seller_id equals to the requester_id and property_id=given id.',
-      apiUrl: '${baseUrl}/documents/seller/${propertyId}',
+      apiUrl: '$baseUrl/documents/seller/$propertyId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -1958,7 +1952,7 @@ class FetchListOfEntriesFromDocumentsCollectionWhereTheSellerIdEqualsToTheReques
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch list of entries from documents collection where the seller_id equals to the requester_id, property_id first uri param and user_id is the second one.',
-      apiUrl: '${baseUrl}/documents/seller/${propertyId}/${userId}',
+      apiUrl: '$baseUrl/documents/seller/$propertyId/$userId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -1984,7 +1978,7 @@ class FetchAnEntryFromDocumentsCollectionWithTheDocumentIdWhereTheSellerIdEquals
       callName:
           'Fetch an entry from documents collection with the documentId where the seller_id equals to the requester_id, property_id first uri param and user_id is the second one.',
       apiUrl:
-          '${baseUrl}/documents/seller/${propertyId}/${userId}/${documentId}',
+          '$baseUrl/documents/seller/$propertyId/$userId/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -2007,10 +2001,10 @@ class ThisMethodIsUsedToFetchAllTheEnteriesInvolvingTheAdminInAscendingOrderFilt
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to fetch all the enteries involving the admin in ascending order filtered by property id.',
-      apiUrl: '${baseUrl}/documents/admin',
+      apiUrl: '$baseUrl/documents/admin',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       returnBody: true,
@@ -2033,10 +2027,10 @@ class ThisMethodIsUsedToInsertASingleRecordIntoTheDocumentsCollectionIntiatedByA
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to insert a single record into the documents collection, intiated by admin',
-      apiUrl: '${baseUrl}/documents/admin',
+      apiUrl: '$baseUrl/documents/admin',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -2060,10 +2054,10 @@ class ThisMethodIsUsedToUpdateASingleRecordIntoTheDocumentsCollectionIntiatedByA
     return ApiManager.instance.makeApiCall(
       callName:
           'This method is used to update a single record into the documents collection, intiated by admin',
-      apiUrl: '${baseUrl}/documents/admin',
+      apiUrl: '$baseUrl/documents/admin',
       callType: ApiCallType.PATCH,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       bodyType: BodyType.JSON,
@@ -2086,7 +2080,7 @@ class FetchAListOfEnteriesFromDocumentsCollectionForTheGivenPropertyIdCall {
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch a list of enteries from documents collection for the given propertyId',
-      apiUrl: '${baseUrl}/documents/admin/${propertyId}',
+      apiUrl: '$baseUrl/documents/admin/$propertyId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -2110,7 +2104,7 @@ class FetchAListOfEnteriesFromDocumentsCollectionForTheGivenUserIdAndPropertyIdC
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch a list of enteries from documents collection for the given userId and propertyId',
-      apiUrl: '${baseUrl}/documents/admin/${propertyId}/${userId}',
+      apiUrl: '$baseUrl/documents/admin/$propertyId/$userId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -2136,7 +2130,7 @@ class FetchAnEntryFromDocumentsCollectionWithTheDocumentIdForTheGivePropertyAndU
       callName:
           'Fetch an entry from documents collection with the documentId for the give property and user',
       apiUrl:
-          '${baseUrl}/documents/admin/${propertyId}/${userId}/${documentId}',
+          '$baseUrl/documents/admin/$propertyId/$userId/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -2199,7 +2193,7 @@ class GetTemplatesCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getTemplates',
-      apiUrl: '${baseUrl}/templates',
+      apiUrl: '$baseUrl/templates',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
@@ -2225,12 +2219,12 @@ class GetTemplateCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getTemplate',
-      apiUrl: '${baseUrl}/templates/${id}',
+      apiUrl: '$baseUrl/templates/$id',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       returnBody: true,
@@ -2261,12 +2255,12 @@ class UpdateTemplateCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'updateTemplate',
-      apiUrl: '${baseUrl}/templates/${id}',
+      apiUrl: '$baseUrl/templates/$id',
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -2290,12 +2284,12 @@ class ArchiveTemplateCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'archiveTemplate',
-      apiUrl: '${baseUrl}/templates/${id}',
+      apiUrl: '$baseUrl/templates/$id',
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       returnBody: true,
@@ -2323,12 +2317,12 @@ class GetSubmissionsCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getSubmissions',
-      apiUrl: '${baseUrl}/submissions',
+      apiUrl: '$baseUrl/submissions',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {
         'template_id': templateId,
@@ -2386,8 +2380,8 @@ class CreateSubmissionCall {
 
     final ffApiRequestBody = '''
 {
-  "template_id": ${templateId},
-  "send_email": ${sendEmail},
+  "template_id": $templateId,
+  "send_email": $sendEmail,
   "order": "${escapeStringForJson(order)}",
   "submitters": [
     {
@@ -2418,7 +2412,7 @@ class CreateSubmissionCall {
         },
         {
           "name": "buyer_check",
-          "default_value": "${buyerCheck}",
+          "default_value": "$buyerCheck",
           "readonly": true,
           "preferences": {
             "font_size": 12,
@@ -2617,7 +2611,7 @@ class CreateSubmissionCall {
         },
         {
           "name": "is_fha",
-          "default_value": "${isFha}",
+          "default_value": "$isFha",
           "readonly": true,
           "preferences": {
             "font_size": 12,
@@ -2628,7 +2622,7 @@ class CreateSubmissionCall {
         },
         {
           "name": "is_va",
-          "default_value": "${isVa}",
+          "default_value": "$isVa",
           "readonly": true,
           "preferences": {
             "font_size": 12,
@@ -2639,7 +2633,7 @@ class CreateSubmissionCall {
         },
         {
           "name": "is_seller_financing",
-          "default_value": "${isSellerFinancing}",
+          "default_value": "$isSellerFinancing",
           "readonly": true,
           "preferences": {
             "font_size": 12,
@@ -2650,7 +2644,7 @@ class CreateSubmissionCall {
         },
         {
           "name": "is_other",
-          "default_value": "${isOther}",
+          "default_value": "$isOther",
           "readonly": true,
           "preferences": {
             "font_size": 12,
@@ -2687,7 +2681,7 @@ class CreateSubmissionCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'createSubmission',
-      apiUrl: '${baseUrl}/submissions',
+      apiUrl: '$baseUrl/submissions',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
@@ -2725,12 +2719,12 @@ class GetSubmissionCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getSubmission',
-      apiUrl: '${baseUrl}/submissions/${id}',
+      apiUrl: '$baseUrl/submissions/$id',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       returnBody: true,
@@ -2752,12 +2746,12 @@ class ArchiveSubmissionCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'archiveSubmission',
-      apiUrl: '${baseUrl}/submissions/${id}',
+      apiUrl: '$baseUrl/submissions/$id',
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       returnBody: true,
@@ -2788,12 +2782,12 @@ class CreateSubmissionsFromEmailsCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'createSubmissionsFromEmails',
-      apiUrl: '${baseUrl}/submissions/emails',
+      apiUrl: '$baseUrl/submissions/emails',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -2817,12 +2811,12 @@ class GetSubmitterCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getSubmitter',
-      apiUrl: '${baseUrl}/submitters/${id}',
+      apiUrl: '$baseUrl/submitters/$id',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       returnBody: true,
@@ -2870,12 +2864,12 @@ class UpdateSubmitterCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'updateSubmitter',
-      apiUrl: '${baseUrl}/submitters/${id}',
+      apiUrl: '$baseUrl/submitters/$id',
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -2906,12 +2900,12 @@ class GetSubmittersCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getSubmitters',
-      apiUrl: '${baseUrl}/submitters',
+      apiUrl: '$baseUrl/submitters',
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {
         'submission_id': submissionId,
@@ -2956,12 +2950,12 @@ class AddDocumentToTemplateCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'addDocumentToTemplate',
-      apiUrl: '${baseUrl}/templates/${id}/documents',
+      apiUrl: '$baseUrl/templates/$id/documents',
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -2991,12 +2985,12 @@ class CloneTemplateCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'cloneTemplate',
-      apiUrl: '${baseUrl}/templates/${id}/clone',
+      apiUrl: '$baseUrl/templates/$id/clone',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3035,12 +3029,12 @@ class CreateTemplateFromHtmlCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'createTemplateFromHtml',
-      apiUrl: '${baseUrl}/templates/html',
+      apiUrl: '$baseUrl/templates/html',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3104,12 +3098,12 @@ class CreateTemplateFromDocxCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'createTemplateFromDocx',
-      apiUrl: '${baseUrl}/templates/docx',
+      apiUrl: '$baseUrl/templates/docx',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3175,12 +3169,12 @@ class CreateTemplateFromPdfCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'createTemplateFromPdf',
-      apiUrl: '${baseUrl}/templates/pdf',
+      apiUrl: '$baseUrl/templates/pdf',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3212,12 +3206,12 @@ class MergeTemplateCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'mergeTemplate',
-      apiUrl: '${baseUrl}/templates/merge',
+      apiUrl: '$baseUrl/templates/merge',
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
         'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '${xAuthToken}',
+        'X-Auth-Token': '$xAuthToken',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3253,7 +3247,7 @@ class GetAllOffersCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllOffers',
-      apiUrl: '${baseUrl}/offers',
+      apiUrl: '$baseUrl/offers',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -3275,7 +3269,7 @@ class GetOfferByIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getOfferById',
-      apiUrl: '${baseUrl}/offers/${id}',
+      apiUrl: '$baseUrl/offers/$id',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -3292,20 +3286,19 @@ class GetOfferByIdCall {
 class InsertOfferCall {
   Future<ApiCallResponse> call({
     String? requesterId = '',
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = IwoOffersGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'insertOffer',
-      apiUrl: '${baseUrl}/offers',
+      apiUrl: '$baseUrl/offers',
       callType: ApiCallType.POST,
       headers: {
         'content-type': 'application/json',
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3328,7 +3321,7 @@ class GetOfferByRequesterIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getOfferByRequesterId',
-      apiUrl: '${baseUrl}/offers',
+      apiUrl: '$baseUrl/offers',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -3358,16 +3351,15 @@ class IwoPatchesAPIGroup {
 class UpdateOfferByIdCall {
   Future<ApiCallResponse> call({
     String? id = '',
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = IwoPatchesAPIGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'updateOfferById',
-      apiUrl: '${baseUrl}/offers/${id}',
+      apiUrl: '$baseUrl/offers/$id',
       callType: ApiCallType.PATCH,
       headers: {},
       params: {},
@@ -3398,19 +3390,18 @@ class EmailApiGroup {
 class PostEmailCall {
   Future<ApiCallResponse> call({
     String? requesterId = '',
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = EmailApiGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'postEmail',
-      apiUrl: '${baseUrl}/claude-email',
+      apiUrl: '$baseUrl/claude-email',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
         'Content-Type': 'application/json',
       },
       params: {},
@@ -3429,19 +3420,18 @@ ${data}''';
 class PostSMSCall {
   Future<ApiCallResponse> call({
     String? requesterId = '',
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = EmailApiGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'postSMS',
-      apiUrl: '${baseUrl}/claude-sms',
+      apiUrl: '$baseUrl/claude-sms',
       callType: ApiCallType.POST,
       headers: {
-        'requester-id': '${requesterId}',
+        'requester-id': '$requesterId',
       },
       params: {},
       body: ffApiRequestBody,
@@ -3482,16 +3472,15 @@ class IwoAgentClientGroup {
 
 class CreateAgentCall {
   Future<ApiCallResponse> call({
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = IwoAgentClientGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'createAgent',
-      apiUrl: '${baseUrl}/my-agent',
+      apiUrl: '$baseUrl/my-agent',
       callType: ApiCallType.POST,
       headers: {},
       params: {},
@@ -3513,7 +3502,7 @@ class GetAllAgentsCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllAgents',
-      apiUrl: '${baseUrl}/my-agent',
+      apiUrl: '$baseUrl/my-agent',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3537,7 +3526,7 @@ class GetAgentByIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAgentById',
-      apiUrl: '${baseUrl}/my-agent/${agentId}',
+      apiUrl: '$baseUrl/my-agent/$agentId',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3561,7 +3550,7 @@ class GetAllClientsByAgentIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllClientsByAgentId',
-      apiUrl: '${baseUrl}/my-client/${agentId}',
+      apiUrl: '$baseUrl/my-client/$agentId',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3580,16 +3569,15 @@ class GetAllClientsByAgentIdCall {
 class CreateClientByAgentIdCall {
   Future<ApiCallResponse> call({
     String? agentId = '',
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final baseUrl = IwoAgentClientGroup.getBaseUrl();
 
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'createClientByAgentId',
-      apiUrl: '${baseUrl}/my-client/${agentId}',
+      apiUrl: '$baseUrl/my-client/$agentId',
       callType: ApiCallType.POST,
       headers: {},
       params: {},
@@ -3614,7 +3602,7 @@ class GetClientByAgentIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getClientByAgentId',
-      apiUrl: '${baseUrl}/my-client/${agentId}/${clientId}',
+      apiUrl: '$baseUrl/my-client/$agentId/$clientId',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3638,7 +3626,7 @@ class GetAllClientActivityByAgentIdCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getAllClientActivityByAgentId',
-      apiUrl: '${baseUrl}/activity/${agentId}',
+      apiUrl: '$baseUrl/activity/$agentId',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3663,7 +3651,7 @@ class GetClientActivityByAgentCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getClientActivityByAgent',
-      apiUrl: '${baseUrl}/activity/${agentId}/${clientId}',
+      apiUrl: '$baseUrl/activity/$agentId/$clientId',
       callType: ApiCallType.GET,
       headers: {
         'Content-Type': 'application/json',
@@ -3687,7 +3675,7 @@ class GetCrmByAgentCall {
 
     return ApiManager.instance.makeApiCall(
       callName: 'getCrmByAgent',
-      apiUrl: '${baseUrl}/my-client/partnerpro/load-crm',
+      apiUrl: '$baseUrl/my-client/partnerpro/load-crm',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -3716,7 +3704,7 @@ class GetPropertiesListCall {
           'http://dev-iwo-seller-properties-api.us-w2.cloudhub.io/api/v1/properties/seller',
       callType: ApiCallType.GET,
       headers: {
-        'requester-id': '${userId}',
+        'requester-id': '$userId',
       },
       params: {
         'zillowProperties': zillowProperties,
@@ -3845,7 +3833,7 @@ class GetPlaceNameCall {
     return ApiManager.instance.makeApiCall(
       callName: 'getPlaceName',
       apiUrl:
-          'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${EnvConfig.googleMapsKey}',
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=${EnvConfig.googleMapsKey}',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -3930,11 +3918,10 @@ class GetPropertyzpidCall {
 
 class PayShowingPartnerProCall {
   static Future<ApiCallResponse> call({
-    dynamic? dataJson,
+    dynamic dataJson,
   }) async {
     final data = _serializeJson(dataJson);
-    final ffApiRequestBody = '''
-${data}''';
+    final ffApiRequestBody = data;
     return ApiManager.instance.makeApiCall(
       callName: 'payShowingPartnerPro',
       apiUrl: 'https://dev-iwo-stripe-api.us-w2.cloudhub.io/api/v1/charge',

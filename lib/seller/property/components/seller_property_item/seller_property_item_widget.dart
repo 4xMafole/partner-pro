@@ -4,17 +4,13 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/property/property_item_option/property_item_option_widget.dart';
 import '/seller/shared_components/warning_popup_card/warning_popup_card_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_property_item_model.dart';
 export 'seller_property_item_model.dart';
 
@@ -25,7 +21,7 @@ class SellerPropertyItemWidget extends StatefulWidget {
     required this.property,
     required this.indexItem,
     bool? isNew,
-  }) : this.isNew = isNew ?? false;
+  }) : isNew = isNew ?? false;
 
   final Future Function()? onTap;
   final PropertyStruct? property;
@@ -118,7 +114,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                       0.0, 0.0, 0.0, 10.0),
                                   child: Text(
                                     valueOrDefault<String>(
-                                      widget!.property?.location?.name,
+                                      widget.property?.location.name,
                                       'Title',
                                     ).maybeHandleOverflow(
                                       maxChars: 40,
@@ -144,7 +140,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                               Text(
                                 valueOrDefault<String>(
                                   formatNumber(
-                                    widget!.property?.price,
+                                    widget.property?.price,
                                     formatType: FormatType.decimal,
                                     decimalType: DecimalType.automatic,
                                     currency: '\$',
@@ -194,7 +190,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                               children: [
                                                 TextSpan(
                                                   text: valueOrDefault<String>(
-                                                    widget!.property?.sqft,
+                                                    widget.property?.sqft,
                                                     '0',
                                                   ),
                                                   style: FlutterFlowTheme.of(
@@ -268,7 +264,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                               children: [
                                                 TextSpan(
                                                   text: valueOrDefault<String>(
-                                                    widget!.property?.beds,
+                                                    widget.property?.beds,
                                                     '0',
                                                   ),
                                                   style: FlutterFlowTheme.of(
@@ -346,7 +342,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                               children: [
                                                 TextSpan(
                                                   text: valueOrDefault<String>(
-                                                    widget!.property?.baths,
+                                                    widget.property?.baths,
                                                     '0',
                                                   ),
                                                   style:
@@ -414,7 +410,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                     ),
                                     TextSpan(
                                       text: valueOrDefault<String>(
-                                        widget!.property?.listDate,
+                                        widget.property?.listDate,
                                         'N/A',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -461,10 +457,10 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                 topRight: Radius.circular(16.0),
                               ),
                               child: Image.network(
-                                widget!.property?.images?.length != 0
+                                widget.property?.images.isNotEmpty == true
                                     ? valueOrDefault<String>(
-                                        functions.stringToImagePath(widget!
-                                            .property?.images?.firstOrNull),
+                                        functions.stringToImagePath(widget
+                                            .property?.images.firstOrNull),
                                         'https://placehold.co/400x400@2x.png?text=Home',
                                       )
                                     : 'https://placehold.co/400x400@2x.png?text=Home',
@@ -474,7 +470,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                               ),
                             ),
                           ),
-                          if (!widget!.isNew)
+                          if (!widget.isNew)
                             Builder(
                               builder: (context) => InkWell(
                                 splashColor: Colors.transparent,
@@ -493,7 +489,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                             MediaQuery.viewInsetsOf(context),
                                         child: PropertyItemOptionWidget(
                                           propertyTitle: valueOrDefault<String>(
-                                            widget!.property?.location?.name,
+                                            widget.property?.location.name,
                                             'Title',
                                           ),
                                           onEdit: () async {
@@ -508,7 +504,7 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                                   ParamType.Enum,
                                                 ),
                                                 'editProperty': serializeParam(
-                                                  widget!.property,
+                                                  widget.property,
                                                   ParamType.DataStruct,
                                                 ),
                                                 'indexItem': serializeParam(
@@ -546,8 +542,8 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                                               .deleteSellerPropertyCall
                                                               .call(
                                                         userId: currentUserUid,
-                                                        propertyId: widget!
-                                                            .property?.id,
+                                                        propertyId:
+                                                            widget.property?.id,
                                                       );
                                                     },
                                                   ),
@@ -563,8 +559,8 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                               queryParameters: {
                                                 'propertyTitle': serializeParam(
                                                   valueOrDefault<String>(
-                                                    widget!.property?.location
-                                                        ?.name,
+                                                    widget.property?.location
+                                                        .name,
                                                     'Title',
                                                   ),
                                                   ParamType.String,
@@ -581,8 +577,8 @@ class _SellerPropertyItemWidgetState extends State<SellerPropertyItemWidget> {
                                               queryParameters: {
                                                 'property': serializeParam(
                                                   valueOrDefault<String>(
-                                                    widget!.property?.location
-                                                        ?.name,
+                                                    widget.property?.location
+                                                        .name,
                                                     'Title',
                                                   ),
                                                   ParamType.String,

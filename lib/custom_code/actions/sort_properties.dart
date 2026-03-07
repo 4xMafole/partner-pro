@@ -1,13 +1,8 @@
 // Automatic FlutterFlow imports
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -32,10 +27,10 @@ Future<List<PropertyDataClassStruct>> sortProperties(
     case 'Newest':
       sortedProperties.sort((a, b) {
         final DateTime aDate = a.listDate != null
-            ? DateTime.tryParse(a.listDate!) ?? DateTime(1900)
+            ? DateTime.tryParse(a.listDate) ?? DateTime(1900)
             : DateTime(1900);
         final DateTime bDate = b.listDate != null
-            ? DateTime.tryParse(b.listDate!) ?? DateTime(1900)
+            ? DateTime.tryParse(b.listDate) ?? DateTime(1900)
             : DateTime(1900);
         return bDate.compareTo(aDate); // Newest first
       });

@@ -1,10 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/profile_page/document_uploaded/document_uploaded_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'editable_document_upload_model.dart';
 export 'editable_document_upload_model.dart';
 
@@ -43,7 +40,7 @@ class _EditableDocumentUploadWidgetState
     _model.textController ??= TextEditingController(
         text: (String var1) {
       return var1.replaceAll('.pdf', '');
-    }(widget!.label!));
+    }(widget.label!));
     _model.textFieldFocusNode ??= FocusNode();
   }
 
@@ -70,7 +67,7 @@ class _EditableDocumentUploadWidgetState
           safeSetState(() {
             _model.textController?.text = ((String var1) {
               return var1.replaceAll('.pdf', '');
-            }(widget!.label!));
+            }(widget.label!));
           });
         },
         child: Stack(
@@ -80,14 +77,14 @@ class _EditableDocumentUploadWidgetState
               model: _model.documentUploadedModel,
               updateCallback: () => safeSetState(() {}),
               child: DocumentUploadedWidget(
-                label: widget!.label!,
+                label: widget.label!,
                 onTap: () async {},
               ),
             ),
             Builder(
               builder: (context) {
                 if (_model.isEdit) {
-                  return Container(
+                  return SizedBox(
                     width: 200.0,
                     child: TextFormField(
                       controller: _model.textController,

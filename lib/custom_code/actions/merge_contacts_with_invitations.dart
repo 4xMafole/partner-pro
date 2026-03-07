@@ -1,13 +1,8 @@
 // Automatic FlutterFlow imports
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
+// Imports other custom actions
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -19,7 +14,7 @@ List<MemberStruct> mergeContactsWithInvitations(
 ) {
   List<MemberStruct> result = [];
 
-  if (apiContacts == null || apiContacts is! List || apiContacts.isEmpty) {
+  if (apiContacts == null || apiContacts.isEmpty) {
     apiContacts = [];
   }
   // Create a map of email -> invitation for quick lookup
@@ -27,8 +22,8 @@ List<MemberStruct> mergeContactsWithInvitations(
   if (firebaseInvitations != null) {
     for (var invitation in firebaseInvitations) {
       try {
-        String? inviteeEmail = invitation.invitations?.inviteeEmail;
-        if (inviteeEmail != null && inviteeEmail.isNotEmpty) {
+        String? inviteeEmail = invitation.invitations.inviteeEmail;
+        if (inviteeEmail.isNotEmpty) {
           invitationMap[inviteeEmail.toLowerCase()] = invitation;
         }
       } catch (e) {
@@ -40,70 +35,66 @@ List<MemberStruct> mergeContactsWithInvitations(
 
   // Create a set of emails from API contacts for quick lookup
   Set<String> apiEmails = {};
-  if (apiContacts != null) {
-    for (var contact in apiContacts) {
-      String email = contact['email']?.toString() ?? '';
-      if (email.isNotEmpty) {
-        apiEmails.add(email.toLowerCase());
-      }
+  for (var contact in apiContacts) {
+    String email = contact['email']?.toString() ?? '';
+    if (email.isNotEmpty) {
+      apiEmails.add(email.toLowerCase());
     }
   }
 
   if (selectedTab == "CRM") {
     // Show all API contacts with status from Firebase invitations
-    if (apiContacts != null) {
-      for (var contact in apiContacts) {
-        try {
-          String email = contact['email']?.toString() ?? '';
-          String emailLower = email.toLowerCase();
-          String phone = contact['phone']?.toString() ?? '';
-          String firstname = contact['firstname']?.toString() ?? '';
-          String lastname = contact['lastname']?.toString() ?? '';
-          String clientID = contact['id']?.toString() ?? '';
-          String agentID = contact['agentID']?.toString() ?? '';
+    for (var contact in apiContacts) {
+      try {
+        String email = contact['email']?.toString() ?? '';
+        String emailLower = email.toLowerCase();
+        String phone = contact['phone']?.toString() ?? '';
+        String firstname = contact['firstname']?.toString() ?? '';
+        String lastname = contact['lastname']?.toString() ?? '';
+        String clientID = contact['id']?.toString() ?? '';
+        String agentID = contact['agentID']?.toString() ?? '';
 
-          // Check if this contact has an invitation in Firebase
-          InvitationsRecord? invitation = invitationMap[emailLower];
-          Status? status;
+        // Check if this contact has an invitation in Firebase
+        InvitationsRecord? invitation = invitationMap[emailLower];
+        Status? status;
 
-          if (invitation != null) {
-            // Contact has an invitation - add the status from Firebase
-            String? statusStr = invitation.invitations?.status;
-            // Capitalize first letter: "pending" -> "Pending"
-            String capitalized = statusStr![0].toUpperCase() +
-                statusStr.substring(1).toLowerCase();
-            status = statusStringToEnum(capitalized);
-          }
-
-          result.add(MemberStruct(
-            clientID: clientID,
-            agentID: agentID,
-            fullName: '$firstname $lastname'.trim(),
-            email: email,
-            id: clientID,
-            phoneNumber: phone,
-            status: status,
-          ));
-        } catch (e) {
-          print('Error processing CRM contact: $e');
-          continue;
+        if (invitation != null) {
+          // Contact has an invitation - add the status from Firebase
+          String? statusStr = invitation.invitations.status;
+          // Capitalize first letter: "pending" -> "Pending"
+          String capitalized = statusStr[0].toUpperCase() +
+              statusStr.substring(1).toLowerCase();
+          status = statusStringToEnum(capitalized);
         }
+
+        result.add(MemberStruct(
+          clientID: clientID,
+          agentID: agentID,
+          fullName: '$firstname $lastname'.trim(),
+          email: email,
+          id: clientID,
+          phoneNumber: phone,
+          status: status,
+        ));
+      } catch (e) {
+        print('Error processing CRM contact: $e');
+        continue;
       }
     }
-  } else if (selectedTab == "My Contacts") {
+    } else if (selectedTab == "My Contacts") {
     // Show only contacts from Firebase that are NOT in the API (manually added)
     Set<String> addedEmails = {}; // Track added emails to prevent duplicates
 
     if (firebaseInvitations != null) {
       for (var invitation in firebaseInvitations) {
         try {
-          String? inviteeEmail = invitation.invitations?.inviteeEmail;
-          String? inviteeName = invitation.invitations?.inviteeName;
-          String? inviteePhone = invitation.invitations?.inviteePhoneNumber;
-          String? statusStr = invitation.invitations?.status;
-          String? inviterUid = invitation.invitations?.inviterUid;
+          String? inviteeEmail = invitation.invitations.inviteeEmail;
+          String? inviteeName = invitation.invitations.inviteeName;
+          String? inviteePhone = invitation.invitations.inviteePhoneNumber;
+          String? statusStr = invitation.invitations.status;
+          String? inviterUid = invitation.invitations.inviterUid;
 
-          if (inviteeEmail == null || inviteeEmail.isEmpty) continue;
+          if (inviteeEmail.isEmpty) continue;
 
           String emailLower = inviteeEmail.toLowerCase();
 
@@ -114,7 +105,7 @@ List<MemberStruct> mergeContactsWithInvitations(
           if (!apiEmails.contains(emailLower) &&
               !addedEmails.contains(emailLower)) {
             addedEmails.add(emailLower);
-            String capitalized = statusStr![0].toUpperCase() +
+            String capitalized = statusStr[0].toUpperCase() +
                 statusStr.substring(1).toLowerCase();
             result.add(MemberStruct(
               clientID: '', // No client ID for manually added contacts

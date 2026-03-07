@@ -18,17 +18,13 @@ import '/seller/property/components/seller_preview_property/seller_preview_prope
 import '/seller/property/components/upload_image_item/upload_image_item_widget.dart';
 import '/seller/property/congrats_sheet/congrats_sheet_widget.dart';
 import '/seller/property/property_upload/property_upload_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_add_property_page_model.dart';
 export 'seller_add_property_page_model.dart';
 
@@ -67,36 +63,34 @@ class _SellerAddPropertyPageWidgetState
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.editProperty != null) {
+      if (widget.editProperty != null) {
         _model.uploadedImageList = functions
-            .addStrToImage(widget!.editProperty?.images?.toList(), true)!
+            .addStrToImage(widget.editProperty?.images.toList(), true)!
             .toList()
             .cast<ImageStruct>();
         _model.uploadedFileList = functions
-            .addStrToImage(widget!.editProperty?.documents?.toList(), false)!
+            .addStrToImage(widget.editProperty?.documents.toList(), false)!
             .toList()
             .cast<ImageStruct>();
-        _model.price = widget!.editProperty?.price;
-        _model.selectedType = widget!.editProperty?.propertyType;
-        _model.addToPropertyTypes(widget!.editProperty!.propertyType);
+        _model.price = widget.editProperty?.price;
+        _model.selectedType = widget.editProperty?.propertyType;
+        _model.addToPropertyTypes(widget.editProperty!.propertyType);
         safeSetState(() {});
       }
-      if (widget!.place != null) {
-        _model.propertyLocation = widget!.place;
+      if (widget.place != null) {
+        _model.propertyLocation = widget.place;
         safeSetState(() {});
       }
     });
 
     _model.descTextFieldTextController ??= TextEditingController(
-        text: widget!.editProperty != null
-            ? widget!.editProperty?.description
-            : null);
+        text: widget.editProperty?.description);
     _model.descTextFieldFocusNode ??= FocusNode();
 
     _model.priceTextFieldTextController ??= TextEditingController(
-        text: widget!.editProperty != null
+        text: widget.editProperty != null
             ? formatNumber(
-                widget!.editProperty?.price,
+                widget.editProperty?.price,
                 formatType: FormatType.decimal,
                 decimalType: DecimalType.automatic,
                 currency: '\$',
@@ -152,7 +146,7 @@ class _SellerAddPropertyPageWidgetState
                               size: 24.0,
                             ),
                           ),
-                          if (widget!.pageType == PropertyAddPage.Add)
+                          if (widget.pageType == PropertyAddPage.Add)
                             wrapWithModel(
                               model: _model.titleLabelModel1,
                               updateCallback: () => safeSetState(() {}),
@@ -160,7 +154,7 @@ class _SellerAddPropertyPageWidgetState
                                 title: 'Add Property',
                               ),
                             ),
-                          if (widget!.pageType != PropertyAddPage.Add)
+                          if (widget.pageType != PropertyAddPage.Add)
                             wrapWithModel(
                               model: _model.titleLabelModel2,
                               updateCallback: () => safeSetState(() {}),
@@ -260,14 +254,14 @@ class _SellerAddPropertyPageWidgetState
                                                       Radius.circular(16.0),
                                                 ),
                                                 child: Image.network(
-                                                  widget!.editProperty!.images
+                                                  widget.editProperty!.images
                                                           .isNotEmpty
                                                       ? valueOrDefault<String>(
                                                           functions.stringToImagePath(
-                                                              widget!
+                                                              widget
                                                                   .editProperty
                                                                   ?.images
-                                                                  ?.firstOrNull),
+                                                                  .firstOrNull),
                                                           'https://placehold.co/400x400@2x.png?text=Home',
                                                         )
                                                       : 'https://placehold.co/400x400@2x.png?text=Home',
@@ -466,9 +460,7 @@ class _SellerAddPropertyPageWidgetState
                                           ),
                                           hint: 'Bed',
                                           initialValue:
-                                              widget!.editProperty != null
-                                                  ? widget!.editProperty?.beds
-                                                  : null,
+                                              widget.editProperty?.beds,
                                         ),
                                       ),
                                       wrapWithModel(
@@ -484,9 +476,7 @@ class _SellerAddPropertyPageWidgetState
                                           ),
                                           hint: 'Bath',
                                           initialValue:
-                                              widget!.editProperty != null
-                                                  ? widget!.editProperty?.baths
-                                                  : null,
+                                              widget.editProperty?.baths,
                                         ),
                                       ),
                                       wrapWithModel(
@@ -501,10 +491,10 @@ class _SellerAddPropertyPageWidgetState
                                             size: 28.0,
                                           ),
                                           hint: 'Sqft',
-                                          initialValue: widget!.editProperty !=
+                                          initialValue: widget.editProperty !=
                                                   null
                                               ? functions
-                                                  .parseSquareFootage(widget!
+                                                  .parseSquareFootage(widget
                                                       .editProperty!.sqft)
                                                   .toString()
                                               : null,
@@ -1328,7 +1318,7 @@ class _SellerAddPropertyPageWidgetState
                                                 padding:
                                                     MediaQuery.viewInsetsOf(
                                                         context),
-                                                child: Container(
+                                                child: SizedBox(
                                                   height:
                                                       MediaQuery.sizeOf(context)
                                                               .height *
@@ -1501,8 +1491,8 @@ class _SellerAddPropertyPageWidgetState
                                           ..propertyType = _model.selectedType
                                           ..media = functions
                                               .mergeUrls(
-                                                  widget!.editProperty?.images
-                                                      ?.toList(),
+                                                  widget.editProperty?.images
+                                                      .toList(),
                                                   _model
                                                       .uploadedFileUrls_firebaseImages
                                                       .toList())!
@@ -1523,7 +1513,7 @@ class _SellerAddPropertyPageWidgetState
                                             false,
                                             true,
                                           ),
-                                          property: widget!.editProperty,
+                                          property: widget.editProperty,
                                           purchasePrice: 549000,
                                           counteredCount: 0,
                                           status: Status.Pending,
@@ -1550,7 +1540,7 @@ class _SellerAddPropertyPageWidgetState
                                         ));
                                         FFAppState()
                                             .addToSellerListOfProperties(
-                                                widget!.editProperty!);
+                                                widget.editProperty!);
                                         FFAppState().addToSellerNotifications(
                                             NotificationStruct(
                                           id: 'fwreew2',

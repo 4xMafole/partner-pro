@@ -2,12 +2,8 @@ import '/app_components/navbar/navbar_item/navbar_item_widget.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'agent_bottom_navbar_model.dart';
 export 'agent_bottom_navbar_model.dart';
 
@@ -76,12 +72,12 @@ class _AgentBottomNavbarWidgetState extends State<AgentBottomNavbarWidget> {
                       label: 'Dashboard',
                       iconNav: Icon(
                         Icons.dashboard_outlined,
-                        color: widget!.activeNav == AgentNavbar.Dashboard
+                        color: widget.activeNav == AgentNavbar.Dashboard
                             ? FlutterFlowTheme.of(context).primary
                             : FlutterFlowTheme.of(context).secondaryText,
                         size: 24.0,
                       ),
-                      isActive: widget!.activeNav == AgentNavbar.Dashboard,
+                      isActive: widget.activeNav == AgentNavbar.Dashboard,
                       onTap: () async {
                         context.goNamed(
                           AgentDashboardWidget.routeName,
@@ -106,12 +102,12 @@ class _AgentBottomNavbarWidgetState extends State<AgentBottomNavbarWidget> {
                       label: 'Search',
                       iconNav: Icon(
                         Icons.search_sharp,
-                        color: widget!.activeNav == AgentNavbar.Search
+                        color: widget.activeNav == AgentNavbar.Search
                             ? FlutterFlowTheme.of(context).primary
                             : FlutterFlowTheme.of(context).secondaryText,
                         size: 24.0,
                       ),
-                      isActive: widget!.activeNav == AgentNavbar.Search,
+                      isActive: widget.activeNav == AgentNavbar.Search,
                       onTap: () async {
                         context.goNamed(
                           SearchPageWidget.routeName,
@@ -142,12 +138,12 @@ class _AgentBottomNavbarWidgetState extends State<AgentBottomNavbarWidget> {
                       label: 'Offers',
                       iconNav: Icon(
                         Icons.home_outlined,
-                        color: widget!.activeNav == AgentNavbar.Offers
+                        color: widget.activeNav == AgentNavbar.Offers
                             ? FlutterFlowTheme.of(context).primary
                             : FlutterFlowTheme.of(context).secondaryText,
                         size: 24.0,
                       ),
-                      isActive: widget!.activeNav == AgentNavbar.Offers,
+                      isActive: widget.activeNav == AgentNavbar.Offers,
                       onTap: () async {
                         context.goNamed(
                           AgentOffersWidget.routeName,
@@ -172,12 +168,12 @@ class _AgentBottomNavbarWidgetState extends State<AgentBottomNavbarWidget> {
                       label: 'Clients',
                       iconNav: Icon(
                         Icons.people_outlined,
-                        color: widget!.activeNav == AgentNavbar.Clients
+                        color: widget.activeNav == AgentNavbar.Clients
                             ? FlutterFlowTheme.of(context).primary
                             : FlutterFlowTheme.of(context).secondaryText,
                         size: 24.0,
                       ),
-                      isActive: widget!.activeNav == AgentNavbar.Clients,
+                      isActive: widget.activeNav == AgentNavbar.Clients,
                       onTap: () async {
                         context.goNamed(
                           ClientListPageWidget.routeName,

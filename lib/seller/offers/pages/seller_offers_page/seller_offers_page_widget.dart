@@ -5,15 +5,12 @@ import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/offers/components/seller_counter_sheet/seller_counter_sheet_widget.dart';
 import '/seller/offers/components/seller_offer_item/seller_offer_item_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'seller_offers_page_model.dart';
 export 'seller_offers_page_model.dart';
@@ -77,7 +74,7 @@ class _SellerOffersPageWidgetState extends State<SellerOffersPageWidget>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget!.propertyTitle != null && widget!.propertyTitle != '')
+              if (widget.propertyTitle != null && widget.propertyTitle != '')
                 Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Row(
@@ -106,7 +103,7 @@ class _SellerOffersPageWidgetState extends State<SellerOffersPageWidget>
                             updateCallback: () => safeSetState(() {}),
                             child: TitleLabelWidget(
                               title: valueOrDefault<String>(
-                                widget!.propertyTitle,
+                                widget.propertyTitle,
                                 'Property Title',
                               ),
                             ),
@@ -116,7 +113,7 @@ class _SellerOffersPageWidgetState extends State<SellerOffersPageWidget>
                     ],
                   ),
                 ),
-              if (widget!.propertyTitle == null || widget!.propertyTitle == '')
+              if (widget.propertyTitle == null || widget.propertyTitle == '')
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 0.0, 0.0),
                   child: wrapWithModel(
@@ -559,7 +556,7 @@ class _SellerOffersPageWidgetState extends State<SellerOffersPageWidget>
                   ),
                 ),
               ),
-              if (widget!.propertyTitle == null || widget!.propertyTitle == '')
+              if (widget.propertyTitle == null || widget.propertyTitle == '')
                 wrapWithModel(
                   model: _model.sellerBottomNavbarModel,
                   updateCallback: () => safeSetState(() {}),

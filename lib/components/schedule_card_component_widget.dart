@@ -2,12 +2,8 @@ import '/backend/schema/structs/index.dart';
 import '/components/appointment_component_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'schedule_card_component_model.dart';
 export 'schedule_card_component_model.dart';
 
@@ -20,7 +16,7 @@ class ScheduleCardComponentWidget extends StatefulWidget {
     this.onReschedule,
     this.onPay,
     required this.onTap,
-  }) : this.showActions = showActions ?? false;
+  }) : showActions = showActions ?? false;
 
   final bool showActions;
   final AppointmentStruct? appointmentData;
@@ -85,14 +81,14 @@ class _ScheduleCardComponentWidgetState
               child: AppointmentComponentWidget(
                 isOpened: _model.isOpened,
                 photo:
-                    functions.stringToImagePath(widget!.appointmentData?.photo),
-                address: widget!.appointmentData?.address,
-                showingDate: widget!.appointmentData?.date,
+                    functions.stringToImagePath(widget.appointmentData?.photo),
+                address: widget.appointmentData?.address,
+                showingDate: widget.appointmentData?.date,
                 onTap: () async {},
               ),
             ),
           ),
-          if (_model.isOpened && widget!.showActions)
+          if (_model.isOpened && widget.showActions)
             Container(
               width: MediaQuery.sizeOf(context).width * 0.6,
               height: 70.0,
@@ -109,7 +105,7 @@ class _ScheduleCardComponentWidgetState
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         if (functions
-                            .isPayButtonEnabled(widget!.appointmentData!.date!))
+                            .isPayButtonEnabled(widget.appointmentData!.date!))
                           InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,
@@ -163,7 +159,7 @@ class _ScheduleCardComponentWidgetState
                             ),
                           ),
                         if (!functions
-                            .isPayButtonEnabled(widget!.appointmentData!.date!))
+                            .isPayButtonEnabled(widget.appointmentData!.date!))
                           InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,

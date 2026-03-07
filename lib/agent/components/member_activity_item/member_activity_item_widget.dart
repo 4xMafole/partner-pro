@@ -1,11 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'member_activity_item_model.dart';
 export 'member_activity_item_model.dart';
 
@@ -86,7 +82,7 @@ class _MemberActivityItemWidgetState extends State<MemberActivityItemWidget> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(40.0),
                           child: Image.network(
-                            functions.stringToImagePath(widget!.photoUrl)!,
+                            functions.stringToImagePath(widget.photoUrl)!,
                             width: 60.0,
                             height: 60.0,
                             fit: BoxFit.cover,
@@ -97,7 +93,7 @@ class _MemberActivityItemWidgetState extends State<MemberActivityItemWidget> {
                     Expanded(
                       child: Text(
                         valueOrDefault<String>(
-                          widget!.title,
+                          widget.title,
                           'N/A',
                         ),
                         maxLines: 2,
@@ -144,7 +140,7 @@ class _MemberActivityItemWidgetState extends State<MemberActivityItemWidget> {
                           EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 0.0),
                       child: Text(
                         valueOrDefault<String>(
-                          widget!.subtitle,
+                          widget.subtitle,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).labelSmall.override(
@@ -161,7 +157,7 @@ class _MemberActivityItemWidgetState extends State<MemberActivityItemWidget> {
                           EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 0.0),
                       child: Text(
                         valueOrDefault<String>(
-                          widget!.time,
+                          widget.time,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).labelSmall.override(

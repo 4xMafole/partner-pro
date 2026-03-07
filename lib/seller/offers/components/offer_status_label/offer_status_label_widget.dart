@@ -1,11 +1,7 @@
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'offer_status_label_model.dart';
 export 'offer_status_label_model.dart';
 
@@ -50,7 +46,7 @@ class _OfferStatusLabelWidgetState extends State<OfferStatusLabelWidget> {
       children: [
         Builder(
           builder: (context) {
-            if (widget!.status == Status.Pending) {
+            if (widget.status == Status.Pending) {
               return Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -73,7 +69,7 @@ class _OfferStatusLabelWidgetState extends State<OfferStatusLabelWidget> {
                   ),
                 ].divide(SizedBox(width: 4.0)),
               );
-            } else if (widget!.status == Status.Accepted) {
+            } else if (widget.status == Status.Accepted) {
               return Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'property_type_bottom_sheet_model.dart';
 export 'property_type_bottom_sheet_model.dart';
 
@@ -104,12 +99,12 @@ class _PropertyTypeBottomSheetWidgetState
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                 child: Builder(
                   builder: (context) {
-                    final items = widget!.listOfTypes
+                    final items = widget.listOfTypes
                             ?.map((e) => e)
                             .toList()
-                            ?.where((e) => e != null && e != '')
+                            .where((e) => e != '')
                             .toList()
-                            ?.toList() ??
+                            .toList() ??
                         [];
 
                     return Column(

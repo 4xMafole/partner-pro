@@ -1,11 +1,7 @@
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'status_model.dart';
 export 'status_model.dart';
 
@@ -54,9 +50,9 @@ class _StatusWidgetState extends State<StatusWidget> {
           Container(
             decoration: BoxDecoration(
               color: () {
-                if (widget!.status == Status.Pending) {
+                if (widget.status == Status.Pending) {
                   return FlutterFlowTheme.of(context).alternate;
-                } else if (widget!.status == Status.Accepted) {
+                } else if (widget.status == Status.Accepted) {
                   return FlutterFlowTheme.of(context).success;
                 } else {
                   return FlutterFlowTheme.of(context).accent2;
@@ -68,7 +64,7 @@ class _StatusWidgetState extends State<StatusWidget> {
               padding: EdgeInsets.all(5.0),
               child: Text(
                 valueOrDefault<String>(
-                  widget!.status?.name,
+                  widget.status?.name,
                   'Status',
                 ),
                 style: FlutterFlowTheme.of(context).bodySmall.override(

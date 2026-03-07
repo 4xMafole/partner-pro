@@ -6,7 +6,6 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/custom_loading_indicator_widget.dart';
 import '/components/member_suggestion_sheet_widget.dart';
 import '/flutter_flow/flutter_flow_expanded_image_view.dart';
@@ -19,18 +18,14 @@ import '/pages/profile_page/lender_popup/lender_popup_widget.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/shared_components/custom_bottom_sheet/custom_bottom_sheet_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'property_details_page_model.dart';
 export 'property_details_page_model.dart';
@@ -41,7 +36,7 @@ class PropertyDetailsPageWidget extends StatefulWidget {
     required this.propertyId,
     this.member,
     bool? isUserFromSearch,
-  }) : this.isUserFromSearch = isUserFromSearch ?? false;
+  }) : isUserFromSearch = isUserFromSearch ?? false;
 
   final String? propertyId;
   final MemberStruct? member;
@@ -71,13 +66,13 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
       safeSetState(() {});
       _model.propertyZipId =
           await IwoSellerPropertiesApiGroup.getPropertiesByZipIdCall.call(
-        zpId: widget!.propertyId,
+        zpId: widget.propertyId,
         userId: currentUserUid,
       );
 
       if ((_model.propertyZipId?.succeeded ?? true)) {
         _model.estimationPrice = await PropertyEstimateCall.call(
-          zpid: widget!.propertyId,
+          zpid: widget.propertyId,
         );
 
         _model.property = PropertyDataClassStruct(
@@ -145,39 +140,39 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
             streetName: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.streetName,
+                .streetName,
             streetNumber: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.streetNumber,
+                .streetNumber,
             streetDirection: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.streetDirection,
+                .streetDirection,
             streetType: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.streetType,
+                .streetType,
             neighborhood: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.neighborhood,
+                .neighborhood,
             city: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.city,
+                .city,
             state: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.state,
+                .state,
             zip: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.zip,
+                .zip,
             zipPlus4: PropertyDataByZIPIDStruct.maybeFromMap(
                     (_model.propertyZipId?.jsonBody ?? ''))
                 ?.address
-                ?.zipPlus4,
+                .zipPlus4,
           ),
           squareFootage: functions.parseSquareFootage(
               PropertyDataByZIPIDStruct.maybeFromMap(
@@ -204,7 +199,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
           parent: currentUserReference,
           queryBuilder: (favoritesRecord) => favoritesRecord.where(
             'property_data.id',
-            isEqualTo: widget!.propertyId,
+            isEqualTo: widget.propertyId,
           ),
           singleRecord: true,
         ).then((s) => s.firstOrNull);
@@ -324,7 +319,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                       queryBuilder: (favoritesRecord) =>
                                           favoritesRecord.where(
                                         'property_data.id',
-                                        isEqualTo: widget!.propertyId,
+                                        isEqualTo: widget.propertyId,
                                       ),
                                       singleRecord: true,
                                     ).then((s) => s.firstOrNull);
@@ -404,9 +399,9 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                 child: Builder(
                   builder: (context) {
-                    final media = _model.property?.media?.toList() ?? [];
+                    final media = _model.property?.media.toList() ?? [];
 
-                    return Container(
+                    return SizedBox(
                       width: double.infinity,
                       height: MediaQuery.sizeOf(context).height * 0.333,
                       child: CarouselSlider.builder(
@@ -580,7 +575,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                       ),
                                       Text(
                                         valueOrDefault<String>(
-                                          _model.property?.bedrooms?.toString(),
+                                          _model.property?.bedrooms.toString(),
                                           'N/A',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -630,7 +625,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                       Text(
                                         valueOrDefault<String>(
                                           _model.property?.bathrooms
-                                              ?.toString(),
+                                              .toString(),
                                           'N/A',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -1213,7 +1208,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                               ? 'N/A'
                                               : valueOrDefault<String>(
                                                   _model.property?.yearBuilt
-                                                      ?.toString(),
+                                                      .toString(),
                                                   'N/A',
                                                 ),
                                           style: FlutterFlowTheme.of(context)
@@ -1447,20 +1442,20 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                 address: functions.formatAddressFromModel(
                                     AddressDataClassStruct(
                                       streetName:
-                                          _model.property?.address?.streetName,
+                                          _model.property?.address.streetName,
                                       streetNumber: _model
-                                          .property?.address?.streetNumber,
+                                          .property?.address.streetNumber,
                                       streetDirection: _model
-                                          .property?.address?.streetDirection,
+                                          .property?.address.streetDirection,
                                       streetType:
-                                          _model.property?.address?.streetType,
+                                          _model.property?.address.streetType,
                                       neighborhood: _model
-                                          .property?.address?.neighborhood,
-                                      city: _model.property?.address?.city,
-                                      state: _model.property?.address?.state,
-                                      zip: _model.property?.address?.zip,
+                                          .property?.address.neighborhood,
+                                      city: _model.property?.address.city,
+                                      state: _model.property?.address.state,
+                                      zip: _model.property?.address.zip,
                                       zipPlus4:
-                                          _model.property?.address?.zipPlus4,
+                                          _model.property?.address.zipPlus4,
                                     ),
                                     ''),
                               ),
@@ -1718,7 +1713,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                           ),
                                                         ),
                                                         zipCode: _model.property
-                                                            ?.address?.zip,
+                                                            ?.address.zip,
                                                       ),
                                                     );
                                                   },
@@ -1742,7 +1737,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
               Builder(
                 builder: (context) {
                   if (!((currentUserDocument?.role == UserType.Agent) &&
-                      widget!.isUserFromSearch)) {
+                      widget.isUserFromSearch)) {
                     return Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Row(
@@ -1754,7 +1749,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                 onPressed: () async {
                                   if (_model.isDocumentUploaded ||
                                       (FFAppState().currentOfferDraft.id ==
-                                          widget!.propertyId)) {
+                                          widget.propertyId)) {
                                     await showModalBottomSheet(
                                       isScrollControlled: true,
                                       backgroundColor: Colors.transparent,
@@ -1768,7 +1763,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                             iwriteEstimate: _model
                                                 .estimateAmount
                                                 ?.toDouble(),
-                                            member: widget!.member,
+                                            member: widget.member,
                                             onUpdate: (value) async {},
                                           ),
                                         );
@@ -1820,7 +1815,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                               iwriteEstimate: _model
                                                   .estimateAmount
                                                   ?.toDouble(),
-                                              member: widget!.member,
+                                              member: widget.member,
                                               onUpdate: (value) async {},
                                             ),
                                           );
@@ -1869,7 +1864,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                             FFAppState()
                                                                 .updateCurrentOfferDraftStruct(
                                                               (e) => e
-                                                                ..id = widget!
+                                                                ..id = widget
                                                                     .propertyId,
                                                             );
                                                             safeSetState(() {});
@@ -1894,7 +1889,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                                     iwriteEstimate: _model
                                                                         .estimateAmount
                                                                         ?.toDouble(),
-                                                                    member: widget!
+                                                                    member: widget
                                                                         .member,
                                                                     onUpdate:
                                                                         (value) async {},
@@ -1964,7 +1959,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                         iwriteEstimate: _model
                                                             .estimateAmount
                                                             ?.toDouble(),
-                                                        member: widget!.member,
+                                                        member: widget.member,
                                                         onUpdate:
                                                             (value) async {},
                                                       ),
@@ -2029,7 +2024,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                         return Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: Container(
+                                          child: SizedBox(
                                             height: MediaQuery.sizeOf(context)
                                                     .height *
                                                 1.0,
@@ -2062,16 +2057,16 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                         line2: _model
                                                             .property
                                                             ?.media
-                                                            ?.firstOrNull,
+                                                            .firstOrNull,
                                                         city: _model.property
-                                                            ?.address?.city,
+                                                            ?.address.city,
                                                         state: _model.property
-                                                            ?.address?.state,
+                                                            ?.address.state,
                                                         zip: _model.property
-                                                            ?.address?.zip,
+                                                            ?.address.zip,
                                                       ),
                                                       propertyId:
-                                                          widget!.propertyId,
+                                                          widget.propertyId,
                                                       createdAt:
                                                           getCurrentTimestamp
                                                               .toString(),
@@ -2108,21 +2103,21 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                                 line2: _model
                                                                     .property
                                                                     ?.media
-                                                                    ?.firstOrNull,
+                                                                    .firstOrNull,
                                                                 city: _model
                                                                     .property
                                                                     ?.address
-                                                                    ?.city,
+                                                                    .city,
                                                                 state: _model
                                                                     .property
                                                                     ?.address
-                                                                    ?.state,
+                                                                    .state,
                                                                 zip: _model
                                                                     .property
                                                                     ?.address
-                                                                    ?.zip,
+                                                                    .zip,
                                                               ),
-                                                              propertyId: widget!
+                                                              propertyId: widget
                                                                   .propertyId,
                                                               createdAt:
                                                                   getCurrentTimestamp
@@ -2154,7 +2149,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                     isEqualTo: _model
                                                         .clientRelationDoc
                                                         ?.relationship
-                                                        ?.agentUid,
+                                                        .agentUid,
                                                   ),
                                                   singleRecord: true,
                                                 ).then((s) => s.firstOrNull);
@@ -2217,15 +2212,15 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                                 .address,
                                                             ''),
                                                     line2: _model.property
-                                                        ?.media?.firstOrNull,
+                                                        ?.media.firstOrNull,
                                                     city: _model.property
-                                                        ?.address?.city,
+                                                        ?.address.city,
                                                     state: _model.property
-                                                        ?.address?.state,
+                                                        ?.address.state,
                                                     zip: _model
-                                                        .property?.address?.zip,
+                                                        .property?.address.zip,
                                                     externalId:
-                                                        widget!.propertyId,
+                                                        widget.propertyId,
                                                     phone: currentPhoneNumber,
                                                     preferredAgent1Emai:
                                                         _model.agentDoc?.email,
@@ -2241,7 +2236,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                               _model.agentDoc
                                                                   ?.phoneNumber),
                                                       content:
-                                                          'Hi ${_model.agentDoc?.displayName}, ${currentUserDisplayName} has approved for property showing at ${functions.formatAddressFromModel(_model.property!.address, '')}. A charge has been applied to your account. Check PartnerPro for details.',
+                                                          'Hi ${_model.agentDoc?.displayName}, $currentUserDisplayName has approved for property showing at ${functions.formatAddressFromModel(_model.property!.address, '')}. A charge has been applied to your account. Check PartnerPro for details.',
                                                     );
                                                     safeSetState(() {});
                                                     if ((_model.agentDoc
@@ -2483,7 +2478,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: MemberSuggestionSheetWidget(
-                                          propertyID: widget!.propertyId!,
+                                          propertyID: widget.propertyId!,
                                           onMemberSuggested:
                                               (memberItem) async {
                                             showDialog(
@@ -2526,7 +2521,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                   (suggestionsRecord) =>
                                                       suggestionsRecord.where(
                                                 'property_data.id',
-                                                isEqualTo: widget!.propertyId,
+                                                isEqualTo: widget.propertyId,
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
@@ -2571,7 +2566,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                               ));
                                               triggerPushNotification(
                                                 notificationTitle:
-                                                    '💡 New Property from ${currentUserDisplayName}',
+                                                    '💡 New Property from $currentUserDisplayName',
                                                 notificationText:
                                                     '${functions.formatAddressFromModel(_model.property!.address, '')} • ${formatNumber(
                                                   _model.property?.listPrice,
@@ -2585,7 +2580,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                     .stringToImagePath(_model
                                                         .property
                                                         ?.media
-                                                        ?.firstOrNull),
+                                                        .firstOrNull),
                                                 notificationSound: 'default',
                                                 userRefs: [
                                                   _model.buyerDoc!.reference
@@ -2605,7 +2600,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                     userRef: _model
                                                         .buyerDoc?.reference,
                                                     notificationTitle:
-                                                        '💡 New Property from ${currentUserDisplayName}',
+                                                        '💡 New Property from $currentUserDisplayName',
                                                     notificationBody:
                                                         '${functions.formatAddressFromModel(_model.property!.address, '')} • ${formatNumber(
                                                       _model
@@ -2623,7 +2618,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                               if (_model
                                                   .buyerDoc!.hasAcceptedSMS) {
                                                 _model.suggestionAgentToBuyer =
-                                                    await actions
+                                                    actions
                                                         .generatePropertySuggestionEmail(
                                                   _model.property!,
                                                   _model.buyerDoc!.displayName,
@@ -2634,7 +2629,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                   'partnerpro://app.page/myHomesPage?isSuggest=true',
                                                 );
                                                 _model.propertySuggestionSMS =
-                                                    await actions
+                                                    actions
                                                         .generatePropertySuggestionSMS(
                                                   _model.property!,
                                                   _model.buyerDoc!.displayName,

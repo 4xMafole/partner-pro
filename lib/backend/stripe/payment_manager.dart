@@ -153,7 +153,7 @@ Future<StripePaymentResponse> showWebPaymentSheet(
   buttonColor = buttonColor ?? FlutterFlowTheme.of(context).primary;
   final screenWidth = MediaQuery.sizeOf(context).width;
 
-  final buildPaymentSheet = (BuildContext context, double width) => Column(
+  buildPaymentSheet(BuildContext context, double width) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ClipRRect(

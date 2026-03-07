@@ -3,14 +3,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:badges/badges.dart' as badges;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'header_model.dart';
 export 'header_model.dart';
 
@@ -168,14 +163,18 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                                     ),
                               ),
                               showBadge:
-                                  badgeNotificationsRecordList.length > 0,
-                              shape: badges.BadgeShape.circle,
-                              badgeColor: FlutterFlowTheme.of(context).primary,
-                              elevation: 4.0,
-                              padding: EdgeInsets.all(6.0),
+                                  badgeNotificationsRecordList.isNotEmpty,
+                              badgeStyle: badges.BadgeStyle(
+                                shape: badges.BadgeShape.circle,
+                                badgeColor:
+                                    FlutterFlowTheme.of(context).primary,
+                                elevation: 4.0,
+                                padding: EdgeInsets.all(6.0),
+                              ),
+                              badgeAnimation: badges.BadgeAnimation.scale(
+                                toAnimate: true,
+                              ),
                               position: badges.BadgePosition.topEnd(),
-                              animationType: badges.BadgeAnimationType.scale,
-                              toAnimate: true,
                               child: FaIcon(
                                 FontAwesomeIcons.bell,
                                 color: FlutterFlowTheme.of(context).primaryText,
@@ -207,7 +206,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                   ),
                   TextSpan(
                     text: valueOrDefault<String>(
-                      widget!.username,
+                      widget.username,
                       'N/A',
                     ),
                     style: FlutterFlowTheme.of(context).displaySmall.override(

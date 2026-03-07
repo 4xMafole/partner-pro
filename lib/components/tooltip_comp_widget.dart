@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'tooltip_comp_model.dart';
 export 'tooltip_comp_model.dart';
 
@@ -71,7 +67,7 @@ class _TooltipCompWidgetState extends State<TooltipCompWidget> {
             ),
             Text(
               valueOrDefault<String>(
-                widget!.title,
+                widget.title,
                 'Title',
               ),
               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -88,7 +84,7 @@ class _TooltipCompWidgetState extends State<TooltipCompWidget> {
               children: [
                 Text(
                   valueOrDefault<String>(
-                    widget!.description,
+                    widget.description,
                     'description',
                   ),
                   style: FlutterFlowTheme.of(context).labelLarge.override(

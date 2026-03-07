@@ -1,18 +1,8 @@
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/title_label_widget.dart';
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/profile/components/seller_appoint_item/seller_appoint_item_widget.dart';
-import '/seller/shared_components/warning_popup_card/warning_popup_card_widget.dart';
-import 'dart:ui';
 import 'seller_appointment_page_widget.dart' show SellerAppointmentPageWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SellerAppointmentPageModel
     extends FlutterFlowModel<SellerAppointmentPageWidget> {

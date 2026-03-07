@@ -3,13 +3,11 @@ import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'favorite_notes_copy_model.dart';
 export 'favorite_notes_copy_model.dart';
 
@@ -98,7 +96,7 @@ class _FavoriteNotesCopyWidgetState extends State<FavoriteNotesCopyWidget> {
                       children: [
                         Text(
                           valueOrDefault<String>(
-                            widget!.addressName,
+                            widget.addressName,
                             'Address',
                           ).maybeHandleOverflow(
                             maxChars: 33,
@@ -257,7 +255,7 @@ class _FavoriteNotesCopyWidgetState extends State<FavoriteNotesCopyWidget> {
                         .call(
                       userId: currentUserUid,
                       createdBy: currentUserDisplayName,
-                      propertyId: widget!.propertyID,
+                      propertyId: widget.propertyID,
                       note: _model.shortBioTextController.text,
                     );
 

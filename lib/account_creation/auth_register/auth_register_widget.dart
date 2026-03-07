@@ -4,19 +4,14 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'auth_register_model.dart';
 export 'auth_register_model.dart';
 
@@ -57,7 +52,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                 FocusScope.of(dialogContext).unfocus();
                 FocusManager.instance.primaryFocus?.unfocus();
               },
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.7,
                 child: AuthRegisterRoleDialogWidget(
                   onRoleType: (value) async {
@@ -200,7 +195,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 16.0),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -289,7 +284,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 16.0),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -380,7 +375,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 16.0),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -471,7 +466,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 0.0, 0.0, 16.0),
-                                      child: Container(
+                                      child: SizedBox(
                                         width: double.infinity,
                                         child: TextFormField(
                                           controller:
@@ -562,7 +557,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 16.0),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -669,7 +664,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 16.0),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller: _model
@@ -816,7 +811,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                     width: 2,
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .primary!,
+                                                        .primary,
                                                   )
                                                 : null,
                                             activeColor:
@@ -934,7 +929,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                     width: 2,
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .primary!,
+                                                        .primary,
                                                   )
                                                 : null,
                                             activeColor:
@@ -1112,7 +1107,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                         agentUid: _model
                                                             .pendingInviteDoc
                                                             ?.invitations
-                                                            ?.inviterUid,
+                                                            .inviterUid,
                                                         subjectUid:
                                                             currentUserUid,
                                                         type: 'agent-to-agent',
@@ -1159,7 +1154,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                             _model
                                                                 .pendingInviteDoc
                                                                 ?.invitations
-                                                                ?.inviterUid,
+                                                                .inviterUid,
                                                             ParamType.String,
                                                           ),
                                                           'isNewUser':
@@ -1329,7 +1324,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                         agentUid: _model
                                                             .pendingBuyerInviteDoc
                                                             ?.invitations
-                                                            ?.inviterUid,
+                                                            .inviterUid,
                                                         subjectUid:
                                                             currentUserUid,
                                                         type: 'agent-to-buyer',
@@ -1372,7 +1367,7 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                         agentId: _model
                                                             .pendingBuyerInviteDoc
                                                             ?.invitations
-                                                            ?.inviterUid,
+                                                            .inviterUid,
                                                         dataJson: <String,
                                                             String>{
                                                           'clientID':

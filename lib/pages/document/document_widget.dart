@@ -3,13 +3,10 @@ import '/flutter_flow/flutter_flow_pdf_viewer.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'document_model.dart';
 export 'document_model.dart';
 
@@ -87,7 +84,7 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                           queryParameters: {
                             'url': serializeParam(
                               functions
-                                  .cleanUrl(widget!.document!.documentFile),
+                                  .cleanUrl(widget.document!.documentFile),
                               ParamType.String,
                             ),
                           }.withoutNulls,
@@ -110,7 +107,7 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                         ),
                         child: FlutterFlowPdfViewer(
                           networkPath: functions
-                              .cleanUrl(widget!.document!.documentFile),
+                              .cleanUrl(widget.document!.documentFile),
                           horizontalScroll: false,
                         ),
                       ),
@@ -134,7 +131,7 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                                     12.0, 0.0, 0.0, 6.0),
                                 child: AutoSizeText(
                                   valueOrDefault<String>(
-                                    widget!.document?.documentName,
+                                    widget.document?.documentName,
                                     'N/A',
                                   ).maybeHandleOverflow(
                                     maxChars: 30,
@@ -157,7 +154,7 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                                     12.0, 0.0, 0.0, 12.0),
                                 child: Text(
                                   valueOrDefault<String>(
-                                    widget!.document?.documentSize,
+                                    widget.document?.documentSize,
                                     'N/A',
                                   ),
                                   style: FlutterFlowTheme.of(context)

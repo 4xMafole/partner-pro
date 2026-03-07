@@ -1,19 +1,15 @@
 // Automatic FlutterFlow imports
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports other custom widgets
+// Imports custom actions
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:google_maps_flutter/google_maps_flutter.dart' as map;
-import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/painting.dart' as painting;
@@ -91,29 +87,24 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
   Future<void> _loadMarkers() async {
     Map<String, map.Marker> newMarkerMap = {};
     for (var property in widget.properties) {
-      if (property.latitude != null &&
-          property.longitude != null &&
-          property.listPrice != null &&
-          property.id != null) {
-        String formattedPrice = _formatPrice(property.listPrice!);
+      String formattedPrice = _formatPrice(property.listPrice);
 
-        map.BitmapDescriptor customIcon =
-            await _createPriceMarker(formattedPrice, widget.markerColor);
+      map.BitmapDescriptor customIcon =
+          await _createPriceMarker(formattedPrice, widget.markerColor);
 
-        markerIcons[property.id!] = customIcon;
+      markerIcons[property.id] = customIcon;
 
-        map.Marker marker = map.Marker(
-          markerId: map.MarkerId(property.id!),
-          position: map.LatLng(property.latitude!, property.longitude!),
-          icon: markerIcons[property.id!]!,
-          onTap: () {
-            _showPropertyCard(property);
-            _toggleMarkerColor(property.id!);
-          },
-        );
-        newMarkerMap[property.id!] = marker;
-      }
-    }
+      map.Marker marker = map.Marker(
+        markerId: map.MarkerId(property.id),
+        position: map.LatLng(property.latitude, property.longitude),
+        icon: markerIcons[property.id]!,
+        onTap: () {
+          _showPropertyCard(property);
+          _toggleMarkerColor(property.id);
+        },
+      );
+      newMarkerMap[property.id] = marker;
+        }
 
     if (mounted) {
       setState(() {
@@ -126,7 +117,7 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
           _isMapCreated &&
           mapController != null) {
         _showPropertyCard(widget.initialProperty!);
-        _toggleMarkerColor(widget.initialProperty!.id!);
+        _toggleMarkerColor(widget.initialProperty!.id);
         _animateToProperty(widget.initialProperty!);
       }
     }
@@ -134,12 +125,10 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
 
   // Animate to a specific property
   void _animateToProperty(PropertyDataClassStruct property) {
-    if (mapController != null &&
-        property.latitude != null &&
-        property.longitude != null) {
+    if (mapController != null) {
       mapController!.animateCamera(
         map.CameraUpdate.newLatLngZoom(
-          map.LatLng(property.latitude!, property.longitude!),
+          map.LatLng(property.latitude, property.longitude),
           widget.zoomLevel,
         ),
       );
@@ -221,10 +210,8 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
           (element) => element.id == propertyId,
           orElse: () => PropertyDataClassStruct());
 
-      if (property.listPrice == null) return;
-
       map.BitmapDescriptor updatedIcon = await _createPriceMarker(
-        _formatPrice(property.listPrice!),
+        _formatPrice(property.listPrice),
         color,
       );
 
@@ -239,13 +226,11 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
   }
 
   void _showPropertyCard(PropertyDataClassStruct property) {
-    if (property.latitude != null && property.longitude != null) {
-      _customInfoWindowController.addInfoWindow!(
-        _buildPropertyCard(property),
-        map.LatLng(property.latitude!, property.longitude!),
-      );
+    _customInfoWindowController.addInfoWindow!(
+      _buildPropertyCard(property),
+      map.LatLng(property.latitude, property.longitude),
+    );
     }
-  }
 
   Widget _buildPropertyCard(PropertyDataClassStruct property) {
     return GestureDetector(
@@ -266,11 +251,11 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (property.media != null && property.media!.isNotEmpty) ...[
+              if (property.media.isNotEmpty) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    property.media!.first,
+                    property.media.first,
                     width: double.infinity,
                     height: 150,
                     fit: BoxFit.cover,
@@ -288,7 +273,7 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
                 const SizedBox(height: 8),
               ],
               Text(
-                property.listPrice != null && property.listPrice! > 0
+                property.listPrice > 0
                     ? formatNumber(
                         property.listPrice,
                         formatType: FormatType.decimal,
@@ -367,7 +352,7 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
             // Handle initial property now that the map is created
             if (widget.initialProperty != null) {
               _showPropertyCard(widget.initialProperty!);
-              _toggleMarkerColor(widget.initialProperty!.id!);
+              _toggleMarkerColor(widget.initialProperty!.id);
               _animateToProperty(widget.initialProperty!);
             }
           },

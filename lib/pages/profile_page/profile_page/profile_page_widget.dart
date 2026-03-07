@@ -5,12 +5,9 @@ import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/profile_page/support_sheet/support_sheet_widget.dart';
 import '/seller/property/congrats_sheet/congrats_sheet_widget.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -251,8 +248,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                     value: _model.notificationSwitchValue!,
                                     onChanged: (newValue) async {
                                       safeSetState(() => _model
-                                          .notificationSwitchValue = newValue!);
-                                      if (newValue!) {
+                                          .notificationSwitchValue = newValue);
+                                      if (newValue) {
                                         FFAppState().enableNotification = true;
                                         safeSetState(() {});
                                       } else {

@@ -1,20 +1,14 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/editable_document_upload_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/random_data_util.dart' as random_data;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'funds_proof_sheet_model.dart';
 export 'funds_proof_sheet_model.dart';
 
@@ -307,15 +301,15 @@ class _FundsProofSheetWidgetState extends State<FundsProofSheetWidget> {
                                                   .postDocumentsByUserCall
                                                   .call(
                                             requesterId: currentUserUid,
-                                            propertyId: widget!.property?.id,
+                                            propertyId: widget.property?.id,
                                             documentDirectory: 'proof_of_funds',
                                             documentFile:
                                                 _model.proofFunds?.fileUrl,
                                             documentName:
                                                 _model.proofFunds?.fileName,
                                             documentType: 'pdf',
-                                            sellerId: widget!.property?.sellerId
-                                                ?.firstOrNull,
+                                            sellerId: widget.property?.sellerId
+                                                .firstOrNull,
                                             documentSize:
                                                 _model.proofFunds?.fileSize,
                                           );

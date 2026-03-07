@@ -2,24 +2,19 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/seller/property/components/upload_image_item/upload_image_item_widget.dart';
 import '/seller/property/property_upload/property_upload_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'edit_profile_details_page_model.dart';
 export 'edit_profile_details_page_model.dart';
 
@@ -58,12 +53,12 @@ class _EditProfileDetailsPageWidgetState
         _model.agentDoc = await queryUsersRecordOnce(
           queryBuilder: (usersRecord) => usersRecord.where(
             'uid',
-            isEqualTo: _model.buyerRelationDoc?.relationship?.agentUid,
+            isEqualTo: _model.buyerRelationDoc?.relationship.agentUid,
           ),
           singleRecord: true,
         ).then((s) => s.firstOrNull);
         _model.uploadedLogoList = functions
-            .strListToImageList(_model.agentDoc?.agentAppLogos?.toList())!
+            .strListToImageList(_model.agentDoc?.agentAppLogos.toList())!
             .toList()
             .cast<ImageStruct>();
         safeSetState(() {});
@@ -76,7 +71,7 @@ class _EditProfileDetailsPageWidgetState
           singleRecord: true,
         ).then((s) => s.firstOrNull);
         _model.uploadedLogoList = functions
-            .strListToImageList(_model.agentDoc1?.agentAppLogos?.toList())!
+            .strListToImageList(_model.agentDoc1?.agentAppLogos.toList())!
             .toList()
             .cast<ImageStruct>();
         safeSetState(() {});
@@ -270,8 +265,6 @@ class _EditProfileDetailsPageWidgetState
                                     }
 
                                     if (_model.uploadedFileUrl_uploadDataUserPhoto !=
-                                            null &&
-                                        _model.uploadedFileUrl_uploadDataUserPhoto !=
                                             '') {
                                       await currentUserReference!
                                           .update(createUsersRecordData(
@@ -292,13 +285,9 @@ class _EditProfileDetailsPageWidgetState
                                     child: Image.network(
                                       valueOrDefault<String>(
                                         () {
-                                          if (currentUserPhoto != null &&
-                                              currentUserPhoto != '') {
+                                          if (currentUserPhoto != '') {
                                             return currentUserPhoto;
-                                          } else if (_model
-                                                      .uploadedFileUrl_uploadDataUserPhoto !=
-                                                  null &&
-                                              _model.uploadedFileUrl_uploadDataUserPhoto !=
+                                          } else if (_model.uploadedFileUrl_uploadDataUserPhoto !=
                                                   '') {
                                             return _model
                                                 .uploadedFileUrl_uploadDataUserPhoto;
@@ -356,8 +345,8 @@ class _EditProfileDetailsPageWidgetState
                                     value: _model.switchValue!,
                                     onChanged: (newValue) async {
                                       safeSetState(
-                                          () => _model.switchValue = newValue!);
-                                      if (newValue!) {
+                                          () => _model.switchValue = newValue);
+                                      if (newValue) {
                                         var confirmDialogResponse =
                                             await showDialog<bool>(
                                                   context: context,
@@ -488,7 +477,7 @@ class _EditProfileDetailsPageWidgetState
                           Align(
                             alignment: AlignmentDirectional(-1.0, -1.0),
                             child: AuthUserStreamWidget(
-                              builder: (context) => Container(
+                              builder: (context) => SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.userNameTextController,
@@ -598,7 +587,7 @@ class _EditProfileDetailsPageWidgetState
                           Align(
                             alignment: AlignmentDirectional(-1.0, -1.0),
                             child: AuthUserStreamWidget(
-                              builder: (context) => Container(
+                              builder: (context) => SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.firstNameTextController,
@@ -708,7 +697,7 @@ class _EditProfileDetailsPageWidgetState
                           Align(
                             alignment: AlignmentDirectional(-1.0, -1.0),
                             child: AuthUserStreamWidget(
-                              builder: (context) => Container(
+                              builder: (context) => SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.lastNameTextController,
@@ -818,7 +807,7 @@ class _EditProfileDetailsPageWidgetState
                           Align(
                             alignment: AlignmentDirectional(-1.0, -1.0),
                             child: AuthUserStreamWidget(
-                              builder: (context) => Container(
+                              builder: (context) => SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.phoneTextController,
@@ -927,7 +916,7 @@ class _EditProfileDetailsPageWidgetState
                           ),
                           Align(
                             alignment: AlignmentDirectional(-1.0, -1.0),
-                            child: Container(
+                            child: SizedBox(
                               width: double.infinity,
                               child: TextFormField(
                                 controller: _model.emailTextController,
@@ -1045,13 +1034,13 @@ class _EditProfileDetailsPageWidgetState
                                           ),
                                         ),
                                       ),
-                                      Container(
+                                      SizedBox(
                                         width: 200.0,
                                         child: Align(
                                           alignment:
                                               AlignmentDirectional(-1.0, -1.0),
                                           child: AuthUserStreamWidget(
-                                            builder: (context) => Container(
+                                            builder: (context) => SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller:
@@ -1204,13 +1193,13 @@ class _EditProfileDetailsPageWidgetState
                                           ),
                                         ),
                                       ),
-                                      Container(
+                                      SizedBox(
                                         width: 200.0,
                                         child: Align(
                                           alignment:
                                               AlignmentDirectional(-1.0, -1.0),
                                           child: AuthUserStreamWidget(
-                                            builder: (context) => Container(
+                                            builder: (context) => SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller:
@@ -1727,7 +1716,7 @@ class _EditProfileDetailsPageWidgetState
                                               width: 2,
                                               color:
                                                   FlutterFlowTheme.of(context)
-                                                      .primary!,
+                                                      .primary,
                                             )
                                           : null,
                                       activeColor:
@@ -1812,8 +1801,6 @@ class _EditProfileDetailsPageWidgetState
                                   displayName:
                                       _model.userNameTextController.text,
                                   photoUrl: _model.uploadedFileUrl_uploadDataUserPhoto !=
-                                              null &&
-                                          _model.uploadedFileUrl_uploadDataUserPhoto !=
                                               ''
                                       ? _model
                                           .uploadedFileUrl_uploadDataUserPhoto

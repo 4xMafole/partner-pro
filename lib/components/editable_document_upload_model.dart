@@ -1,11 +1,7 @@
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/profile_page/document_uploaded/document_uploaded_widget.dart';
 import 'editable_document_upload_widget.dart' show EditableDocumentUploadWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class EditableDocumentUploadModel
     extends FlutterFlowModel<EditableDocumentUploadWidget> {

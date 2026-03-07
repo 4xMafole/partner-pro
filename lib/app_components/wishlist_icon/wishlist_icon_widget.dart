@@ -1,11 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'wishlist_icon_model.dart';
 export 'wishlist_icon_model.dart';
 
@@ -14,7 +10,7 @@ class WishlistIconWidget extends StatefulWidget {
     super.key,
     this.onWishlist,
     bool? isFavourite,
-  }) : this.isFavourite = isFavourite ?? false;
+  }) : isFavourite = isFavourite ?? false;
 
   final Future Function(bool isChecked)? onWishlist;
   final bool isFavourite;
@@ -39,7 +35,7 @@ class _WishlistIconWidgetState extends State<WishlistIconWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.isSaved = widget!.isFavourite;
+      _model.isSaved = widget.isFavourite;
       safeSetState(() {});
     });
   }

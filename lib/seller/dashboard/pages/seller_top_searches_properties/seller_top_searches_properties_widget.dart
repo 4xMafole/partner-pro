@@ -2,14 +2,11 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/property/components/seller_property_item/seller_property_item_widget.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'seller_top_searches_properties_model.dart';
 export 'seller_top_searches_properties_model.dart';
@@ -93,7 +90,7 @@ class _SellerTopSearchesPropertiesWidgetState
                         ),
                         Builder(
                           builder: (context) {
-                            if (widget!.pageType == PropertyPage.Top) {
+                            if (widget.pageType == PropertyPage.Top) {
                               return Text(
                                 'Top Properties',
                                 style: FlutterFlowTheme.of(context)
@@ -140,7 +137,7 @@ class _SellerTopSearchesPropertiesWidgetState
               Expanded(
                 child: Builder(
                   builder: (context) {
-                    if (widget!.pageType == PropertyPage.Top) {
+                    if (widget.pageType == PropertyPage.Top) {
                       return Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Builder(

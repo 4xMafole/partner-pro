@@ -2,13 +2,9 @@ import '/app_components/wishlist_icon/wishlist_icon_widget.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_preview_property_model.dart';
 export 'seller_preview_property_model.dart';
 
@@ -93,7 +89,7 @@ class _SellerPreviewPropertyWidgetState
                       ),
                       Text(
                         valueOrDefault<String>(
-                          widget!.property?.location?.name,
+                          widget.property?.location.name,
                           'Property address',
                         ).maybeHandleOverflow(
                           maxChars: 30,
@@ -131,9 +127,9 @@ class _SellerPreviewPropertyWidgetState
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
               child: Builder(
                 builder: (context) {
-                  final images = widget!.images!.toList();
+                  final images = widget.images!.toList();
 
-                  return Container(
+                  return SizedBox(
                     width: double.infinity,
                     height: MediaQuery.sizeOf(context).height * 0.333,
                     child: CarouselSlider.builder(
@@ -231,7 +227,7 @@ class _SellerPreviewPropertyWidgetState
                                     ),
                                     Text(
                                       valueOrDefault<String>(
-                                        widget!.property?.sqft,
+                                        widget.property?.sqft,
                                         '0',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -279,7 +275,7 @@ class _SellerPreviewPropertyWidgetState
                                     ),
                                     Text(
                                       valueOrDefault<String>(
-                                        widget!.property?.baths,
+                                        widget.property?.baths,
                                         '0',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -327,7 +323,7 @@ class _SellerPreviewPropertyWidgetState
                                     ),
                                     Text(
                                       valueOrDefault<String>(
-                                        widget!.property?.baths,
+                                        widget.property?.baths,
                                         '0',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -355,7 +351,7 @@ class _SellerPreviewPropertyWidgetState
                       Text(
                         valueOrDefault<String>(
                           formatNumber(
-                            widget!.property?.price,
+                            widget.property?.price,
                             formatType: FormatType.decimal,
                             decimalType: DecimalType.automatic,
                             currency: '\$',
@@ -379,7 +375,7 @@ class _SellerPreviewPropertyWidgetState
                         children: [
                           Text(
                             valueOrDefault<String>(
-                              widget!.property?.propertyType,
+                              widget.property?.propertyType,
                               'Property address',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -405,7 +401,7 @@ class _SellerPreviewPropertyWidgetState
                               Expanded(
                                 child: Text(
                                   valueOrDefault<String>(
-                                    widget!.property?.location?.address,
+                                    widget.property?.location.address,
                                     'Property location',
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -445,7 +441,7 @@ class _SellerPreviewPropertyWidgetState
                           ),
                           Text(
                             valueOrDefault<String>(
-                              widget!.property?.description,
+                              widget.property?.description,
                               'Property Description',
                             ),
                             style: FlutterFlowTheme.of(context)

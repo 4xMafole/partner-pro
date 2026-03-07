@@ -6,6 +6,7 @@
           include:
             - lib/features/**/models/**
             - lib/features/**/entities/**
+            - lib/features/**/bloc/**
       json_serializable:
         generate_for:
           include:
@@ -20,3 +21,4 @@
         generate_for:
           include:
             - lib/core/di/**
+            - lib/app/di/**

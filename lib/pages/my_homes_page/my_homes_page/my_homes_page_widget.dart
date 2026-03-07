@@ -3,23 +3,18 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/offers/components/seller_counter_sheet/seller_counter_sheet_widget.dart';
 import '/seller/offers/components/seller_offer_item/seller_offer_item_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'my_homes_page_model.dart';
 export 'my_homes_page_model.dart';
 
@@ -27,7 +22,7 @@ class MyHomesPageWidget extends StatefulWidget {
   const MyHomesPageWidget({
     super.key,
     bool? isSuggest,
-  }) : this.isSuggest = isSuggest ?? false;
+  }) : isSuggest = isSuggest ?? false;
 
   final bool isSuggest;
 
@@ -51,8 +46,8 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.isSuggest) {
-        _model.isFavorite = widget!.isSuggest;
+      if (widget.isSuggest) {
+        _model.isFavorite = widget.isSuggest;
         safeSetState(() {});
       }
     });
@@ -62,7 +57,7 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
       length: 2,
       initialIndex: min(
           valueOrDefault<int>(
-            widget!.isSuggest ? 1 : 0,
+            widget.isSuggest ? 1 : 0,
             0,
           ),
           1),
@@ -654,17 +649,17 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                                       as Iterable<
                                                                           NewOfferStruct?>)
                                                                   .withoutNulls
-                                                                  ?.where((e) =>
+                                                                  .where((e) =>
                                                                       e.status ==
                                                                       Status
                                                                           .Pending
                                                                           .name)
                                                                   .toList()
-                                                                  ?.sortedList(
+                                                                  .sortedList(
                                                                       keyOf: (e) =>
                                                                           e.createdTime,
                                                                       desc: true)
-                                                                  ?.toList() ??
+                                                                  .toList() ??
                                                               [];
                                                           if (pendingOffers
                                                               .isEmpty) {
@@ -911,17 +906,17 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                                       as Iterable<
                                                                           NewOfferStruct?>)
                                                                   .withoutNulls
-                                                                  ?.where((e) =>
+                                                                  .where((e) =>
                                                                       e.status ==
                                                                       Status
                                                                           .Accepted
                                                                           .name)
                                                                   .toList()
-                                                                  ?.sortedList(
+                                                                  .sortedList(
                                                                       keyOf: (e) =>
                                                                           e.createdTime,
                                                                       desc: true)
-                                                                  ?.toList() ??
+                                                                  .toList() ??
                                                               [];
                                                           if (acceptedOffers
                                                               .isEmpty) {
@@ -1134,17 +1129,17 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                                       as Iterable<
                                                                           NewOfferStruct?>)
                                                                   .withoutNulls
-                                                                  ?.where((e) =>
+                                                                  .where((e) =>
                                                                       e.status ==
                                                                       Status
                                                                           .Declined
                                                                           .name)
                                                                   .toList()
-                                                                  ?.sortedList(
+                                                                  .sortedList(
                                                                       keyOf: (e) =>
                                                                           e.createdTime,
                                                                       desc: true)
-                                                                  ?.toList() ??
+                                                                  .toList() ??
                                                               [];
                                                           if (declinedOffers
                                                               .isEmpty) {

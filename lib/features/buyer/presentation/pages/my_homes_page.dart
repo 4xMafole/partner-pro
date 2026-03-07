@@ -7,7 +7,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
-import '../../../../core/enums/app_enums.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../offer/presentation/bloc/offer_bloc.dart';
@@ -74,14 +73,16 @@ class _MyHomesPageState extends State<MyHomesPage>
 
   Widget _buildFavoritesTab() {
     return BlocBuilder<PropertyBloc, PropertyState>(builder: (context, state) {
-      if (state.isLoading && state.favorites.isEmpty)
+      if (state.isLoading && state.favorites.isEmpty) {
         return const Center(child: CircularProgressIndicator());
-      if (state.favorites.isEmpty)
+      }
+      if (state.favorites.isEmpty) {
         return const AppEmptyState(
             icon: LucideIcons.heart,
             title: 'No saved homes yet',
             subtitle: 'Properties you favorite will appear here.',
             actionLabel: 'Browse Properties');
+      }
       return ListView.builder(
           padding: EdgeInsets.all(16.w),
           itemCount: state.favorites.length,
@@ -125,15 +126,17 @@ class _MyHomesPageState extends State<MyHomesPage>
                       onPressed: () {
                         final favId = fav['id'] as String? ?? '';
                         final a = context.read<AuthBloc>().state;
-                        if (a is AuthAuthenticated && favId.isNotEmpty)
+                        if (a is AuthAuthenticated && favId.isNotEmpty) {
                           context.read<PropertyBloc>().add(RemoveFavorite(
                               userId: a.user.uid ?? '',
                               favoriteId: favId,
                               requesterId: a.user.uid ?? ''));
+                        }
                       }),
                   onTap: () {
-                    if (propertyId.isNotEmpty)
+                    if (propertyId.isNotEmpty) {
                       context.push('${RouteNames.propertyDetails}/$propertyId');
+                    }
                   },
                 ));
           });
@@ -142,14 +145,16 @@ class _MyHomesPageState extends State<MyHomesPage>
 
   Widget _buildOffersTab() {
     return BlocBuilder<OfferBloc, OfferState>(builder: (context, state) {
-      if (state.isLoading && state.offers.isEmpty)
+      if (state.isLoading && state.offers.isEmpty) {
         return const Center(child: CircularProgressIndicator());
-      if (state.offers.isEmpty)
+      }
+      if (state.offers.isEmpty) {
         return const AppEmptyState(
             icon: LucideIcons.fileText,
             title: 'No offers yet',
             subtitle:
                 'When you make offers on properties, they will appear here.');
+      }
       return ListView.builder(
           padding: EdgeInsets.all(16.w),
           itemCount: state.offers.length,

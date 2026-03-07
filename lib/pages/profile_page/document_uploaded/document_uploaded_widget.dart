@@ -1,11 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'document_uploaded_model.dart';
 export 'document_uploaded_model.dart';
 
@@ -14,7 +10,7 @@ class DocumentUploadedWidget extends StatefulWidget {
     super.key,
     String? label,
     this.onTap,
-  }) : this.label = label ?? 'Label';
+  }) : label = label ?? 'Label';
 
   final String label;
   final Future Function()? onTap;
@@ -63,7 +59,7 @@ class _DocumentUploadedWidgetState extends State<DocumentUploadedWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           AutoSizeText(
-            widget!.label.maybeHandleOverflow(
+            widget.label.maybeHandleOverflow(
               maxChars: 30,
               replacement: '…',
             ),

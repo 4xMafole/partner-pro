@@ -1,13 +1,9 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/shared_components/status/status_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_prop_appoint_item_model.dart';
 export 'seller_prop_appoint_item_model.dart';
 
@@ -66,7 +62,7 @@ class _SellerPropAppointItemWidgetState
               child: Image.memory(
                 functions
                         .base64ToImage(
-                            widget!.appointment?.property?.images?.firstOrNull)
+                            widget.appointment?.property.images.firstOrNull)
                         ?.bytes ??
                     Uint8List.fromList([]),
                 width: MediaQuery.sizeOf(context).width * 1.0,
@@ -101,7 +97,7 @@ class _SellerPropAppointItemWidgetState
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.appointment?.property?.title,
+                              widget.appointment?.property.title,
                               'title',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -121,7 +117,7 @@ class _SellerPropAppointItemWidgetState
                         Text(
                           valueOrDefault<String>(
                             formatNumber(
-                              widget!.appointment?.property?.price,
+                              widget.appointment?.property.price,
                               formatType: FormatType.decimal,
                               decimalType: DecimalType.automatic,
                               currency: '\$',
@@ -154,7 +150,7 @@ class _SellerPropAppointItemWidgetState
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.appointment?.property?.location?.name,
+                              widget.appointment?.property.location.name,
                               'location',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -192,7 +188,7 @@ class _SellerPropAppointItemWidgetState
                               Text(
                                 dateTimeFormat(
                                   "M/d h:mm a",
-                                  widget!.appointment!.date!,
+                                  widget.appointment!.date!,
                                   locale:
                                       FFLocalizations.of(context).languageCode,
                                 ),
@@ -224,7 +220,7 @@ class _SellerPropAppointItemWidgetState
                 model: _model.statusModel,
                 updateCallback: () => safeSetState(() {}),
                 child: StatusWidget(
-                  status: widget!.appointment!.status,
+                  status: widget.appointment!.status,
                 ),
               ),
             ),

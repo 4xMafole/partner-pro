@@ -7,15 +7,12 @@ import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/property/components/seller_property_item/seller_property_item_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'seller_property_listing_page_model.dart';
 export 'seller_property_listing_page_model.dart';
@@ -455,7 +452,7 @@ class _SellerPropertyListingPageWidgetState
                         },
                       ),
                     ),
-                    if (FFAppState().sellerListOfProperties.length != 0)
+                    if (FFAppState().sellerListOfProperties.isNotEmpty)
                       Align(
                         alignment: AlignmentDirectional(1.0, 1.0),
                         child: Padding(

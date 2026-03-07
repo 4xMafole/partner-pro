@@ -1,7 +1,5 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -164,7 +162,7 @@ class _NotificationsSettingsWidgetState
                                       onChanged: (newValue) async {
                                         safeSetState(() =>
                                             _model.notificationSwitchValue =
-                                                newValue!);
+                                                newValue);
                                       },
                                       activeColor:
                                           FlutterFlowTheme.of(context).primary,
@@ -249,7 +247,7 @@ class _NotificationsSettingsWidgetState
                                         value: _model.switchValue1!,
                                         onChanged: (newValue) async {
                                           safeSetState(() =>
-                                              _model.switchValue1 = newValue!);
+                                              _model.switchValue1 = newValue);
                                         },
                                         activeColor:
                                             FlutterFlowTheme.of(context)
@@ -320,7 +318,7 @@ class _NotificationsSettingsWidgetState
                                             value: _model.switchValue2!,
                                             onChanged: (newValue) async {
                                               safeSetState(() => _model
-                                                  .switchValue2 = newValue!);
+                                                  .switchValue2 = newValue);
                                             },
                                             activeColor:
                                                 FlutterFlowTheme.of(context)
@@ -413,7 +411,7 @@ class _NotificationsSettingsWidgetState
                                             value: _model.switchValue3!,
                                             onChanged: (newValue) async {
                                               safeSetState(() => _model
-                                                  .switchValue3 = newValue!);
+                                                  .switchValue3 = newValue);
                                             },
                                             activeColor:
                                                 FlutterFlowTheme.of(context)
@@ -492,7 +490,7 @@ class _NotificationsSettingsWidgetState
                                               value: _model.switchValue4!,
                                               onChanged: (newValue) async {
                                                 safeSetState(() => _model
-                                                    .switchValue4 = newValue!);
+                                                    .switchValue4 = newValue);
                                               },
                                               activeColor:
                                                   FlutterFlowTheme.of(context)
@@ -586,7 +584,7 @@ class _NotificationsSettingsWidgetState
                                             value: _model.switchValue5!,
                                             onChanged: (newValue) async {
                                               safeSetState(() => _model
-                                                  .switchValue5 = newValue!);
+                                                  .switchValue5 = newValue);
                                             },
                                             activeColor:
                                                 FlutterFlowTheme.of(context)
@@ -684,7 +682,7 @@ class _NotificationsSettingsWidgetState
                                               value: _model.switchValue6!,
                                               onChanged: (newValue) async {
                                                 safeSetState(() => _model
-                                                    .switchValue6 = newValue!);
+                                                    .switchValue6 = newValue);
                                               },
                                               activeColor:
                                                   FlutterFlowTheme.of(context)
@@ -764,7 +762,7 @@ class _NotificationsSettingsWidgetState
                                               value: _model.switchValue7!,
                                               onChanged: (newValue) async {
                                                 safeSetState(() => _model
-                                                    .switchValue7 = newValue!);
+                                                    .switchValue7 = newValue);
                                               },
                                               activeColor:
                                                   FlutterFlowTheme.of(context)

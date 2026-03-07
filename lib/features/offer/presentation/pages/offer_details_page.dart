@@ -8,7 +8,6 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../bloc/offer_bloc.dart';
 import '../../data/models/offer_model.dart';
 

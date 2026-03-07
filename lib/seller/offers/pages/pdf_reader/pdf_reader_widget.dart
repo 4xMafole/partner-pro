@@ -1,11 +1,7 @@
 import '/flutter_flow/flutter_flow_pdf_viewer.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'pdf_reader_model.dart';
 export 'pdf_reader_model.dart';
 
@@ -109,7 +105,7 @@ class _PdfReaderWidgetState extends State<PdfReaderWidget> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         FlutterFlowPdfViewer(
-                          networkPath: widget!.url!,
+                          networkPath: widget.url!,
                           height: MediaQuery.sizeOf(context).height * 0.8,
                           horizontalScroll: false,
                         ),

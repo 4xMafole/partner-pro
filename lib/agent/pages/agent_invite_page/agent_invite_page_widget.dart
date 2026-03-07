@@ -2,16 +2,12 @@ import '/app_components/custom_dialog/custom_dialog_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'agent_invite_page_model.dart';
 export 'agent_invite_page_model.dart';
@@ -134,7 +130,7 @@ class _AgentInvitePageWidgetState extends State<AgentInvitePageWidget> {
                     Padding(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                      child: Container(
+                      child: SizedBox(
                         width: double.infinity,
                         child: TextFormField(
                           controller: _model.emailAddressTextController,
@@ -213,14 +209,14 @@ class _AgentInvitePageWidgetState extends State<AgentInvitePageWidget> {
                           );
                           safeSetState(() {});
                           _model.agentHtml =
-                              await actions.generateInvitationEmailHtml(
+                              actions.generateInvitationEmailHtml(
                             currentUserDisplayName,
                             FFAppState().redirectUrl,
                             'agent',
-                            (currentUserDocument?.agentAppLogos?.toList() ?? [])
+                            (currentUserDocument?.agentAppLogos.toList() ?? [])
                                     .isNotEmpty
                                 ? (currentUserDocument?.agentAppLogos
-                                            ?.toList() ??
+                                            .toList() ??
                                         [])
                                     .firstOrNull!
                                 : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/partner-pro-i7cxfg/assets/hmx5ppn0h4bf/partner_pro_black-01.png',

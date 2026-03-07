@@ -1,9 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'notification_item_model.dart';
 export 'notification_item_model.dart';
 
@@ -12,7 +9,7 @@ class NotificationItemWidget extends StatefulWidget {
     super.key,
     this.onTap,
     bool? isActive,
-  }) : this.isActive = isActive ?? false;
+  }) : isActive = isActive ?? false;
 
   final Future Function()? onTap;
   final bool isActive;
@@ -63,7 +60,7 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget> {
               color: Color(0xFF9198A0),
               size: 32.0,
             ),
-            if (widget!.isActive)
+            if (widget.isActive)
               Container(
                 width: 15.0,
                 height: 15.0,

@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'apointment_component_model.dart';
 export 'apointment_component_model.dart';
 
@@ -13,7 +8,7 @@ class ApointmentComponentWidget extends StatefulWidget {
   const ApointmentComponentWidget({
     super.key,
     bool? parameter1,
-  }) : this.parameter1 = parameter1 ?? false;
+  }) : parameter1 = parameter1 ?? false;
 
   final bool parameter1;
 
@@ -55,10 +50,10 @@ class _ApointmentComponentWidgetState extends State<ApointmentComponentWidget> {
           color: FlutterFlowTheme.of(context).primaryBackground,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
-            color: widget!.parameter1
+            color: widget.parameter1
                 ? FlutterFlowTheme.of(context).secondary
                 : Color(0x4A484848),
-            width: widget!.parameter1 ? 2.0 : 1.0,
+            width: widget.parameter1 ? 2.0 : 1.0,
           ),
         ),
         child: Row(

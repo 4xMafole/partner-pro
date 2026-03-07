@@ -1,13 +1,9 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_top_prop_item_model.dart';
 export 'seller_top_prop_item_model.dart';
 
@@ -64,7 +60,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
               borderRadius: BorderRadius.circular(8.0),
               child: Image.memory(
                 functions
-                        .base64ToImage(widget!.property?.images?.firstOrNull)
+                        .base64ToImage(widget.property?.images.firstOrNull)
                         ?.bytes ??
                     Uint8List.fromList([]),
                 width: MediaQuery.sizeOf(context).width * 1.0,
@@ -99,7 +95,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.property?.title,
+                              widget.property?.title,
                               'title',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -120,7 +116,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                           child: Text(
                             valueOrDefault<String>(
                               formatNumber(
-                                widget!.property?.price,
+                                widget.property?.price,
                                 formatType: FormatType.decimal,
                                 decimalType: DecimalType.automatic,
                                 currency: '\$',
@@ -154,7 +150,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                         Expanded(
                           child: Text(
                             valueOrDefault<String>(
-                              widget!.property?.location?.name,
+                              widget.property?.location.name,
                               'location',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -191,7 +187,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.property?.beds,
+                                  widget.property?.beds,
                                   '0',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -240,7 +236,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.property?.baths,
+                                  widget.property?.baths,
                                   '0',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -289,7 +285,7 @@ class _SellerTopPropItemWidgetState extends State<SellerTopPropItemWidget> {
                               ),
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.property?.sqft,
+                                  widget.property?.sqft,
                                   '0',
                                 ),
                                 style: FlutterFlowTheme.of(context)

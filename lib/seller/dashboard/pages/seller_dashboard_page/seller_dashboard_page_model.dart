@@ -1,27 +1,15 @@
 import '/app_components/navbar/seller_bottom_navbar/seller_bottom_navbar_widget.dart';
 import '/app_shared/components/walkthrough/info_card/info_card_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/dashboard/components/appointment/seller_prop_appoint_item/seller_prop_appoint_item_widget.dart';
 import '/seller/dashboard/components/dash_overview_item/dash_overview_item_widget.dart';
-import '/seller/dashboard/components/notification/seller_notification/seller_notification_widget.dart';
 import '/seller/dashboard/components/notification_item/notification_item_widget.dart';
 import '/seller/dashboard/components/seller_top_prop_item/seller_top_prop_item_widget.dart';
-import '/walkthroughs/new_seller.dart';
-import 'dart:ui';
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart'
     show TutorialCoachMark;
 import 'seller_dashboard_page_widget.dart' show SellerDashboardPageWidget;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SellerDashboardPageModel
     extends FlutterFlowModel<SellerDashboardPageWidget> {

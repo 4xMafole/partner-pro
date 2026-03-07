@@ -1,16 +1,8 @@
 import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'contact_suggest_item_model.dart';
 export 'contact_suggest_item_model.dart';
 
@@ -20,7 +12,7 @@ class ContactSuggestItemWidget extends StatefulWidget {
     required this.member,
     this.onSuggest,
     Color? suggestionIconColor,
-  }) : this.suggestionIconColor =
+  }) : suggestionIconColor =
             suggestionIconColor ?? const Color(0xFF57636C);
 
   final MemberSuggestionStruct? member;
@@ -83,7 +75,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                 child: Image.network(
                   valueOrDefault<String>(
                     functions
-                        .stringToImagePath(widget!.member?.member?.photoUrl),
+                        .stringToImagePath(widget.member?.member.photoUrl),
                     'https://placehold.co/800@2x.png?text=U',
                   ),
                   width: 60.0,
@@ -100,7 +92,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                     children: [
                       Text(
                         valueOrDefault<String>(
-                          widget!.member?.member?.fullName,
+                          widget.member?.member.fullName,
                           'N/A',
                         ),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(
@@ -116,7 +108,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                         children: [
                           Text(
                             valueOrDefault<String>(
-                              widget!.member?.member?.phoneNumber,
+                              widget.member?.member.phoneNumber,
                               'N/A',
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -140,7 +132,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                             Expanded(
                               child: Text(
                                 valueOrDefault<String>(
-                                  widget!.member?.member?.email,
+                                  widget.member?.member.email,
                                   'N/A',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -160,7 +152,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                           ],
                         ),
                       ),
-                      if (widget!.member?.createdAt != null)
+                      if (widget.member?.createdAt != null)
                         Container(
                           decoration: BoxDecoration(
                             color: Color(0x34249689),
@@ -206,7 +198,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                 },
                 child: Icon(
                   Icons.lightbulb_rounded,
-                  color: widget!.suggestionIconColor,
+                  color: widget.suggestionIconColor,
                   size: 24.0,
                 ),
               ),

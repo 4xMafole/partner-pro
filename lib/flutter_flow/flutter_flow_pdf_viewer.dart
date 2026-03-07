@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:internet_file/internet_file.dart';
+import 'package:http/http.dart' as http;
 import 'package:pdfx/pdfx.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -40,7 +40,8 @@ class _FlutterFlowPdfViewerState extends State<FlutterFlowPdfViewer> {
             ? assetPath.isNotEmpty
                 ? await PdfDocument.openAsset(assetPath)
                 : networkPath.isNotEmpty
-                    ? await PdfDocument.openData(InternetFile.get(networkPath))
+                    ? await PdfDocument.openData(
+                        (await http.get(Uri.parse(networkPath))).bodyBytes)
                     : await PdfDocument.openData(Uint8List.fromList(fileBytes))
             : null;
     controller = pdfDocument != null

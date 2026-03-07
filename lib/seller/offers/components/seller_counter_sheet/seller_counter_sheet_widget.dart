@@ -2,11 +2,8 @@ import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_counter_sheet_model.dart';
 export 'seller_counter_sheet_model.dart';
 
@@ -102,7 +99,7 @@ class _SellerCounterSheetWidgetState extends State<SellerCounterSheetWidget> {
                   title: 'Counter Offer',
                 ),
               ),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: 50.0,
                 child: custom_widgets.CurrencyInputWidget(

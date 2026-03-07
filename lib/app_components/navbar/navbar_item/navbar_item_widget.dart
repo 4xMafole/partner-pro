@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'navbar_item_model.dart';
 export 'navbar_item_model.dart';
 
@@ -15,8 +11,8 @@ class NavbarItemWidget extends StatefulWidget {
     required this.iconNav,
     bool? isActive,
     this.onTap,
-  })  : this.label = label ?? 'Label',
-        this.isActive = isActive ?? false;
+  })  : label = label ?? 'Label',
+        isActive = isActive ?? false;
 
   final String label;
   final Widget? iconNav;
@@ -63,12 +59,12 @@ class _NavbarItemWidgetState extends State<NavbarItemWidget> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          widget!.iconNav!,
+          widget.iconNav!,
           Text(
-            widget!.label,
+            widget.label,
             style: FlutterFlowTheme.of(context).bodyMedium.override(
                   fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
-                  color: widget!.isActive
+                  color: widget.isActive
                       ? FlutterFlowTheme.of(context).primaryText
                       : FlutterFlowTheme.of(context).secondaryText,
                   letterSpacing: 0.0,

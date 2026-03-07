@@ -1,11 +1,7 @@
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'yard_sign_model.dart';
 export 'yard_sign_model.dart';
 
@@ -52,7 +48,7 @@ class _YardSignWidgetState extends State<YardSignWidget> {
       children: [
         Builder(
           builder: (context) {
-            if (widget!.status == Status.Accepted) {
+            if (widget.status == Status.Accepted) {
               return Container(
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).accent4,

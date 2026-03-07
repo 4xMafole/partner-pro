@@ -8,20 +8,16 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/search_result_popup_widget.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/pages/search/search_components/filter_location_popup/filter_location_popup_widget.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
 import '/pages/search/search_filter/search_filter_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -32,7 +28,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'search_page_model.dart';
@@ -278,7 +273,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (widget!.userType == UserType.Buyer)
+                          if (widget.userType == UserType.Buyer)
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 16.0),
@@ -397,19 +392,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                             ),
                                             showBadge:
                                                 badgeNotificationsRecordList
-                                                        .length >
-                                                    0,
-                                            shape: badges.BadgeShape.circle,
-                                            badgeColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            elevation: 4.0,
-                                            padding: EdgeInsets.all(6.0),
+                                                    .isNotEmpty,
+                                            badgeStyle: badges.BadgeStyle(
+                                              shape: badges.BadgeShape.circle,
+                                              badgeColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              elevation: 4.0,
+                                              padding: EdgeInsets.all(6.0),
+                                            ),
+                                            badgeAnimation:
+                                                badges.BadgeAnimation.scale(
+                                              toAnimate: true,
+                                            ),
                                             position:
                                                 badges.BadgePosition.topEnd(),
-                                            animationType:
-                                                badges.BadgeAnimationType.scale,
-                                            toAnimate: true,
                                             child: FaIcon(
                                               FontAwesomeIcons.bell,
                                               color:
@@ -567,7 +564,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                           SearchResultPopupWidget(
                                                         onSelect:
                                                             (query) async {
-                                                          var _shouldSetState =
+                                                          var shouldSetState =
                                                               false;
                                                           _model.isLoading =
                                                               true;
@@ -589,8 +586,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                             location: query,
                                                           );
 
-                                                          _shouldSetState =
-                                                              true;
+                                                          shouldSetState = true;
                                                           if ((_model
                                                                   .locationZpid
                                                                   ?.succeeded ??
@@ -652,7 +648,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                             FocusManager.instance.primaryFocus?.unfocus();
                                                                           },
                                                                           child:
-                                                                              Container(
+                                                                              SizedBox(
                                                                             width:
                                                                                 MediaQuery.sizeOf(context).width * 0.8,
                                                                             child:
@@ -660,7 +656,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                               locations: ((_model.locationZpid?.jsonBody ?? '').toList().map<LocationZpidStruct?>(LocationZpidStruct.maybeFromMap).toList() as Iterable<LocationZpidStruct?>).withoutNulls,
                                                                               query: query,
                                                                               onTap: (value, querySearch) async {
-                                                                                var _shouldSetState = false;
+                                                                                var shouldSetState = false;
                                                                                 Navigator.pop(context);
                                                                                 if (!((String var1) {
                                                                                   return var1.contains('community_address');
@@ -677,7 +673,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                                     user: currentUserUid,
                                                                                   );
 
-                                                                                  _shouldSetState = true;
+                                                                                  shouldSetState = true;
                                                                                   if ((_model.citySearchProperties1?.succeeded ?? true) && (((_model.citySearchProperties1?.jsonBody ?? '').toList().map<PropertyDataClassStruct?>(PropertyDataClassStruct.maybeFromMap).toList() as Iterable<PropertyDataClassStruct?>).withoutNulls.isNotEmpty)) {
                                                                                     _model.initialResults = ((_model.citySearchProperties1?.jsonBody ?? '').toList().map<PropertyDataClassStruct?>(PropertyDataClassStruct.maybeFromMap).toList() as Iterable<PropertyDataClassStruct?>).withoutNulls.toList().cast<PropertyDataClassStruct>();
                                                                                     safeSetState(() {});
@@ -729,7 +725,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                         currentUserUid,
                                                                   );
 
-                                                                  _shouldSetState =
+                                                                  shouldSetState =
                                                                       true;
                                                                   if ((_model.citySearchProperties
                                                                               ?.succeeded ??
@@ -845,7 +841,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                   currentUserUid,
                                                             );
 
-                                                            _shouldSetState =
+                                                            shouldSetState =
                                                                 true;
                                                             if ((_model
                                                                     .searchPropertyByZipIdCopy
@@ -911,47 +907,47 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.streetName,
+                                                                      .streetName,
                                                                   streetNumber: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.streetNumber,
+                                                                      .streetNumber,
                                                                   streetDirection: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.streetDirection,
+                                                                      .streetDirection,
                                                                   streetType: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.streetType,
+                                                                      .streetType,
                                                                   neighborhood: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.neighborhood,
+                                                                      .neighborhood,
                                                                   city: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.city,
+                                                                      .city,
                                                                   state: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.state,
+                                                                      .state,
                                                                   zip: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.zip,
+                                                                      .zip,
                                                                   zipPlus4: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                           (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                               ''))
                                                                       ?.address
-                                                                      ?.zipPlus4,
+                                                                      .zipPlus4,
                                                                 ),
                                                                 squareFootage: functions.parseSquareFootage(PropertyDataByZIPIDStruct.maybeFromMap((_model
                                                                             .searchPropertyByZipIdCopy
@@ -971,15 +967,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                         (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                             ''))
                                                                     ?.address
-                                                                    ?.city,
+                                                                    .city,
                                                                 state: PropertyDataByZIPIDStruct.maybeFromMap(
                                                                         (_model.searchPropertyByZipIdCopy?.jsonBody ??
                                                                             ''))
                                                                     ?.address
-                                                                    ?.state,
+                                                                    .state,
                                                               );
 
-                                                              _shouldSetState =
+                                                              shouldSetState =
                                                                   true;
                                                               if ((_model
                                                                       .searchPropertyByZipIdCopy
@@ -1117,7 +1113,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                         filterFields) async {
                                                       if (!(filteredItems !=
                                                               null &&
-                                                          (filteredItems)!
+                                                          (filteredItems)
                                                               .isNotEmpty)) {
                                                         await showDialog(
                                                           context: context,
@@ -1175,7 +1171,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                         );
                                                       } else {
                                                         _model.filteredResults =
-                                                            filteredItems!
+                                                            filteredItems
                                                                 .toList()
                                                                 .cast<
                                                                     PropertyDataClassStruct>();
@@ -1270,14 +1266,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                       .initialResults
                                                       .firstOrNull
                                                       ?.address
-                                                      ?.city,
+                                                      .city,
                                                   'City',
                                                 )}, ${valueOrDefault<String>(
                                                   _model
                                                       .initialResults
                                                       .firstOrNull
                                                       ?.address
-                                                      ?.state,
+                                                      .state,
                                                   'State',
                                                 )}',
                                                 style:
@@ -1647,7 +1643,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                             if (_model.isMapView) {
                                               return Stack(
                                                 children: [
-                                                  Container(
+                                                  SizedBox(
                                                     width: double.infinity,
                                                     height: double.infinity,
                                                     child: custom_widgets
@@ -1699,11 +1695,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                           : _model
                                                               .initialResults,
                                                       initialProperty: _model
-                                                                  .selectedProperty !=
-                                                              null
-                                                          ? _model
-                                                              .selectedProperty
-                                                          : null,
+                                                          .selectedProperty,
                                                       onCardTap:
                                                           (property) async {
                                                         if (!FFAppState()
@@ -1759,13 +1751,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                       currentUserUid,
                                                                   inputField: functions
                                                                       .formatAddressFromModel(
-                                                                          property!
+                                                                          property
                                                                               .address,
                                                                           ''),
                                                                   status: true,
                                                                   propertyJson:
                                                                       property
-                                                                          ?.toMap(),
+                                                                          .toMap(),
                                                                 );
 
                                                                 if ((_model
@@ -1781,7 +1773,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                       'propertyId':
                                                                           serializeParam(
                                                                         property
-                                                                            ?.id,
+                                                                            .id,
                                                                         ParamType
                                                                             .String,
                                                                       ),
@@ -1826,7 +1818,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                     'propertyId':
                                                                         serializeParam(
                                                                       property
-                                                                          ?.id,
+                                                                          .id,
                                                                       ParamType
                                                                           .String,
                                                                     ),
@@ -1854,7 +1846,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                 status: true,
                                                                 propertyJson:
                                                                     property
-                                                                        ?.toMap(),
+                                                                        .toMap(),
                                                               );
 
                                                               if ((_model
@@ -1870,7 +1862,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                     'propertyId':
                                                                         serializeParam(
                                                                       property
-                                                                          ?.id,
+                                                                          .id,
                                                                       ParamType
                                                                           .String,
                                                                     ),
@@ -1998,7 +1990,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                 Colors
                                                                     .transparent,
                                                             onTap: () async {
-                                                              var _shouldSetState =
+                                                              var shouldSetState =
                                                                   false;
                                                               if (!FFAppState()
                                                                   .isNavigating) {
@@ -2015,7 +2007,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                       currentUserUid,
                                                                 );
 
-                                                                _shouldSetState =
+                                                                shouldSetState =
                                                                     true;
                                                                 if ((_model
                                                                         .getSavedSearches1
@@ -2037,7 +2029,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                           )!
                                                                           .toList(),
                                                                     );
-                                                                    _shouldSetState =
+                                                                    shouldSetState =
                                                                         true;
                                                                     if (!functions.hasPropertyId(
                                                                         _model
@@ -2059,16 +2051,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                             listInitialPropertiesItem.toMap(),
                                                                       );
 
-                                                                      _shouldSetState =
+                                                                      shouldSetState =
                                                                           true;
                                                                       if ((_model
                                                                               .insertSavedSearch2
                                                                               ?.succeeded ??
                                                                           true)) {
                                                                         if (listInitialPropertiesItem.id !=
-                                                                                null &&
-                                                                            listInitialPropertiesItem.id !=
-                                                                                '') {
+                                                                            '') {
                                                                           context
                                                                               .pushNamed(
                                                                             PropertyDetailsPageWidget.routeName,
@@ -2085,8 +2075,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                             }.withoutNulls,
                                                                           );
                                                                         } else {
-                                                                          if (_shouldSetState)
+                                                                          if (shouldSetState) {
                                                                             safeSetState(() {});
+                                                                          }
                                                                           return;
                                                                         }
                                                                       } else {
@@ -2108,10 +2099,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                         );
                                                                       }
                                                                     } else {
-                                                                      if (listInitialPropertiesItem.id !=
-                                                                              null &&
-                                                                          listInitialPropertiesItem.id !=
-                                                                              '') {
+                                                                      if (listInitialPropertiesItem
+                                                                              .id !=
+                                                                          '') {
                                                                         context
                                                                             .pushNamed(
                                                                           PropertyDetailsPageWidget
@@ -2131,9 +2121,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                           }.withoutNulls,
                                                                         );
                                                                       } else {
-                                                                        if (_shouldSetState)
+                                                                        if (shouldSetState) {
                                                                           safeSetState(
                                                                               () {});
+                                                                        }
                                                                         return;
                                                                       }
                                                                     }
@@ -2155,16 +2146,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                               .toMap(),
                                                                     );
 
-                                                                    _shouldSetState =
+                                                                    shouldSetState =
                                                                         true;
                                                                     if ((_model
                                                                             .insertSavedSearch3
                                                                             ?.succeeded ??
                                                                         true)) {
-                                                                      if (listInitialPropertiesItem.id !=
-                                                                              null &&
-                                                                          listInitialPropertiesItem.id !=
-                                                                              '') {
+                                                                      if (listInitialPropertiesItem
+                                                                              .id !=
+                                                                          '') {
                                                                         context
                                                                             .pushNamed(
                                                                           PropertyDetailsPageWidget
@@ -2184,9 +2174,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                           }.withoutNulls,
                                                                         );
                                                                       } else {
-                                                                        if (_shouldSetState)
+                                                                        if (shouldSetState) {
                                                                           safeSetState(
                                                                               () {});
+                                                                        }
                                                                         return;
                                                                       }
                                                                     } else {
@@ -2234,9 +2225,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                                   );
                                                                 }
                                                               }
-                                                              if (_shouldSetState)
+                                                              if (shouldSetState) {
                                                                 safeSetState(
                                                                     () {});
+                                                              }
                                                             },
                                                             child:
                                                                 wrapWithModel(
@@ -2325,7 +2317,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                                                 SearchPageWidget.routeName,
                                                 queryParameters: {
                                                   'userType': serializeParam(
-                                                    widget!.userType,
+                                                    widget.userType,
                                                     ParamType.Enum,
                                                   ),
                                                 }.withoutNulls,
@@ -2347,7 +2339,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                 ),
                 Builder(
                   builder: (context) {
-                    if (widget!.userType == UserType.Buyer) {
+                    if (widget.userType == UserType.Buyer) {
                       return wrapWithModel(
                         model: _model.buyerBottomNavbarModel,
                         updateCallback: () => safeSetState(() {}),
@@ -2355,7 +2347,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget>
                           activeNav: BuyerNavbar.Search,
                         ),
                       );
-                    } else if (widget!.userType == UserType.Agent) {
+                    } else if (widget.userType == UserType.Agent) {
                       return wrapWithModel(
                         model: _model.agentBottomNavbarModel,
                         updateCallback: () => safeSetState(() {}),

@@ -7,12 +7,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/pages/profile_page/document_upload/document_upload_widget.dart';
-import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'verification_sheet_model.dart';
 export 'verification_sheet_model.dart';
 
@@ -427,10 +423,10 @@ class _VerificationSheetWidgetState extends State<VerificationSheetWidget> {
                                 Builder(
                                   builder: (context) {
                                     if ((currentUserDocument
-                                                    ?.userIDCard?.front !=
+                                                    ?.userIDCard.front !=
                                                 null &&
                                             currentUserDocument
-                                                    ?.userIDCard?.front !=
+                                                    ?.userIDCard.front !=
                                                 '') &&
                                         !_model.isFrontLoading) {
                                       return Padding(
@@ -596,10 +592,10 @@ class _VerificationSheetWidgetState extends State<VerificationSheetWidget> {
                                 Builder(
                                   builder: (context) {
                                     if ((currentUserDocument
-                                                    ?.userIDCard?.back !=
+                                                    ?.userIDCard.back !=
                                                 null &&
                                             currentUserDocument
-                                                    ?.userIDCard?.back !=
+                                                    ?.userIDCard.back !=
                                                 '') &&
                                         !_model.isBackLoading) {
                                       return Padding(

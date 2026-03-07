@@ -10,14 +10,12 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:aligned_tooltip/aligned_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'onboarding_form_model.dart';
 export 'onboarding_form_model.dart';
@@ -51,7 +49,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (!widget!.isNewUser!) {
+      if (!widget.isNewUser!) {
         showDialog(
           barrierDismissible: false,
           context: context,
@@ -76,7 +74,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
         );
 
         _model.apiResult64z = await IwoAgentClientGroup.getAgentByIdCall.call(
-          agentId: widget!.agentId,
+          agentId: widget.agentId,
         );
 
         if ((_model.apiResult64z?.succeeded ?? true)) {
@@ -86,7 +84,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                     .map<CredentialsStruct?>(CredentialsStruct.maybeFromMap)
                     .toList() as Iterable<CredentialsStruct?>)
                 .withoutNulls
-                ?.firstOrNull;
+                .firstOrNull;
             safeSetState(() {});
             safeSetState(() {
               _model.formNameAddressTextController?.text =
@@ -243,7 +241,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
         child: Scaffold(
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-          appBar: !widget!.isNewUser!
+          appBar: !widget.isNewUser!
               ? AppBar(
                   backgroundColor:
                       FlutterFlowTheme.of(context).primaryBackground,
@@ -283,7 +281,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (widget!.isNewUser ?? true)
+                    if (widget.isNewUser ?? true)
                       Container(
                         width: double.infinity,
                         height: 140.0,
@@ -323,7 +321,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (widget!.isNewUser ?? true)
+                                if (widget.isNewUser ?? true)
                                   Text(
                                     'Onboarding',
                                     style: FlutterFlowTheme.of(context)
@@ -338,7 +336,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                                   .headlineLargeIsCustom,
                                         ),
                                   ),
-                                if (widget!.isNewUser ?? true)
+                                if (widget.isNewUser ?? true)
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 24.0),
@@ -404,7 +402,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -519,7 +517,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -632,7 +630,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -746,7 +744,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -862,7 +860,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1019,7 +1017,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1133,7 +1131,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1309,7 +1307,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1422,7 +1420,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1536,7 +1534,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1712,7 +1710,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1825,7 +1823,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -1939,7 +1937,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -2237,7 +2235,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -2351,7 +2349,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
                                                 child: TextFormField(
                                                   controller: _model
@@ -2500,7 +2498,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                                         .validate()) {
                                                   return;
                                                 }
-                                                if (widget!.isNewUser! ||
+                                                if (widget.isNewUser! ||
                                                     _model.isNewOnboarding) {
                                                   _model.credentials =
                                                       CredentialsStruct(
@@ -2542,7 +2540,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                                         currentUserDisplayName,
                                                     email: currentUserEmail,
                                                     referredByAgentID:
-                                                        widget!.agentId,
+                                                        widget.agentId,
                                                     brokerage:
                                                         BrokerageCredentialsDataStruct(
                                                       name: _model
@@ -2655,7 +2653,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
                                                 if ((_model.apiCredentials
                                                         ?.succeeded ??
                                                     true)) {
-                                                  if (widget!.isNewUser!) {
+                                                  if (widget.isNewUser!) {
                                                     context.pushNamed(
                                                         FlowChooserPageWidget
                                                             .routeName);

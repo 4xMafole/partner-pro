@@ -5,7 +5,6 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/backend/stripe/payment_manager.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_radio_button.dart';
@@ -14,20 +13,16 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/seller/property/congrats_sheet/congrats_sheet_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:aligned_tooltip/aligned_tooltip.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_debounce.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'offer_process_model.dart';
@@ -84,85 +79,83 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                 : functions.offerClosingDate(getCurrentTimestamp))
             .toString();
       });
-      if (FFAppState().currentOfferDraft != null) {
-        safeSetState(() {
-          _model.firstBuyersNameTextController?.text = functions.getNamePart(
-              FFAppState().currentOfferDraft.parties.buyer.name, true);
+      safeSetState(() {
+        _model.firstBuyersNameTextController?.text = functions.getNamePart(
+            FFAppState().currentOfferDraft.parties.buyer.name, true);
+      });
+      safeSetState(() {
+        _model.lastBuyersNameTextController?.text = functions.getNamePart(
+            FFAppState().currentOfferDraft.parties.buyer.name, false);
+      });
+      safeSetState(() {
+        _model.buyersPhoneTextController?.text =
+            FFAppState().currentOfferDraft.parties.buyer.phoneNumber;
+        _model.buyersPhoneMask.updateMask(
+          newValue: TextEditingValue(
+            text: _model.buyersPhoneTextController!.text,
+          ),
+        );
+      });
+      safeSetState(() {
+        _model.buyersEmailTextController?.text =
+            FFAppState().currentOfferDraft.parties.buyer.email;
+      });
+      safeSetState(() {
+        _model.secondBuyerNameTextController?.text = functions.getNamePart(
+            FFAppState().currentOfferDraft.parties.secondBuyer.name, true);
+      });
+      safeSetState(() {
+        _model.secondBuyerLastNameTextController?.text =
+            functions.getNamePart(
+                FFAppState().currentOfferDraft.parties.secondBuyer.name,
+                false);
+      });
+      safeSetState(() {
+        _model.secondBuyerPhoneTextController?.text =
+            FFAppState().currentOfferDraft.parties.secondBuyer.phoneNumber;
+        _model.secondBuyerPhoneMask.updateMask(
+          newValue: TextEditingValue(
+            text: _model.secondBuyerPhoneTextController!.text,
+          ),
+        );
+      });
+      safeSetState(() {
+        _model.secondBuyerEmailTextController?.text =
+            FFAppState().currentOfferDraft.parties.secondBuyer.email;
+      });
+      safeSetState(() {
+        _model.titileCompanyNameTextController?.text =
+            FFAppState().currentOfferDraft.titleCompany.companyName;
+      });
+      _model.purchasePrice =
+          FFAppState().currentOfferDraft.pricing.purchasePrice.toString();
+      _model.downPaymentAmount = FFAppState()
+          .currentOfferDraft
+          .financials
+          .downPaymentAmount
+          .toDouble();
+      _model.depositAmount =
+          FFAppState().currentOfferDraft.financials.depositAmount.toDouble();
+      _model.downPaymentType =
+          FFAppState().currentOfferDraft.financials.loanType;
+      _model.creditRequest =
+          FFAppState().currentOfferDraft.financials.creditRequest.toString();
+      _model.additionalEarnest = FFAppState()
+          .currentOfferDraft
+          .financials
+          .additionalEarnest
+          .toString();
+      _model.optionFee =
+          FFAppState().currentOfferDraft.financials.optionFee.toString();
+      _model.coverageAmount =
+          FFAppState().currentOfferDraft.financials.coverageAmount.toString();
+      _model.downPaymentTypePercentage = (String type) {
+        return type.substring(type.lastIndexOf(' ') + 1).replaceAll('%', '');
+      }(FFAppState().currentOfferDraft.financials.loanType);
+      _model.hasSecondBuyer =
+          FFAppState().currentOfferDraft.parties.secondBuyer != null;
+      safeSetState(() {});
         });
-        safeSetState(() {
-          _model.lastBuyersNameTextController?.text = functions.getNamePart(
-              FFAppState().currentOfferDraft.parties.buyer.name, false);
-        });
-        safeSetState(() {
-          _model.buyersPhoneTextController?.text =
-              FFAppState().currentOfferDraft.parties.buyer.phoneNumber;
-          _model.buyersPhoneMask.updateMask(
-            newValue: TextEditingValue(
-              text: _model.buyersPhoneTextController!.text,
-            ),
-          );
-        });
-        safeSetState(() {
-          _model.buyersEmailTextController?.text =
-              FFAppState().currentOfferDraft.parties.buyer.email;
-        });
-        safeSetState(() {
-          _model.secondBuyerNameTextController?.text = functions.getNamePart(
-              FFAppState().currentOfferDraft.parties.secondBuyer.name, true);
-        });
-        safeSetState(() {
-          _model.secondBuyerLastNameTextController?.text =
-              functions.getNamePart(
-                  FFAppState().currentOfferDraft.parties.secondBuyer.name,
-                  false);
-        });
-        safeSetState(() {
-          _model.secondBuyerPhoneTextController?.text =
-              FFAppState().currentOfferDraft.parties.secondBuyer.phoneNumber;
-          _model.secondBuyerPhoneMask.updateMask(
-            newValue: TextEditingValue(
-              text: _model.secondBuyerPhoneTextController!.text,
-            ),
-          );
-        });
-        safeSetState(() {
-          _model.secondBuyerEmailTextController?.text =
-              FFAppState().currentOfferDraft.parties.secondBuyer.email;
-        });
-        safeSetState(() {
-          _model.titileCompanyNameTextController?.text =
-              FFAppState().currentOfferDraft.titleCompany.companyName;
-        });
-        _model.purchasePrice =
-            FFAppState().currentOfferDraft.pricing.purchasePrice.toString();
-        _model.downPaymentAmount = FFAppState()
-            .currentOfferDraft
-            .financials
-            .downPaymentAmount
-            .toDouble();
-        _model.depositAmount =
-            FFAppState().currentOfferDraft.financials.depositAmount.toDouble();
-        _model.downPaymentType =
-            FFAppState().currentOfferDraft.financials.loanType;
-        _model.creditRequest =
-            FFAppState().currentOfferDraft.financials.creditRequest.toString();
-        _model.additionalEarnest = FFAppState()
-            .currentOfferDraft
-            .financials
-            .additionalEarnest
-            .toString();
-        _model.optionFee =
-            FFAppState().currentOfferDraft.financials.optionFee.toString();
-        _model.coverageAmount =
-            FFAppState().currentOfferDraft.financials.coverageAmount.toString();
-        _model.downPaymentTypePercentage = (String type) {
-          return type.substring(type.lastIndexOf(' ') + 1).replaceAll('%', '');
-        }(FFAppState().currentOfferDraft.financials.loanType);
-        _model.hasSecondBuyer =
-            FFAppState().currentOfferDraft.parties.secondBuyer != null;
-        safeSetState(() {});
-      }
-    });
 
     _model.firstBuyersNameTextController ??= TextEditingController();
     _model.firstBuyersNameFocusNode ??= FocusNode();
@@ -661,7 +654,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                   0.0, 0.0, 0.0, 12.0),
                                           child: Text(
                                             functions.formatAddressFromModel(
-                                                widget!.property!.address, ''),
+                                                widget.property!.address, ''),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyLarge
                                                 .override(
@@ -1921,7 +1914,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         Text(
                                           valueOrDefault<String>(
                                             formatNumber(
-                                              widget!.iwriteEstimate,
+                                              widget.iwriteEstimate,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -2015,7 +2008,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             ),
                                           ],
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           height: 50.0,
                                           child: custom_widgets
@@ -2043,8 +2036,6 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     double.parse(price));
                                               }(
                                                   (_model.downPaymentTypePercentage !=
-                                                              null &&
-                                                          _model.downPaymentTypePercentage !=
                                                               ''
                                                       ? _model
                                                           .downPaymentTypePercentage
@@ -2074,8 +2065,6 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                             .toInt();
                                                       }(
                                                           (_model.downPaymentTypePercentage !=
-                                                                      null &&
-                                                                  _model.downPaymentTypePercentage !=
                                                                       ''
                                                               ? _model
                                                                   .downPaymentTypePercentage
@@ -2185,7 +2174,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         padding: MediaQuery
                                                             .viewInsetsOf(
                                                                 context),
-                                                        child: Container(
+                                                        child: SizedBox(
                                                           height:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -2572,7 +2561,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             ),
                                           ],
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           height: 50.0,
                                           child: custom_widgets
@@ -2949,7 +2938,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             ),
                                           ],
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           height: 50.0,
                                           child: custom_widgets
@@ -3023,7 +3012,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             ),
                                           ],
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           height: 50.0,
                                           child: custom_widgets
@@ -3149,7 +3138,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             ),
                                           ],
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           height: 50.0,
                                           child: custom_widgets
@@ -3459,7 +3448,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  final _datePickedDate =
+                                                  final datePickedDate =
                                                       await showDatePicker(
                                                     context: context,
                                                     initialDate: (functions
@@ -3527,13 +3516,13 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     },
                                                   );
 
-                                                  if (_datePickedDate != null) {
+                                                  if (datePickedDate != null) {
                                                     safeSetState(() {
                                                       _model.datePicked =
                                                           DateTime(
-                                                        _datePickedDate.year,
-                                                        _datePickedDate.month,
-                                                        _datePickedDate.day,
+                                                        datePickedDate.year,
+                                                        datePickedDate.month,
+                                                        datePickedDate.day,
                                                       );
                                                     });
                                                   } else if (_model
@@ -3739,13 +3728,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         .propertyConditionRadioButtonValueController ??=
                                                     FormFieldController<
                                                         String>(FFAppState()
-                                                                .currentOfferDraft !=
-                                                            null
-                                                        ? FFAppState()
-                                                            .currentOfferDraft
-                                                            .conditions
-                                                            .propertyCondition
-                                                        : null!),
+                                                            .currentOfferDraft.conditions
+                                                            .propertyCondition),
                                                 optionHeight: 32.0,
                                                 textStyle:
                                                     FlutterFlowTheme.of(context)
@@ -4276,7 +4260,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          Container(
+                                          SizedBox(
                                             width: double.infinity,
                                             height: 50.0,
                                             child: custom_widgets
@@ -4671,13 +4655,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                           .choiceRadioButtonValueController ??=
                                                       FormFieldController<
                                                           String>(FFAppState()
-                                                                  .currentOfferDraft !=
-                                                              null
-                                                          ? FFAppState()
-                                                              .currentOfferDraft
-                                                              .titleCompany
-                                                              .choice
-                                                          : null!),
+                                                              .currentOfferDraft.titleCompany
+                                                              .choice),
                                                   optionHeight: 32.0,
                                                   textStyle:
                                                       FlutterFlowTheme.of(
@@ -4753,7 +4732,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                   queryBuilder: (offerPaymentsRecord) =>
                       offerPaymentsRecord.where(
                     'propertyID',
-                    isEqualTo: widget!.property?.id,
+                    isEqualTo: widget.property?.id,
                   ),
                   singleRecord: true,
                 ),
@@ -4789,7 +4768,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                               return Builder(
                                 builder: (context) => FFButtonWidget(
                                   onPressed: () async {
-                                    var _shouldSetState = false;
+                                    var shouldSetState = false;
                                     if (_model.formKey.currentState == null ||
                                         !_model.formKey.currentState!
                                             .validate()) {
@@ -4868,8 +4847,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                     }
                                     if ((_model.purchasePrice != null &&
                                             _model.purchasePrice != '') &&
-                                        (_model.downPaymentType != null &&
-                                            _model.downPaymentType != '') &&
+                                        (_model.downPaymentType != '') &&
                                         ((_model.depositAmount != null) &&
                                             (_model.depositAmount != 0.0)) &&
                                         (_model.depositDropDownValue != null &&
@@ -4885,16 +4863,16 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         (_model.surveyRadioValue != null &&
                                             _model.surveyRadioValue != '') &&
                                         (_model.closingDate != null)) {
-                                      if (!(widget!.offerId == null ||
-                                          widget!.offerId == '')) {
+                                      if (!(widget.offerId == null ||
+                                          widget.offerId == '')) {
                                         _model.hasOfferChanged =
-                                            await actions.compareOffers(
+                                            actions.compareOffers(
                                           FFAppState()
                                               .currentOfferDraft
                                               .toMap(),
                                           FFAppState().tempOfferCompare.toMap(),
                                         );
-                                        _shouldSetState = true;
+                                        shouldSetState = true;
                                         if (!_model.hasOfferChanged!) {
                                           await showDialog(
                                             context: context,
@@ -4926,8 +4904,9 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             },
                                           );
 
-                                          if (_shouldSetState)
+                                          if (shouldSetState) {
                                             safeSetState(() {});
+                                          }
                                           return;
                                         }
                                       }
@@ -4939,7 +4918,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             _model.closingDate?.toString(),
                                         pricing: PricingStruct(
                                           listPrice:
-                                              widget!.property?.listPrice,
+                                              widget.property?.listPrice,
                                           purchasePrice: double.parse(
                                                   (_model.purchasePrice!))
                                               .toInt(),
@@ -4952,15 +4931,15 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 .buyersPhoneTextController.text,
                                             email: _model
                                                 .buyersEmailTextController.text,
-                                            id: widget!.member != null
-                                                ? widget!.member?.clientID
+                                            id: widget.member != null
+                                                ? widget.member?.clientID
                                                 : currentUserUid,
                                           ),
                                           seller: SellerStruct(
-                                            name: widget!.property?.agentName,
-                                            phoneNumber: widget!
+                                            name: widget.property?.agentName,
+                                            phoneNumber: widget
                                                 .property?.agentPhoneNumber,
-                                            email: widget!.property?.agentEmail,
+                                            email: widget.property?.agentEmail,
                                           ),
                                         ),
                                         financials: FinancialsStruct(
@@ -4971,9 +4950,9 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                   ?.toString()),
                                           loanAmount: functions.doubleToInt(
                                               (double.parse((_model
-                                                          .purchasePrice!)!) -
+                                                          .purchasePrice!)) -
                                                       (_model
-                                                          .downPaymentAmount!)!)
+                                                          .downPaymentAmount!))
                                                   .toString()),
                                           creditRequest: _model.creditRequest !=
                                                       null &&
@@ -5040,9 +5019,6 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         titleCompany:
                                             _model.titileCompanyNameTextController
                                                             .text !=
-                                                        null &&
-                                                    _model.titileCompanyNameTextController
-                                                            .text !=
                                                         ''
                                                 ? NewTitleCompanyStruct(
                                                     companyName: _model
@@ -5052,7 +5028,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         .choiceRadioButtonValue,
                                                   )
                                                 : null,
-                                        property: widget!.property,
+                                        property: widget.property,
                                         documents: FFAppState()
                                             .currentOfferDraft
                                             .documents,
@@ -5063,7 +5039,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         to: 'transactioncoordinator@iwriteoffers.net',
                                         cc: 'transactioncoordinator@iwriteoffers.net',
                                         subject:
-                                            'New Offer | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                            'New Offer | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                         contentType: 'text/html',
                                         body: 'New Offer has been submitted',
                                       );
@@ -5118,18 +5094,18 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                           ),
                                           singleRecord: true,
                                         ).then((s) => s.firstOrNull);
-                                        _shouldSetState = true;
+                                        shouldSetState = true;
                                         _model.agentDoc0 =
                                             await queryUsersRecordOnce(
                                           queryBuilder: (usersRecord) =>
                                               usersRecord.where(
                                             'uid',
                                             isEqualTo: _model.clientRelationDoc0
-                                                ?.relationship?.agentUid,
+                                                ?.relationship.agentUid,
                                           ),
                                           singleRecord: true,
                                         ).then((s) => s.firstOrNull);
-                                        _shouldSetState = true;
+                                        shouldSetState = true;
                                         if (_model.agentDoc0!.hasAutoApproved) {
                                           _model.updateNewOfferDataStruct(
                                             (e) => e
@@ -5151,8 +5127,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         }
                                       }
 
-                                      if (widget!.offerId == null ||
-                                          widget!.offerId == '') {
+                                      if (widget.offerId == null ||
+                                          widget.offerId == '') {
                                         _model.offerCreated =
                                             await IwoOffersGroup.insertOfferCall
                                                 .call(
@@ -5161,7 +5137,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                               _model.newOfferData?.toMap(),
                                         );
 
-                                        _shouldSetState = true;
+                                        shouldSetState = true;
                                         if ((_model.offerCreated?.succeeded ??
                                             true)) {
                                           if (currentUserDocument?.role ==
@@ -5176,7 +5152,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             _model.agentDoc =
                                                 await queryUsersRecordOnce(
                                               queryBuilder: (usersRecord) =>
@@ -5185,11 +5161,11 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 isEqualTo: _model
                                                     .clientRelationDoc
                                                     ?.relationship
-                                                    ?.agentUid,
+                                                    .agentUid,
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             triggerPushNotification(
                                               notificationTitle:
                                                   'Offer submitted for ${formatNumber(
@@ -5202,12 +5178,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 currency: '\$',
                                               )}',
                                               notificationText:
-                                                  '${currentUserDisplayName} has placed an offer for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                  '$currentUserDisplayName has placed an offer for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                               notificationImageUrl: functions
-                                                  .stringToImagePath(widget!
+                                                  .stringToImagePath(widget
                                                       .property
                                                       ?.media
-                                                      ?.firstOrNull),
+                                                      .firstOrNull),
                                               notificationSound: 'default',
                                               userRefs: [
                                                 _model.agentDoc!.reference
@@ -5234,7 +5210,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     currency: '\$',
                                                   )}',
                                                   notificationBody:
-                                                      '${currentUserDisplayName} has placed an offer for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                      '$currentUserDisplayName has placed an offer for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                   createdTime:
                                                       getCurrentTimestamp,
                                                   isRead: false,
@@ -5242,7 +5218,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             if (_model
                                                 .agentDoc!.hasAcceptedSMS) {
                                               _model.creationBuyerToAgent =
-                                                  await actions
+                                                  actions
                                                       .generateOfferEmailNotification(
                                                 EmailType.creationBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
@@ -5250,14 +5226,14 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 FFAppState().appLogo,
                                                 'partnerpro://app.page/agentOffers',
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.creationBuyerToAgentSMS =
-                                                  await actions
+                                                  actions
                                                       .generateOfferSMSContent(
                                                 EmailType.creationBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateSmsProviderStruct(
                                                 (e) => e
                                                   ..recipient = functions
@@ -5273,7 +5249,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 to: _model.agentDoc?.email,
                                                 cc: _model.agentDoc?.email,
                                                 subject:
-                                                    'New Offer | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                    'New Offer | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                 contentType: 'text/html',
                                                 body:
                                                     _model.creationBuyerToAgent,
@@ -5288,7 +5264,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     ?.toMap(),
                                               );
 
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               if ((_model.postEmail13j12
                                                       ?.succeeded ??
                                                   true)) {
@@ -5307,7 +5283,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         ?.toMap(),
                                                   );
 
-                                                  _shouldSetState = true;
+                                                  shouldSetState = true;
                                                   if (!(_model.postSms13j12
                                                           ?.succeeded ??
                                                       true)) {
@@ -5372,12 +5348,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                             isEqualTo: _model
                                                                 .newOfferData
                                                                 ?.parties
-                                                                ?.buyer
-                                                                ?.id,
+                                                                .buyer
+                                                                .id,
                                                           ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             _model.clientDoc =
                                                 await queryUsersRecordOnce(
                                               queryBuilder: (usersRecord) =>
@@ -5386,11 +5362,11 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 isEqualTo: _model
                                                     .agentRelationDoc
                                                     ?.relationship
-                                                    ?.subjectUid,
+                                                    .subjectUid,
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             triggerPushNotification(
                                               notificationTitle:
                                                   'Offer submitted for ${formatNumber(
@@ -5403,12 +5379,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 currency: '\$',
                                               )}',
                                               notificationText:
-                                                  '${currentUserDisplayName} has placed an offer  on your behalf for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                  '$currentUserDisplayName has placed an offer  on your behalf for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                               notificationImageUrl: functions
-                                                  .stringToImagePath(widget!
+                                                  .stringToImagePath(widget
                                                       .property
                                                       ?.media
-                                                      ?.firstOrNull),
+                                                      .firstOrNull),
                                               notificationSound: 'default',
                                               userRefs: [
                                                 _model.clientDoc!.reference
@@ -5435,7 +5411,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     currency: '\$',
                                                   )}',
                                                   notificationBody:
-                                                      '${currentUserDisplayName} has placed an offer  on your behalf for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                      '$currentUserDisplayName has placed an offer  on your behalf for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                   createdTime:
                                                       getCurrentTimestamp,
                                                   isRead: false,
@@ -5443,7 +5419,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             if (_model
                                                 .clientDoc!.hasAcceptedSMS) {
                                               _model.creationAgentToBuyer =
-                                                  await actions
+                                                  actions
                                                       .generateOfferEmailNotification(
                                                 EmailType.creationAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
@@ -5451,14 +5427,14 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 FFAppState().appLogo,
                                                 'partnerpro://app.page/myHomesPage',
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.creationAgentToBuyerSMS =
-                                                  await actions
+                                                  actions
                                                       .generateOfferSMSContent(
                                                 EmailType.creationAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateSmsProviderStruct(
                                                 (e) => e
                                                   ..recipient = functions
@@ -5474,7 +5450,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 to: _model.clientDoc?.email,
                                                 cc: _model.clientDoc?.email,
                                                 subject:
-                                                    'New Offer on Your Behalf | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                    'New Offer on Your Behalf | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                 contentType: 'text/html',
                                                 body:
                                                     _model.creationAgentToBuyer,
@@ -5489,7 +5465,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     ?.toMap(),
                                               );
 
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               if ((_model.apiResulte4h
                                                       ?.succeeded ??
                                                   true)) {
@@ -5508,7 +5484,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         ?.toMap(),
                                                   );
 
-                                                  _shouldSetState = true;
+                                                  shouldSetState = true;
                                                   if (!(_model.postSms13j134
                                                           ?.succeeded ??
                                                       true)) {
@@ -5558,7 +5534,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             }
                                           }
 
-                                          _model.creationToTC = await actions
+                                          _model.creationToTC = actions
                                               .generateOfferEmailNotification(
                                             EmailType.creationToTc,
                                             _model.newOfferData!.toMap(),
@@ -5566,14 +5542,14 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             FFAppState().appLogo,
                                             FFAppState().tcDeskURL,
                                           );
-                                          _shouldSetState = true;
+                                          shouldSetState = true;
                                           _model.emailProvider =
                                               EmailProviderStruct(
                                             from: FFAppState().fromEmail,
                                             to: 'transactioncoordinator@iwriteoffers.net',
                                             cc: 'transactioncoordinator@iwriteoffers.net',
                                             subject:
-                                                'New PartnerPro Offer | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                'New PartnerPro Offer | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                             contentType: 'text/html',
                                             body: _model.creationToTC,
                                           );
@@ -5586,7 +5562,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 _model.emailProvider?.toMap(),
                                           );
 
-                                          _shouldSetState = true;
+                                          shouldSetState = true;
                                           if (!(_model
                                                   .postEmail13j?.succeeded ??
                                               true)) {
@@ -5681,12 +5657,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             await IwoPatchesAPIGroup
                                                 .updateOfferByIdCall
                                                 .call(
-                                          id: widget!.offerId,
+                                          id: widget.offerId,
                                           dataJson:
                                               _model.newOfferData?.toMap(),
                                         );
 
-                                        _shouldSetState = true;
+                                        shouldSetState = true;
                                         if ((_model.revisedOffer?.succeeded ??
                                             true)) {
                                           if (currentUserDocument?.role ==
@@ -5701,7 +5677,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             _model.agentDoc1 =
                                                 await queryUsersRecordOnce(
                                               queryBuilder: (usersRecord) =>
@@ -5710,11 +5686,11 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 isEqualTo: _model
                                                     .clientRelationDoc1
                                                     ?.relationship
-                                                    ?.agentUid,
+                                                    .agentUid,
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             triggerPushNotification(
                                               notificationTitle:
                                                   'Offer revised for ${formatNumber(
@@ -5727,12 +5703,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 currency: '\$',
                                               )}',
                                               notificationText:
-                                                  '${currentUserDisplayName} has revised an offer for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                  '$currentUserDisplayName has revised an offer for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                               notificationImageUrl: functions
-                                                  .stringToImagePath(widget!
+                                                  .stringToImagePath(widget
                                                       .property
                                                       ?.media
-                                                      ?.firstOrNull),
+                                                      .firstOrNull),
                                               notificationSound: 'default',
                                               userRefs: [
                                                 _model.agentDoc1!.reference
@@ -5759,7 +5735,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     currency: '\$',
                                                   )}',
                                                   notificationBody:
-                                                      '${currentUserDisplayName} has revised an offer for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                      '$currentUserDisplayName has revised an offer for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                   createdTime:
                                                       getCurrentTimestamp,
                                                   isRead: false,
@@ -5767,22 +5743,22 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             if (_model
                                                 .agentDoc1!.hasAcceptedSMS) {
                                               _model.updateBuyerToAgent =
-                                                  await actions
+                                                  actions
                                                       .generateOfferEmailNotification(
                                                 EmailType.updateBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
-                                                widget!.oldOffer?.toMap(),
+                                                widget.oldOffer?.toMap(),
                                                 FFAppState().appLogo,
                                                 'partnerpro://app.page/agentOffers',
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateBuyerToAgentSMS =
-                                                  await actions
+                                                  actions
                                                       .generateOfferSMSContent(
                                                 EmailType.updateBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateSmsProviderStruct(
                                                 (e) => e
                                                   ..recipient = functions
@@ -5798,7 +5774,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 to: _model.agentDoc1?.email,
                                                 cc: _model.agentDoc1?.email,
                                                 subject:
-                                                    'Revised Offer | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                    'Revised Offer | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                 contentType: 'text/html',
                                                 body: _model.updateBuyerToAgent,
                                               );
@@ -5812,7 +5788,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     ?.toMap(),
                                               );
 
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               if ((_model.postEmail13j121
                                                       ?.succeeded ??
                                                   true)) {
@@ -5831,7 +5807,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         ?.toMap(),
                                                   );
 
-                                                  _shouldSetState = true;
+                                                  shouldSetState = true;
                                                   if (!(_model.postSms13j134f4
                                                           ?.succeeded ??
                                                       true)) {
@@ -5896,12 +5872,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                             isEqualTo: _model
                                                                 .newOfferData
                                                                 ?.parties
-                                                                ?.buyer
-                                                                ?.id,
+                                                                .buyer
+                                                                .id,
                                                           ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             _model.clientDoc1 =
                                                 await queryUsersRecordOnce(
                                               queryBuilder: (usersRecord) =>
@@ -5910,11 +5886,11 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 isEqualTo: _model
                                                     .agentRelationDoc1
                                                     ?.relationship
-                                                    ?.subjectUid,
+                                                    .subjectUid,
                                               ),
                                               singleRecord: true,
                                             ).then((s) => s.firstOrNull);
-                                            _shouldSetState = true;
+                                            shouldSetState = true;
                                             triggerPushNotification(
                                               notificationTitle:
                                                   'Offer revised by Agent for ${formatNumber(
@@ -5927,12 +5903,12 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 currency: '\$',
                                               )}',
                                               notificationText:
-                                                  '${currentUserDisplayName} (Agent) has revised an offer  on your behalf for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                  '$currentUserDisplayName (Agent) has revised an offer  on your behalf for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                               notificationImageUrl: functions
-                                                  .stringToImagePath(widget!
+                                                  .stringToImagePath(widget
                                                       .property
                                                       ?.media
-                                                      ?.firstOrNull),
+                                                      .firstOrNull),
                                               notificationSound: 'default',
                                               userRefs: [
                                                 _model.clientDoc1!.reference
@@ -5959,7 +5935,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     currency: '\$',
                                                   )}',
                                                   notificationBody:
-                                                      '${currentUserDisplayName}(Agent) has revised an offer  on your behalf for ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                      '$currentUserDisplayName(Agent) has revised an offer  on your behalf for ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                   createdTime:
                                                       getCurrentTimestamp,
                                                   isRead: false,
@@ -5967,22 +5943,22 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             if (_model
                                                 .clientDoc1!.hasAcceptedSMS) {
                                               _model.updateAgentToBuyer =
-                                                  await actions
+                                                  actions
                                                       .generateOfferEmailNotification(
                                                 EmailType.updateAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
-                                                widget!.oldOffer?.toMap(),
+                                                widget.oldOffer?.toMap(),
                                                 FFAppState().appLogo,
                                                 'partnerpro://app.page/myHomesPage',
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateAgentToBuyerSMS =
-                                                  await actions
+                                                  actions
                                                       .generateOfferSMSContent(
                                                 EmailType.updateAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
                                               );
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               _model.updateSmsProviderStruct(
                                                 (e) => e
                                                   ..recipient = functions
@@ -5998,7 +5974,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 to: _model.clientDoc1?.email,
                                                 cc: _model.clientDoc1?.email,
                                                 subject:
-                                                    'Revised Offer on Your Behalf | ${functions.formatAddressFromModel(widget!.property!.address, '')}',
+                                                    'Revised Offer on Your Behalf | ${functions.formatAddressFromModel(widget.property!.address, '')}',
                                                 contentType: 'text/html',
                                                 body: _model.updateAgentToBuyer,
                                               );
@@ -6012,7 +5988,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     ?.toMap(),
                                               );
 
-                                              _shouldSetState = true;
+                                              shouldSetState = true;
                                               if ((_model.apiResulte4h1
                                                       ?.succeeded ??
                                                   true)) {
@@ -6031,7 +6007,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                         ?.toMap(),
                                                   );
 
-                                                  _shouldSetState = true;
+                                                  shouldSetState = true;
                                                   if (!(_model
                                                           .postSms13j134f4n43kj
                                                           ?.succeeded ??
@@ -6083,22 +6059,22 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                             }
                                           }
 
-                                          _model.updateToTC = await actions
+                                          _model.updateToTC = actions
                                               .generateOfferEmailNotification(
                                             EmailType.updateToTc,
                                             _model.newOfferData!.toMap(),
-                                            widget!.oldOffer?.toMap(),
+                                            widget.oldOffer?.toMap(),
                                             FFAppState().appLogo,
                                             FFAppState().tcDeskURL,
                                           );
-                                          _shouldSetState = true;
+                                          shouldSetState = true;
                                           _model.emailProvider =
                                               EmailProviderStruct(
                                             from: FFAppState().fromEmail,
                                             to: 'transactioncoordinator@iwriteoffers.net',
                                             cc: 'transactioncoordinator@iwriteoffers.net',
                                             subject:
-                                                'Revised PartnerPro Offer Submission for ${currentUserDisplayName}',
+                                                'Revised PartnerPro Offer Submission for $currentUserDisplayName',
                                             contentType: 'text/html',
                                             body: _model.updateToTC,
                                           );
@@ -6111,7 +6087,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 _model.emailProvider?.toMap(),
                                           );
 
-                                          _shouldSetState = true;
+                                          shouldSetState = true;
                                           if (!(_model
                                                   .postEmail13j1?.succeeded ??
                                               true)) {
@@ -6138,7 +6114,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                               NewOfferStruct();
                                           safeSetState(() {});
                                           _model.updateNewOfferDataStruct(
-                                            (e) => e..id = widget!.offerId,
+                                            (e) => e..id = widget.offerId,
                                           );
                                           safeSetState(() {});
                                           await widget.onUpdate?.call(
@@ -6230,10 +6206,10 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                       );
                                     }
 
-                                    if (_shouldSetState) safeSetState(() {});
+                                    if (shouldSetState) safeSetState(() {});
                                   },
-                                  text: widget!.offerId == null ||
-                                          widget!.offerId == ''
+                                  text: widget.offerId == null ||
+                                          widget.offerId == ''
                                       ? 'Submit Offer'
                                       : 'Submit Revised Offer',
                                   options: FFButtonOptions(
@@ -6298,7 +6274,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                       await offerPaymentsRecordReference
                                           .set(createOfferPaymentsRecordData(
                                         userRef: currentUserReference,
-                                        propertyID: widget!.property?.id,
+                                        propertyID: widget.property?.id,
                                         createdAt: getCurrentTimestamp,
                                         paymentID: _model.stripePaymentID,
                                       ));
@@ -6309,7 +6285,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     userRef:
                                                         currentUserReference,
                                                     propertyID:
-                                                        widget!.property?.id,
+                                                        widget.property?.id,
                                                     createdAt:
                                                         getCurrentTimestamp,
                                                     paymentID:

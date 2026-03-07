@@ -2,11 +2,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'change_password_model.dart';
 export 'change_password_model.dart';
 
@@ -138,7 +135,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                     Padding(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                      child: Container(
+                      child: SizedBox(
                         width: double.infinity,
                         child: TextFormField(
                           controller: _model.passwordTextController,
@@ -245,7 +242,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                                       ),
                                 ),
                               ),
-                              Container(
+                              SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.newPasswordTextController,
@@ -356,7 +353,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                                       ),
                                 ),
                               ),
-                              Container(
+                              SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller:

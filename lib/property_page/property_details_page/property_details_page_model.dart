@@ -1,38 +1,11 @@
-import '/app_components/custom_dialog/custom_dialog_widget.dart';
-import '/app_components/offer_process/offer_process_widget.dart';
-import '/app_components/schedule_tour_sheet/schedule_tour_sheet_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/push_notifications/push_notifications_util.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
-import '/components/custom_loading_indicator_widget.dart';
-import '/components/member_suggestion_sheet_widget.dart';
-import '/flutter_flow/flutter_flow_expanded_image_view.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_toggle_icon.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/pages/funds_proof_sheet/funds_proof_sheet_widget.dart';
-import '/pages/profile_page/lender_popup/lender_popup_widget.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
-import '/seller/empty_listing/empty_listing_widget.dart';
-import '/seller/shared_components/custom_bottom_sheet/custom_bottom_sheet_widget.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/custom_functions.dart' as functions;
-import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'property_details_page_widget.dart' show PropertyDetailsPageWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 
 class PropertyDetailsPageModel
     extends FlutterFlowModel<PropertyDetailsPageWidget> {

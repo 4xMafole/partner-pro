@@ -1,12 +1,9 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'contract_p_d_f_sheet_model.dart';
 export 'contract_p_d_f_sheet_model.dart';
 
@@ -159,135 +156,135 @@ class _ContractPDFSheetWidgetState extends State<ContractPDFSheetWidget> {
         children: [
           Builder(
             builder: (context) {
-              if (widget!.state == 'TX') {
+              if (widget.state == 'TX') {
                 return Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     height: double.infinity,
                     child: custom_widgets.TexasPDFWidget(
                       width: double.infinity,
                       height: double.infinity,
                       sellerName: valueOrDefault<String>(
-                        widget!.sellerName,
+                        widget.sellerName,
                         'Elshan',
                       ),
                       buyerName: valueOrDefault<String>(
-                        widget!.buyerName,
+                        widget.buyerName,
                         'Yurii',
                       ),
                       blockName: valueOrDefault<String>(
-                        widget!.blockName,
+                        widget.blockName,
                         'Blank',
                       ),
                       lotNumber: valueOrDefault<String>(
-                        widget!.lotNumber,
+                        widget.lotNumber,
                         'Blank',
                       ),
                       city: valueOrDefault<String>(
-                        widget!.city,
+                        widget.city,
                         'Texas',
                       ),
                       countyName: valueOrDefault<String>(
-                        widget!.countyName,
+                        widget.countyName,
                         'Blank',
                       ),
                       addressZipCode: valueOrDefault<String>(
-                        widget!.addressZipCode,
+                        widget.addressZipCode,
                         'Address',
                       ),
                       downPaymentAmount: valueOrDefault<String>(
-                        widget!.downPaymentAmount,
+                        widget.downPaymentAmount,
                         '10000',
                       ),
                       loanAmount: valueOrDefault<String>(
-                        widget!.loanAmount,
+                        widget.loanAmount,
                         '100000',
                       ),
                       totalPrice: valueOrDefault<String>(
-                        widget!.totalPrice,
+                        widget.totalPrice,
                         '1000000',
                       ),
                       sellerFirstName: valueOrDefault<String>(
-                        widget!.sellerFirstName,
+                        widget.sellerFirstName,
                         'Elshan',
                       ),
                       sellerSecondName: valueOrDefault<String>(
-                        widget!.sellerSecondName,
+                        widget.sellerSecondName,
                         'Rafi',
                       ),
                       buyerFirstName: valueOrDefault<String>(
-                        widget!.buyerFirstName,
+                        widget.buyerFirstName,
                         'Mamed',
                       ),
                       buyerSecondName: valueOrDefault<String>(
-                        widget!.buyerSecondName,
+                        widget.buyerSecondName,
                         'Mamedov',
                       ),
-                      titleCompanyName: widget!.titleCompanyName!,
-                      propertyAddress: widget!.propertyAddress!,
-                      titleCompanyAddress: widget!.titleCompanyAddress!,
-                      depositeAmount: widget!.depositeAmmount!,
-                      earnestMoney: widget!.earnestMoney!,
-                      residentialsFees: widget!.resedentialFees!,
-                      closingDate: widget!.closingDate!,
-                      year: widget!.year!,
-                      creditRequest: widget!.creditRequest!,
-                      buyerAddress: widget!.sellerAddress!,
-                      buyerPhone: widget!.buyerPhone!,
-                      buyerEmail: widget!.buyerEmail!,
-                      sellerAddress: widget!.sellerAddress!,
-                      sellerEmail: widget!.sellerEmail!,
-                      sellerPhone: widget!.sellerPhone!,
+                      titleCompanyName: widget.titleCompanyName!,
+                      propertyAddress: widget.propertyAddress!,
+                      titleCompanyAddress: widget.titleCompanyAddress!,
+                      depositeAmount: widget.depositeAmmount!,
+                      earnestMoney: widget.earnestMoney!,
+                      residentialsFees: widget.resedentialFees!,
+                      closingDate: widget.closingDate!,
+                      year: widget.year!,
+                      creditRequest: widget.creditRequest!,
+                      buyerAddress: widget.sellerAddress!,
+                      buyerPhone: widget.buyerPhone!,
+                      buyerEmail: widget.buyerEmail!,
+                      sellerAddress: widget.sellerAddress!,
+                      sellerEmail: widget.sellerEmail!,
+                      sellerPhone: widget.sellerPhone!,
                     ),
                   ),
                 );
-              } else if (widget!.state == 'CA') {
-                return Container(
+              } else if (widget.state == 'CA') {
+                return SizedBox(
                   width: double.infinity,
                   height: double.infinity,
                   child: custom_widgets.CAPDFWidget(
                     width: double.infinity,
                     height: double.infinity,
-                    sellerName: widget!.sellerName!,
-                    buyerName: widget!.buyerName!,
-                    address: widget!.propertyAddress!,
-                    purchasePrice: widget!.purchasePrice!,
-                    loanType: widget!.loanType!,
-                    offerDate: widget!.offerDate!,
-                    agentBrokerLicense: widget!.agentBrokerLicnse!,
-                    agentFirmName: widget!.agentFirmName!,
-                    agentBrokerName: widget!.agentFirmName!,
-                    sellerBrokerFirmName: widget!.sellerBrokerName!,
-                    sellerAgentName: widget!.sellerAgentName!,
-                    buyerBrokerFirmName: widget!.buyerBrokerFirmName!,
-                    buyersAgentName: widget!.buyerBrokerAgentName!,
-                    city: widget!.city!,
-                    county: widget!.countyName!,
-                    zipCode: widget!.addressZipCode!,
-                    propertyId: widget!.propertyID!,
-                    closeDate: widget!.closingDate!,
+                    sellerName: widget.sellerName!,
+                    buyerName: widget.buyerName!,
+                    address: widget.propertyAddress!,
+                    purchasePrice: widget.purchasePrice!,
+                    loanType: widget.loanType!,
+                    offerDate: widget.offerDate!,
+                    agentBrokerLicense: widget.agentBrokerLicnse!,
+                    agentFirmName: widget.agentFirmName!,
+                    agentBrokerName: widget.agentFirmName!,
+                    sellerBrokerFirmName: widget.sellerBrokerName!,
+                    sellerAgentName: widget.sellerAgentName!,
+                    buyerBrokerFirmName: widget.buyerBrokerFirmName!,
+                    buyersAgentName: widget.buyerBrokerAgentName!,
+                    city: widget.city!,
+                    county: widget.countyName!,
+                    zipCode: widget.addressZipCode!,
+                    propertyId: widget.propertyID!,
+                    closeDate: widget.closingDate!,
                     expirationDate: '30',
-                    depositPercent: widget!.depositePercent!,
-                    depositAmount: widget!.depositeAmmount!,
-                    loanPercent: widget!.loanPersent!,
-                    loanAmount: widget!.loanAmount!,
-                    initBuyer1: widget!.initBayer1!,
-                    initBuyer2: widget!.initBuyer2!,
-                    initSeller1: widget!.initSeller1!,
-                    initSeller2: widget!.initSeller2!,
-                    secondBuyerName: widget!.secondaryBuyer!,
-                    buyerPhone: widget!.buyerPhone!,
-                    zip: widget!.sellerBrokerFirmAddresZipCode!,
-                    state: widget!.state!,
-                    sellerBrokerFirm: widget!.sellerBrokerFirm!,
-                    secondSellerName: widget!.secondarySeller!,
-                    sellerPhone: widget!.sellerPhone!,
-                    sellerEmail: widget!.sellerEmail!,
+                    depositPercent: widget.depositePercent!,
+                    depositAmount: widget.depositeAmmount!,
+                    loanPercent: widget.loanPersent!,
+                    loanAmount: widget.loanAmount!,
+                    initBuyer1: widget.initBayer1!,
+                    initBuyer2: widget.initBuyer2!,
+                    initSeller1: widget.initSeller1!,
+                    initSeller2: widget.initSeller2!,
+                    secondBuyerName: widget.secondaryBuyer!,
+                    buyerPhone: widget.buyerPhone!,
+                    zip: widget.sellerBrokerFirmAddresZipCode!,
+                    state: widget.state!,
+                    sellerBrokerFirm: widget.sellerBrokerFirm!,
+                    secondSellerName: widget.secondarySeller!,
+                    sellerPhone: widget.sellerPhone!,
+                    sellerEmail: widget.sellerEmail!,
                     propertySellerComission: '1000',
-                    buyerBrokerName: widget!.buyerBrokerAgentName!,
-                    sellerBrokerName: widget!.sellerBrokerName!,
-                    signatureImageUrl: widget!.buyerSignatureUrl!,
+                    buyerBrokerName: widget.buyerBrokerAgentName!,
+                    sellerBrokerName: widget.sellerBrokerName!,
+                    signatureImageUrl: widget.buyerSignatureUrl!,
                     onFilledPdfReady: (pdf) async {
                       _model.previewPDF = pdf;
                       safeSetState(() {});
@@ -295,17 +292,17 @@ class _ContractPDFSheetWidgetState extends State<ContractPDFSheetWidget> {
                   ),
                 );
               } else {
-                return Container(
+                return SizedBox(
                   width: double.infinity,
                   height: double.infinity,
                   child: custom_widgets.OHPDFWidget(
                     width: double.infinity,
                     height: double.infinity,
-                    sellerName: widget!.sellerName!,
-                    buyerName: widget!.buyerName!,
-                    address: widget!.addressZipCode!,
+                    sellerName: widget.sellerName!,
+                    buyerName: widget.buyerName!,
+                    address: widget.addressZipCode!,
                     purchasePrice: '200',
-                    loanType: widget!.loanType!,
+                    loanType: widget.loanType!,
                   ),
                 );
               }

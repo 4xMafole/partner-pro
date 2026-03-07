@@ -4,7 +4,6 @@ import '/app_components/custom_dialog/custom_dialog_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/custom_loading_indicator_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -12,15 +11,11 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
-import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'buyer_invite_page_model.dart';
 export 'buyer_invite_page_model.dart';
@@ -151,7 +146,7 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                       isEqualTo: currentUserUid,
                                     ),
                                   );
-                                  _model.initContacts2 = await actions
+                                  _model.initContacts2 = actions
                                       .mergeContactsWithInvitations(
                                     (functions.isValidData((_model
                                                     .apiResultmtw2?.jsonBody ??
@@ -270,18 +265,18 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                     padding: MediaQuery.viewInsetsOf(context),
                                     child: InviteContactSheetWidget(
                                       onTap: (member) async {
-                                        _model.buyerHtml = await actions
+                                        _model.buyerHtml = actions
                                             .generateInvitationEmailHtml(
                                           currentUserDisplayName,
                                           FFAppState().redirectUrl,
                                           'buyer',
                                           (currentUserDocument?.agentAppLogos
-                                                          ?.toList() ??
+                                                          .toList() ??
                                                       [])
                                                   .isNotEmpty
                                               ? (currentUserDocument
                                                           ?.agentAppLogos
-                                                          ?.toList() ??
+                                                          .toList() ??
                                                       [])
                                                   .firstOrNull!
                                               : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/partner-pro-i7cxfg/assets/hmx5ppn0h4bf/partner_pro_black-01.png',
@@ -293,7 +288,7 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                               member.fullName, true),
                                         );
                                         _model.smsInvitationProvider =
-                                            await actions
+                                            actions
                                                 .generateInvitationSmsText(
                                           member.fullName,
                                           FFAppState().redirectUrl,
@@ -404,7 +399,7 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                               isEqualTo: currentUserUid,
                                             ),
                                           );
-                                          _model.initContacts = await actions
+                                          _model.initContacts = actions
                                               .mergeContactsWithInvitations(
                                             (functions.isValidData((_model
                                                             .apiResultmtw1
@@ -757,11 +752,11 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                               currentUserDisplayName,
                               FFAppState().redirectUrl,
                               FFAppState().redirectUrl,
-                              (currentUserDocument?.agentAppLogos?.toList() ??
+                              (currentUserDocument?.agentAppLogos.toList() ??
                                           [])
                                       .isNotEmpty
                                   ? (currentUserDocument?.agentAppLogos
-                                              ?.toList() ??
+                                              .toList() ??
                                           [])
                                       .firstOrNull!
                                   : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/partner-pro-i7cxfg/assets/hmx5ppn0h4bf/partner_pro_black-01.png',

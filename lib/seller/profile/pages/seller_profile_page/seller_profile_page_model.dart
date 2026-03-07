@@ -1,17 +1,10 @@
 import '/app_components/navbar/seller_bottom_navbar/seller_bottom_navbar_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/schema/enums/enums.dart';
 import '/components/profile_list_item_widget.dart';
 import '/components/title_label_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'seller_profile_page_widget.dart' show SellerProfilePageWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SellerProfilePageModel extends FlutterFlowModel<SellerProfilePageWidget> {
   ///  State fields for stateful widgets in this page.

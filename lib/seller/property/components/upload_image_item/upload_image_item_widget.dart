@@ -2,11 +2,8 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_pdf_viewer.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'upload_image_item_model.dart';
 export 'upload_image_item_model.dart';
 
@@ -18,9 +15,9 @@ class UploadImageItemWidget extends StatefulWidget {
     bool? isPDF,
     int? widthImage,
     int? heightImage,
-  })  : this.isPDF = isPDF ?? false,
-        this.widthImage = widthImage ?? 140,
-        this.heightImage = heightImage ?? 100;
+  })  : isPDF = isPDF ?? false,
+        widthImage = widthImage ?? 140,
+        heightImage = heightImage ?? 100;
 
   final ImageStruct? image;
   final Future Function(ImageStruct image)? onDelete;
@@ -61,18 +58,18 @@ class _UploadImageItemWidgetState extends State<UploadImageItemWidget> {
       child: Stack(
         alignment: AlignmentDirectional(1.0, -1.0),
         children: [
-          if (!widget!.isPDF)
+          if (!widget.isPDF)
             Builder(
               builder: (context) {
-                if (widget!.image?.hasUrl ?? false) {
+                if (widget.image?.hasUrl ?? false) {
                   return Padding(
                     padding: EdgeInsets.all(4.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.network(
-                        functions.stringToImagePath(widget!.image?.url)!,
-                        width: widget!.widthImage.toDouble(),
-                        height: widget!.heightImage.toDouble(),
+                        functions.stringToImagePath(widget.image?.url)!,
+                        width: widget.widthImage.toDouble(),
+                        height: widget.heightImage.toDouble(),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -83,10 +80,10 @@ class _UploadImageItemWidgetState extends State<UploadImageItemWidget> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.memory(
-                        functions.base64ToImage(widget!.image?.url)?.bytes ??
+                        functions.base64ToImage(widget.image?.url)?.bytes ??
                             Uint8List.fromList([]),
-                        width: widget!.widthImage.toDouble(),
-                        height: widget!.heightImage.toDouble(),
+                        width: widget.widthImage.toDouble(),
+                        height: widget.heightImage.toDouble(),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -94,7 +91,7 @@ class _UploadImageItemWidgetState extends State<UploadImageItemWidget> {
                 }
               },
             ),
-          if (widget!.isPDF)
+          if (widget.isPDF)
             Padding(
               padding: EdgeInsets.all(4.0),
               child: Container(
@@ -103,7 +100,7 @@ class _UploadImageItemWidgetState extends State<UploadImageItemWidget> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: FlutterFlowPdfViewer(
-                  fileBytes: functions.base64ToPDF(widget!.image?.url)?.bytes,
+                  fileBytes: functions.base64ToPDF(widget.image?.url)?.bytes,
                   width: 140.0,
                   height: 100.0,
                   horizontalScroll: false,
@@ -117,7 +114,7 @@ class _UploadImageItemWidgetState extends State<UploadImageItemWidget> {
             highlightColor: Colors.transparent,
             onTap: () async {
               await widget.onDelete?.call(
-                widget!.image!,
+                widget.image!,
               );
             },
             child: Container(

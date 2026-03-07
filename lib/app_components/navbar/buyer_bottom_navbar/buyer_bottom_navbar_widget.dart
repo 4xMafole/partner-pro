@@ -2,13 +2,9 @@ import '/app_components/navbar/navbar_item/navbar_item_widget.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'buyer_bottom_navbar_model.dart';
 export 'buyer_bottom_navbar_model.dart';
 
@@ -74,7 +70,7 @@ class _BuyerBottomNavbarWidgetState extends State<BuyerBottomNavbarWidget> {
                     children: [
                       Builder(
                         builder: (context) {
-                          if (widget!.activeNav != BuyerNavbar.Search) {
+                          if (widget.activeNav != BuyerNavbar.Search) {
                             return Container(
                               decoration: BoxDecoration(),
                               child: wrapWithModel(
@@ -142,7 +138,7 @@ class _BuyerBottomNavbarWidgetState extends State<BuyerBottomNavbarWidget> {
                     children: [
                       Builder(
                         builder: (context) {
-                          if (widget!.activeNav != BuyerNavbar.Tools) {
+                          if (widget.activeNav != BuyerNavbar.Tools) {
                             return Container(
                               decoration: BoxDecoration(),
                               child: wrapWithModel(
@@ -204,7 +200,7 @@ class _BuyerBottomNavbarWidgetState extends State<BuyerBottomNavbarWidget> {
                     children: [
                       Builder(
                         builder: (context) {
-                          if (widget!.activeNav != BuyerNavbar.MyHomes) {
+                          if (widget.activeNav != BuyerNavbar.MyHomes) {
                             return Container(
                               decoration: BoxDecoration(),
                               child: wrapWithModel(
@@ -266,7 +262,7 @@ class _BuyerBottomNavbarWidgetState extends State<BuyerBottomNavbarWidget> {
                     children: [
                       Builder(
                         builder: (context) {
-                          if (widget!.activeNav != BuyerNavbar.Profile) {
+                          if (widget.activeNav != BuyerNavbar.Profile) {
                             return Container(
                               decoration: BoxDecoration(),
                               child: wrapWithModel(

@@ -3,26 +3,20 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/custom_loading_indicator_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/pages/search/search_components/property_item/property_item_widget.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/offers/components/seller_offer_item/seller_offer_item_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'member_activity_model.dart';
 export 'member_activity_model.dart';
 
@@ -79,14 +73,14 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
       _model.apiResultActivity =
           await IwoAgentClientGroup.getClientActivityByAgentCall.call(
         agentId: currentUserUid,
-        clientId: widget!.member?.clientID,
+        clientId: widget.member?.clientID,
       );
 
       if ((_model.apiResultActivity?.succeeded ?? true)) {
         _model.memberDocument = await queryUsersRecordOnce(
           queryBuilder: (usersRecord) => usersRecord.where(
             'uid',
-            isEqualTo: widget!.member?.clientID,
+            isEqualTo: widget.member?.clientID,
           ),
           singleRecord: true,
         ).then((s) => s.firstOrNull);
@@ -145,7 +139,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                 IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
             automaticallyImplyLeading: true,
             title: Text(
-              '${widget!.member?.fullName}\'s Activity',
+              '${widget.member?.fullName}\'s Activity',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
                     fontFamily:
                         FlutterFlowTheme.of(context).headlineMediumFamily,
@@ -186,7 +180,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 0.0, 0.0),
                               child: Text(
-                                'Below is a summary of ${widget!.member?.fullName}.',
+                                'Below is a summary of ${widget.member?.fullName}.',
                                 style: FlutterFlowTheme.of(context)
                                     .labelMedium
                                     .override(
@@ -336,10 +330,6 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                     status: offerItemItem
                                                                     .offerData
                                                                     .status !=
-                                                                null &&
-                                                            offerItemItem
-                                                                    .offerData
-                                                                    .status !=
                                                                 ''
                                                         ? functions
                                                             .statusStringToEnum(
@@ -468,7 +458,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                           ),
                                                           'member':
                                                               serializeParam(
-                                                            widget!.member,
+                                                            widget.member,
                                                             ParamType
                                                                 .DataStruct,
                                                           ),
@@ -547,7 +537,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                         ParamType.String,
                                                       ),
                                                       'member': serializeParam(
-                                                        widget!.member,
+                                                        widget.member,
                                                         ParamType.DataStruct,
                                                       ),
                                                     }.withoutNulls,
@@ -886,7 +876,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                         ParamType.String,
                                                       ),
                                                       'member': serializeParam(
-                                                        widget!.member,
+                                                        widget.member,
                                                         ParamType.DataStruct,
                                                       ),
                                                     }.withoutNulls,
@@ -1002,7 +992,7 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                         ParamType.String,
                                                       ),
                                                       'member': serializeParam(
-                                                        widget!.member,
+                                                        widget.member,
                                                         ParamType.DataStruct,
                                                       ),
                                                     }.withoutNulls,

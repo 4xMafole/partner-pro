@@ -5,20 +5,16 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/contact_popup_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/offers/components/offer_status_label/offer_status_label_widget.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'offer_details_page_model.dart';
 export 'offer_details_page_model.dart';
@@ -149,7 +145,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                 Text(
                                   valueOrDefault<String>(
                                     formatNumber(
-                                      _model.localOffer?.pricing?.purchasePrice,
+                                      _model.localOffer?.pricing.purchasePrice,
                                       formatType: FormatType.decimal,
                                       decimalType: DecimalType.automatic,
                                       currency: '\$',
@@ -295,7 +291,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         ),
                                         Text(
                                           valueOrDefault<String>(
-                                            _model.localOffer?.property?.id,
+                                            _model.localOffer?.property.id,
                                             'N/A',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -345,7 +341,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                               valueOrDefault<String>(
                                                 formatNumber(
                                                   _model.localOffer?.pricing
-                                                      ?.purchasePrice,
+                                                      .purchasePrice,
                                                   formatType:
                                                       FormatType.decimal,
                                                   decimalType:
@@ -406,7 +402,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                               valueOrDefault<String>(
                                                 formatNumber(
                                                   _model.localOffer?.pricing
-                                                      ?.listPrice,
+                                                      .listPrice,
                                                   formatType:
                                                       FormatType.decimal,
                                                   decimalType:
@@ -590,7 +586,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                 Text(
                                                   valueOrDefault<String>(
                                                     _model.localOffer?.parties
-                                                        ?.buyer?.name,
+                                                        .buyer.name,
                                                     'N/A',
                                                   ),
                                                   style: FlutterFlowTheme.of(
@@ -652,7 +648,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         Text(
                                           valueOrDefault<String>(
                                             _model.localOffer?.financials
-                                                ?.loanType,
+                                                .loanType,
                                             'N/A',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -703,7 +699,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.downPaymentAmount,
+                                                  .downPaymentAmount,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -759,7 +755,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.loanAmount,
+                                                  .loanAmount,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -815,7 +811,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.creditRequest,
+                                                  .creditRequest,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -870,7 +866,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         Text(
                                           valueOrDefault<String>(
                                             _model.localOffer?.financials
-                                                ?.depositType,
+                                                .depositType,
                                             'N/A',
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -921,7 +917,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.depositAmount,
+                                                  .depositAmount,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -977,7 +973,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.additionalEarnest,
+                                                  .additionalEarnest,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -1033,7 +1029,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.optionFee,
+                                                  .optionFee,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -1089,7 +1085,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           valueOrDefault<String>(
                                             formatNumber(
                                               _model.localOffer?.financials
-                                                  ?.coverageAmount,
+                                                  .coverageAmount,
                                               formatType: FormatType.decimal,
                                               decimalType:
                                                   DecimalType.automatic,
@@ -1141,7 +1137,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                     Text(
                                       valueOrDefault<String>(
                                         _model.localOffer?.conditions
-                                            ?.propertyCondition,
+                                            .propertyCondition,
                                         'N/A',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -1263,7 +1259,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                     ),
                                   ],
                                 ),
-                                if (_model.localOffer?.parties?.hasAgent() ??
+                                if (_model.localOffer?.parties.hasAgent() ??
                                     true)
                                   Builder(
                                     builder: (context) => InkWell(
@@ -1298,19 +1294,19 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                     name:
                                                         valueOrDefault<String>(
                                                       _model.localOffer?.parties
-                                                          ?.agent?.name,
+                                                          .agent.name,
                                                       'N/A',
                                                     ),
                                                     phoneNumber:
                                                         valueOrDefault<String>(
                                                       _model.localOffer?.parties
-                                                          ?.agent?.phoneNumber,
+                                                          .agent.phoneNumber,
                                                       'N/A',
                                                     ),
                                                     email:
                                                         valueOrDefault<String>(
                                                       _model.localOffer?.parties
-                                                          ?.agent?.email,
+                                                          .agent.email,
                                                       'N/A',
                                                     ),
                                                   ),
@@ -1392,7 +1388,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                       _model
                                                           .localOffer
                                                           ?.titleCompany
-                                                          ?.companyName,
+                                                          .companyName,
                                                       'N/A',
                                                     ),
                                                     phoneNumber:
@@ -1400,7 +1396,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                       _model
                                                           .localOffer
                                                           ?.titleCompany
-                                                          ?.phoneNumber,
+                                                          .phoneNumber,
                                                       'N/A',
                                                     ),
                                                   ),
@@ -1408,7 +1404,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                   choice:
                                                       valueOrDefault<String>(
                                                     _model.localOffer
-                                                        ?.titleCompany?.choice,
+                                                        ?.titleCompany.choice,
                                                     'N/A',
                                                   ),
                                                 ),
@@ -1452,7 +1448,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                     ),
                                   ),
                                 if (_model.localOffer?.parties
-                                        ?.hasSecondBuyer() ??
+                                        .hasSecondBuyer() ??
                                     true)
                                   Builder(
                                     builder: (context) => InkWell(
@@ -1487,7 +1483,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                     name:
                                                         valueOrDefault<String>(
                                                       _model.localOffer?.parties
-                                                          ?.secondBuyer?.name,
+                                                          .secondBuyer.name,
                                                       'N/A',
                                                     ),
                                                     phoneNumber:
@@ -1495,14 +1491,14 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                                       _model
                                                           .localOffer
                                                           ?.parties
-                                                          ?.secondBuyer
-                                                          ?.phoneNumber,
+                                                          .secondBuyer
+                                                          .phoneNumber,
                                                       'N/A',
                                                     ),
                                                     email:
                                                         valueOrDefault<String>(
                                                       _model.localOffer?.parties
-                                                          ?.secondBuyer?.email,
+                                                          .secondBuyer.email,
                                                       'N/A',
                                                     ),
                                                   ),
@@ -1596,7 +1592,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                   _model.apiResults83 = await IwoPatchesAPIGroup
                                       .updateOfferByIdCall
                                       .call(
-                                    id: widget!.newOffer?.id,
+                                    id: widget.newOffer?.id,
                                     dataJson: _model.localOffer?.toMap(),
                                   );
 
@@ -1613,7 +1609,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                               .where(
                                                 'relationship.subjectUid',
                                                 isEqualTo: _model.localOffer
-                                                    ?.parties?.buyer?.id,
+                                                    ?.parties.buyer.id,
                                               ),
                                       singleRecord: true,
                                     ).then((s) => s.firstOrNull);
@@ -1623,7 +1619,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           usersRecord.where(
                                         'uid',
                                         isEqualTo: _model.clientRelationDoc12q
-                                            ?.relationship?.subjectUid,
+                                            ?.relationship.subjectUid,
                                       ),
                                       singleRecord: true,
                                     ).then((s) => s.firstOrNull);
@@ -1639,13 +1635,13 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         currency: '\$',
                                       )}',
                                       notificationText:
-                                          '${currentUserDisplayName} has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
+                                          '$currentUserDisplayName has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
                                       notificationImageUrl:
                                           functions.stringToImagePath(_model
                                               .localOffer
                                               ?.property
-                                              ?.media
-                                              ?.firstOrNull),
+                                              .media
+                                              .firstOrNull),
                                       notificationSound: 'default',
                                       userRefs: [
                                         _model.clientDoc12q!.reference
@@ -1670,24 +1666,24 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                             currency: '\$',
                                           )}',
                                           notificationBody:
-                                              '${currentUserDisplayName} has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
+                                              '$currentUserDisplayName has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
                                           createdTime: getCurrentTimestamp,
                                           isRead: false,
                                         ));
                                     if (_model.clientDoc12q!.hasAcceptedSMS) {
                                       _model.creationAgentToBuyer =
-                                          await actions
+                                          actions
                                               .generateOfferEmailNotification(
                                         EmailType.creationAgentToBuyer,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                         null,
                                         FFAppState().appLogo,
                                         'partnerpro://app.page/myHomesPage',
                                       );
                                       _model.creationAgentToBuyerSMS =
-                                          await actions.generateOfferSMSContent(
+                                          actions.generateOfferSMSContent(
                                         EmailType.creationAgentToBuyer,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                       );
                                       _model.emailProvider =
                                           EmailProviderStruct(
@@ -1773,10 +1769,10 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         );
                                       }
 
-                                      _model.creationToTC = await actions
+                                      _model.creationToTC = actions
                                           .generateOfferEmailNotification(
                                         EmailType.creationToTc,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                         null,
                                         FFAppState().appLogo,
                                         FFAppState().tcDeskURL,
@@ -1880,7 +1876,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                             FlutterFlowTheme.of(context).error,
                                       ),
                                     );
-                                    _model.localOffer = widget!.newOffer;
+                                    _model.localOffer = widget.newOffer;
                                     safeSetState(() {});
                                   }
 
@@ -1943,7 +1939,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                       await IwoPatchesAPIGroup
                                           .updateOfferByIdCall
                                           .call(
-                                    id: widget!.newOffer?.id,
+                                    id: widget.newOffer?.id,
                                     dataJson: _model.localOffer?.toMap(),
                                   );
 
@@ -1964,7 +1960,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           usersRecord.where(
                                         'uid',
                                         isEqualTo: _model.clientRelationDoc12
-                                            ?.relationship?.agentUid,
+                                            ?.relationship.agentUid,
                                       ),
                                       singleRecord: true,
                                     ).then((s) => s.firstOrNull);
@@ -1980,13 +1976,13 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         currency: '\$',
                                       )}',
                                       notificationText:
-                                          '${currentUserDisplayName} has declined an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
+                                          '$currentUserDisplayName has declined an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
                                       notificationImageUrl:
                                           functions.stringToImagePath(_model
                                               .localOffer
                                               ?.property
-                                              ?.media
-                                              ?.firstOrNull),
+                                              .media
+                                              .firstOrNull),
                                       notificationSound: 'default',
                                       userRefs: [_model.agentDoc12!.reference],
                                       initialPageName: 'agent_offers',
@@ -2008,23 +2004,23 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                             currency: '\$',
                                           )}',
                                           notificationBody:
-                                              '${currentUserDisplayName} has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
+                                              '$currentUserDisplayName has approved an offer for ${functions.formatAddressFromModel(_model.localOffer!.property.address, '')}',
                                           createdTime: getCurrentTimestamp,
                                           isRead: false,
                                         ));
                                     if (_model.agentDoc12!.hasAcceptedSMS) {
-                                      _model.declineBuyerToAgent = await actions
+                                      _model.declineBuyerToAgent = actions
                                           .generateOfferEmailNotification(
                                         EmailType.declineBuyerToAgent,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                         null,
                                         FFAppState().appLogo,
                                         'partnerpro://app.page/agentOffers',
                                       );
                                       _model.declineBuyerToAgentSMS =
-                                          await actions.generateOfferSMSContent(
+                                          actions.generateOfferSMSContent(
                                         EmailType.declineBuyerToAgent,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                       );
                                       _model.emailProvider =
                                           EmailProviderStruct(
@@ -2109,10 +2105,10 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                         );
                                       }
 
-                                      _model.declineToTC = await actions
+                                      _model.declineToTC = actions
                                           .generateOfferEmailNotification(
                                         EmailType.declineToTc,
-                                        widget!.newOffer!.toMap(),
+                                        widget.newOffer!.toMap(),
                                         null,
                                         FFAppState().appLogo,
                                         FFAppState().tcDeskURL,
@@ -2215,7 +2211,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                             FlutterFlowTheme.of(context).error,
                                       ),
                                     );
-                                    _model.localOffer = widget!.newOffer;
+                                    _model.localOffer = widget.newOffer;
                                     safeSetState(() {});
                                   }
 
@@ -2258,7 +2254,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                       Expanded(
                         child: FFButtonWidget(
                           onPressed: () async {
-                            FFAppState().currentOfferDraft = widget!.newOffer!;
+                            FFAppState().currentOfferDraft = widget.newOffer!;
                             safeSetState(() {});
                             await showModalBottomSheet(
                               isScrollControlled: true,
@@ -2276,7 +2272,7 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                     child: OfferProcessWidget(
                                       property: _model.localOffer?.property,
                                       offerId: _model.localOffer?.id,
-                                      member: widget!.member,
+                                      member: widget.member,
                                       oldOffer: _model.localOffer,
                                       onUpdate: (value) async {
                                         _model.localOffer = value;

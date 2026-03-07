@@ -3,12 +3,8 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seller_appoint_item_model.dart';
 export 'seller_appoint_item_model.dart';
 
@@ -87,13 +83,14 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                       child: Stack(
                         children: [
                           Image.network(
-                            widget!.appointment?.property?.images?.length != 0
+                            widget.appointment?.property.images.isNotEmpty ==
+                                    true
                                 ? valueOrDefault<String>(
-                                    functions.stringToImagePath(widget!
+                                    functions.stringToImagePath(widget
                                         .appointment
                                         ?.property
-                                        ?.images
-                                        ?.firstOrNull),
+                                        .images
+                                        .firstOrNull),
                                     'https://placehold.co/400x400@2x.png?text=Home',
                                   )
                                 : 'https://placehold.co/400x400@2x.png?text=Home',
@@ -121,7 +118,7 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                                   0.0, 0.0, 0.0, 10.0),
                               child: Text(
                                 valueOrDefault<String>(
-                                  widget!.appointment?.property?.location?.name,
+                                  widget.appointment?.property.location.name,
                                   'N/A',
                                 ).maybeHandleOverflow(
                                   maxChars: 40,
@@ -147,7 +144,7 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                         Text(
                           valueOrDefault<String>(
                             formatNumber(
-                              widget!.appointment?.price,
+                              widget.appointment?.price,
                               formatType: FormatType.decimal,
                               decimalType: DecimalType.automatic,
                               currency: '\$',
@@ -160,10 +157,9 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                                 fontFamily: FlutterFlowTheme.of(context)
                                     .bodyMediumFamily,
                                 color: () {
-                                  if (widget!.status == Status.Accepted) {
+                                  if (widget.status == Status.Accepted) {
                                     return FlutterFlowTheme.of(context).success;
-                                  } else if (widget!.status ==
-                                      Status.Declined) {
+                                  } else if (widget.status == Status.Declined) {
                                     return FlutterFlowTheme.of(context).accent2;
                                   } else {
                                     return FlutterFlowTheme.of(context)
@@ -188,10 +184,10 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                                   Icon(
                                     Icons.date_range,
                                     color: () {
-                                      if (widget!.status == Status.Accepted) {
+                                      if (widget.status == Status.Accepted) {
                                         return FlutterFlowTheme.of(context)
                                             .success;
-                                      } else if (widget!.status ==
+                                      } else if (widget.status ==
                                           Status.Declined) {
                                         return FlutterFlowTheme.of(context)
                                             .error;
@@ -205,7 +201,7 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                                   Text(
                                     dateTimeFormat(
                                       "d/M h:mm a",
-                                      widget!.appointment!.date!,
+                                      widget.appointment!.date!,
                                       locale: FFLocalizations.of(context)
                                           .languageCode,
                                     ),
@@ -216,12 +212,12 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                                               FlutterFlowTheme.of(context)
                                                   .bodySmallFamily,
                                           color: () {
-                                            if (widget!.status ==
+                                            if (widget.status ==
                                                 Status.Accepted) {
                                               return FlutterFlowTheme.of(
                                                       context)
                                                   .success;
-                                            } else if (widget!.status ==
+                                            } else if (widget.status ==
                                                 Status.Declined) {
                                               return FlutterFlowTheme.of(
                                                       context)
@@ -248,7 +244,7 @@ class _SellerAppointItemWidgetState extends State<SellerAppointItemWidget> {
                   ),
                 ].divide(SizedBox(width: 5.0)),
               ),
-              if (widget!.status == Status.Pending)
+              if (widget.status == Status.Pending)
                 Container(
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,

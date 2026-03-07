@@ -136,10 +136,11 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                   child: Text('Recent Activity',
                       style: AppTypography.headlineSmall))),
           BlocBuilder<AgentBloc, AgentState>(builder: (context, state) {
-            if (state.isLoading && state.activities.isEmpty)
+            if (state.isLoading && state.activities.isEmpty) {
               return const SliverToBoxAdapter(
                   child: Center(child: CircularProgressIndicator()));
-            if (state.activities.isEmpty)
+            }
+            if (state.activities.isEmpty) {
               return SliverToBoxAdapter(
                   child: SizedBox(
                       height: 200.h,
@@ -148,6 +149,7 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                           title: 'No recent activity',
                           subtitle:
                               'Client actions and offer updates will appear here.')));
+            }
             final items = state.activities.take(10).toList();
             return SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {

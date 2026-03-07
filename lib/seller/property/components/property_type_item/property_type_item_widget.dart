@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'property_type_item_model.dart';
 export 'property_type_item_model.dart';
 
@@ -13,7 +9,7 @@ class PropertyTypeItemWidget extends StatefulWidget {
     super.key,
     String? value,
     this.onTap,
-  }) : this.value = value ?? 'Value';
+  }) : value = value ?? 'Value';
 
   final String value;
   final Future Function(String type)? onTap;
@@ -53,7 +49,7 @@ class _PropertyTypeItemWidgetState extends State<PropertyTypeItemWidget> {
       highlightColor: Colors.transparent,
       onTap: () async {
         await widget.onTap?.call(
-          widget!.value,
+          widget.value,
         );
       },
       child: Container(
@@ -70,7 +66,7 @@ class _PropertyTypeItemWidgetState extends State<PropertyTypeItemWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                widget!.value,
+                widget.value,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
                       fontSize: 16.0,

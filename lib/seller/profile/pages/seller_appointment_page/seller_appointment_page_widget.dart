@@ -4,13 +4,10 @@ import '/components/title_label_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
 import '/seller/profile/components/seller_appoint_item/seller_appoint_item_widget.dart';
 import '/seller/shared_components/warning_popup_card/warning_popup_card_widget.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'seller_appointment_page_model.dart';
 export 'seller_appointment_page_model.dart';
@@ -19,7 +16,7 @@ class SellerAppointmentPageWidget extends StatefulWidget {
   const SellerAppointmentPageWidget({
     super.key,
     String? property,
-  }) : this.property = property ?? '';
+  }) : property = property ?? '';
 
   final String property;
 
@@ -98,8 +95,7 @@ class _SellerAppointmentPageWidgetState
                               size: 24.0,
                             ),
                           ),
-                          if (widget!.property == null ||
-                              widget!.property == '')
+                          if (widget.property == '')
                             wrapWithModel(
                               model: _model.titleLabelModel1,
                               updateCallback: () => safeSetState(() {}),
@@ -107,13 +103,12 @@ class _SellerAppointmentPageWidgetState
                                 title: 'Appointments',
                               ),
                             ),
-                          if (widget!.property != null &&
-                              widget!.property != '')
+                          if (widget.property != '')
                             wrapWithModel(
                               model: _model.titleLabelModel2,
                               updateCallback: () => safeSetState(() {}),
                               child: TitleLabelWidget(
-                                title: widget!.property,
+                                title: widget.property,
                               ),
                             ),
                         ].divide(SizedBox(width: 10.0)),

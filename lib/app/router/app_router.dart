@@ -63,7 +63,7 @@ class AppRouter {
         return RouteNames.onboard;
       }
       if (isAuthenticated && isAuthRoute) {
-        final user = (authState as AuthAuthenticated).user;
+        final user = (authState).user;
         return user.role == null
             ? RouteNames.roleSelection
             : user.role == 'agent'

@@ -1,21 +1,10 @@
 import '/app_components/navbar/seller_bottom_navbar/seller_bottom_navbar_widget.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/title_label_widget.dart';
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/seller/empty_listing/empty_listing_widget.dart';
-import '/seller/offers/components/seller_counter_sheet/seller_counter_sheet_widget.dart';
 import '/seller/offers/components/seller_offer_item/seller_offer_item_widget.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'seller_offers_page_widget.dart' show SellerOffersPageWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SellerOffersPageModel extends FlutterFlowModel<SellerOffersPageWidget> {
   ///  State fields for stateful widgets in this page.

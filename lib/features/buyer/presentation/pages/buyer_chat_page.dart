@@ -34,16 +34,18 @@ class _BuyerChatPageState extends State<BuyerChatPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Chat')),
       body: BlocBuilder<OfferBloc, OfferState>(builder: (context, state) {
-        if (state.isLoading && state.offers.isEmpty)
+        if (state.isLoading && state.offers.isEmpty) {
           return const Center(child: CircularProgressIndicator());
+        }
         final chatOffers =
             state.offers.where((o) => o.chatId.isNotEmpty).toList();
-        if (chatOffers.isEmpty)
+        if (chatOffers.isEmpty) {
           return const AppEmptyState(
               icon: LucideIcons.messageSquare,
               title: 'No conversations yet',
               subtitle:
                   'Chat threads appear when you have active offers.\nMessages with sellers will show here.');
+        }
         return ListView.separated(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           itemCount: chatOffers.length,

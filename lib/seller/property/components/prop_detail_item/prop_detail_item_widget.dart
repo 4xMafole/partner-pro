@@ -1,11 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'prop_detail_item_model.dart';
 export 'prop_detail_item_model.dart';
 
@@ -15,7 +10,7 @@ class PropDetailItemWidget extends StatefulWidget {
     required this.icon,
     String? hint,
     this.initialValue,
-  }) : this.hint = hint ?? 'hint...';
+  }) : hint = hint ?? 'hint...';
 
   final Widget? icon;
   final String hint;
@@ -39,7 +34,7 @@ class _PropDetailItemWidgetState extends State<PropDetailItemWidget> {
     super.initState();
     _model = createModel(context, () => PropDetailItemModel());
 
-    _model.textController ??= TextEditingController(text: widget!.initialValue);
+    _model.textController ??= TextEditingController(text: widget.initialValue);
     _model.textFieldFocusNode ??= FocusNode();
   }
 
@@ -69,7 +64,7 @@ class _PropDetailItemWidgetState extends State<PropDetailItemWidget> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              widget!.icon!,
+              widget.icon!,
               Flexible(
                 child: TextFormField(
                   controller: _model.textController,
@@ -79,7 +74,7 @@ class _PropDetailItemWidgetState extends State<PropDetailItemWidget> {
                   obscureText: false,
                   decoration: InputDecoration(
                     isDense: false,
-                    hintText: widget!.hint,
+                    hintText: widget.hint,
                     hintStyle: FlutterFlowTheme.of(context)
                         .labelMedium
                         .override(

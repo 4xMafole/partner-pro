@@ -1,14 +1,9 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/seller/empty_listing/empty_listing_widget.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'agent_recent_activity_model.dart';
 export 'agent_recent_activity_model.dart';
 
@@ -83,7 +78,7 @@ class _AgentRecentActivityWidgetState extends State<AgentRecentActivityWidget> {
           Flexible(
             child: Builder(
               builder: (context) {
-                final activityItem = widget!.activities?.toList() ?? [];
+                final activityItem = widget.activities?.toList() ?? [];
                 if (activityItem.isEmpty) {
                   return Center(
                     child: EmptyListingWidget(
