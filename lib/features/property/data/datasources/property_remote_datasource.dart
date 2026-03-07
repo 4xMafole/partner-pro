@@ -1,20 +1,19 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_endpoints.dart';
+
+import '../../../../core/constants/app_constants.dart';
 import '../models/property_model.dart';
 
-/// Remote data source for property-related MuleSoft API calls.
+/// Remote data source for property-related Firestore operations.
 @lazySingleton
 class PropertyRemoteDataSource {
-  final ApiClient _client;
+  final FirebaseFirestore _firestore;
 
-  PropertyRemoteDataSource(this._client);
+  PropertyRemoteDataSource(this._firestore);
 
   // -- Properties Search --
 
   /// Fetches properties by zip code, city, state, and optional filters.
-  /// Maps to: GET /properties/user
   Future<List<PropertyDataClass>> getAllProperties({
     required String requesterId,
     String? zip,
@@ -24,228 +23,199 @@ class PropertyRemoteDataSource {
     bool? isPendingUnderContract,
     bool? zillowProperties,
   }) async {
-    final queryParams = <String, String>{};
-    if (zip != null && zip.isNotEmpty) queryParams['zip'] = zip;
-    if (city != null && city.isNotEmpty) queryParams['city'] = city;
-    if (state != null && state.isNotEmpty) queryParams['state'] = state;
+    Query<Map<String, dynamic>> query =
+        _firestore.collection(AppConstants.propertiesCollection);
+
+    if (zip != null && zip.isNotEmpty) {
+      query = query.where('zip', isEqualTo: zip);
+    }
+    if (city != null && city.isNotEmpty) {
+      query = query.where('city', isEqualTo: city);
+    }
+    if (state != null && state.isNotEmpty) {
+      query = query.where('state', isEqualTo: state);
+    }
     if (homeType != null && homeType.isNotEmpty) {
-      queryParams['home_type'] = homeType;
+      query = query.where('home_type', isEqualTo: homeType);
     }
     if (isPendingUnderContract != null) {
-      queryParams['isPendingUnderContract'] =
-          isPendingUnderContract.toString();
-    }
-    if (zillowProperties != null) {
-      queryParams['zillowProperties'] = zillowProperties.toString();
+      query = query.where('isPendingUnderContract',
+          isEqualTo: isPendingUnderContract);
     }
 
-    final uri = Uri.parse('${ApiEndpoints.propertiesBase}/properties/user')
-        .replace(queryParameters: queryParams);
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data = response is List ? response : (response['properties'] ?? []);
-    return data
-        .map((e) => PropertyDataClass.fromJson(e as Map<String, dynamic>))
+    final snap = await query.limit(AppConstants.defaultPageSize).get();
+    return snap.docs
+        .map((doc) =>
+            PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
   }
 
   /// Fetches properties by Zillow/Zpid ID.
-  /// Maps to: GET /properties/{zpId}
   Future<List<PropertyDataClass>> getPropertiesByZipId({
     required String zpId,
     required String requesterId,
   }) async {
-    final response = await _client.get(
-      '${ApiEndpoints.propertiesBase}/properties/$zpId',
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data = response is List ? response : (response['properties'] ?? []);
-    return data
-        .map((e) => PropertyDataClass.fromJson(e as Map<String, dynamic>))
+    final snap = await _firestore
+        .collection(AppConstants.propertiesCollection)
+        .where('zpId', isEqualTo: zpId)
+        .get();
+    return snap.docs
+        .map((doc) =>
+            PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
   }
 
   // -- Favorites --
 
   /// Fetches user's favorite properties.
-  /// Maps to: GET /favorites/user
   Future<List<Map<String, dynamic>>> getFavorites({
     required String userId,
     required String requesterId,
   }) async {
-    final uri = Uri.parse('${ApiEndpoints.favoritesBase}/favorites/user')
-        .replace(queryParameters: {'user_id': userId});
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data = response is List ? response : (response['favorites'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await _firestore
+        .collection(AppConstants.favoritesCollection)
+        .where('user_id', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   /// Adds a property to favorites.
-  /// Maps to: POST /favorites/user
   Future<void> addFavorite({
     required String userId,
     required String propertyId,
     required String requesterId,
     String notes = '',
   }) async {
-    await _client.post(
-      '${ApiEndpoints.favoritesBase}/favorites/user',
-      headers: {'requester-id': requesterId},
-      body: {
-        'user_id': userId,
-        'property_id': propertyId,
-        'status': true,
-        'notes': notes,
-        'created_by': userId,
-      },
-    );
+    await _firestore.collection(AppConstants.favoritesCollection).add({
+      'user_id': userId,
+      'property_id': propertyId,
+      'status': true,
+      'notes': notes,
+      'created_by': userId,
+      'created_at': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Removes a property from favorites.
-  /// Maps to: DELETE /favorites/user
   Future<void> removeFavorite({
     required String userId,
     required String propertyId,
     required String requesterId,
   }) async {
-    await _client.delete(
-      '${ApiEndpoints.favoritesBase}/favorites/user',
-      headers: {'requester-id': requesterId},
-      body: {
-        'user_id': userId,
-        'property_id': propertyId,
-      },
-    );
+    final snap = await _firestore
+        .collection(AppConstants.favoritesCollection)
+        .where('user_id', isEqualTo: userId)
+        .where('property_id', isEqualTo: propertyId)
+        .limit(1)
+        .get();
+    for (final doc in snap.docs) {
+      await doc.reference.delete();
+    }
   }
 
   /// Updates favorite notes.
-  /// Maps to: PATCH /favorites/user
   Future<void> updateFavoriteNotes({
     required String userId,
     required String propertyId,
     required String notes,
     required String requesterId,
   }) async {
-    await _client.put(
-      '${ApiEndpoints.favoritesBase}/favorites/user',
-      headers: {'requester-id': requesterId},
-      body: {
-        'user_id': userId,
-        'property_id': propertyId,
+    final snap = await _firestore
+        .collection(AppConstants.favoritesCollection)
+        .where('user_id', isEqualTo: userId)
+        .where('property_id', isEqualTo: propertyId)
+        .limit(1)
+        .get();
+    for (final doc in snap.docs) {
+      await doc.reference.update({
         'notes': notes,
-      },
-    );
+        'updated_at': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   // -- Saved Searches --
 
   /// Gets user's saved searches.
-  /// Maps to: GET /saved-search/user
   Future<List<Map<String, dynamic>>> getSavedSearches({
     required String userId,
     required String requesterId,
   }) async {
-    final uri = Uri.parse('${ApiEndpoints.savedSearchBase}/saved-search/user')
-        .replace(queryParameters: {'user_id': userId});
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data = response is List ? response : (response['saved_searches'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .where('user_id', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   /// Saves a search query.
-  /// Maps to: POST /saved-search/user
   Future<void> saveSearch({
     required String userId,
     required String inputField,
     required Map<String, dynamic> propertyFilter,
     required String requesterId,
   }) async {
-    await _client.post(
-      '${ApiEndpoints.savedSearchBase}/saved-search/user',
-      headers: {'requester-id': requesterId},
-      body: {
-        'user_id': userId,
-        'status': true,
-        'search': {
-          'input_field': inputField,
-          'property': propertyFilter,
-        },
+    await _firestore.collection(AppConstants.savedSearchesCollection).add({
+      'user_id': userId,
+      'status': true,
+      'search': {
+        'input_field': inputField,
+        'property': propertyFilter,
       },
-    );
+      'created_at': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Deletes a saved search.
-  /// Maps to: DELETE /saved-search/user
   Future<void> deleteSavedSearch({
     required String searchId,
     required String requesterId,
   }) async {
-    await _client.delete(
-      '${ApiEndpoints.savedSearchBase}/saved-search/user',
-      headers: {'requester-id': requesterId},
-      body: {'id': searchId},
-    );
+    await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .doc(searchId)
+        .delete();
   }
 
   // -- Show Property (Showings) --
 
   /// Gets showing requests for a user.
-  /// Maps to: GET /user/showproperty
   Future<List<Map<String, dynamic>>> getShowings({
     required String userId,
     required String requesterId,
   }) async {
-    final uri = Uri.parse('${ApiEndpoints.showPropertyBase}/user/showproperty')
-        .replace(queryParameters: {'user_id': userId});
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data = response is List ? response : [];
-    return data.cast<Map<String, dynamic>>();
+    final snap = await _firestore
+        .collection(AppConstants.showingsCollection)
+        .where('user_id', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   /// Creates a new showing request.
-  /// Maps to: POST /user/showproperty
   Future<Map<String, dynamic>> createShowing({
     required String requesterId,
     required Map<String, dynamic> showingData,
   }) async {
-    final response = await _client.post(
-      '${ApiEndpoints.showPropertyBase}/user/showproperty',
-      headers: {'requester-id': requesterId},
-      body: showingData,
-    );
-    return response as Map<String, dynamic>;
+    final docRef =
+        await _firestore.collection(AppConstants.showingsCollection).add({
+      ...showingData,
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    final snap = await docRef.get();
+    return {...snap.data()!, 'id': snap.id};
   }
 
   /// Cancels a showing request.
-  /// Maps to: DELETE /user/showproperty
   Future<void> cancelShowing({
     required String showingId,
     required String requesterId,
   }) async {
-    await _client.delete(
-      '${ApiEndpoints.showPropertyBase}/user/showproperty',
-      headers: {'requester-id': requesterId},
-      body: {'id': showingId},
-    );
+    await _firestore
+        .collection(AppConstants.showingsCollection)
+        .doc(showingId)
+        .delete();
   }
 }

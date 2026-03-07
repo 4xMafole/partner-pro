@@ -1,28 +1,33 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
+
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 
-/// Remote data source for document-related MuleSoft API + DocuSeal calls.
+/// Remote data source for document Firestore operations + DocuSeal/ApiFlow external APIs.
 @lazySingleton
 class DocumentRemoteDataSource {
+  final FirebaseFirestore _firestore;
   final ApiClient _client;
 
-  DocumentRemoteDataSource(this._client);
+  DocumentRemoteDataSource(this._firestore, this._client);
 
   static const _docuSealToken = 'DOCUSEAL_TOKEN_REMOVED';
 
-  // -- IWO Documents API --
+  // -- Documents (Firestore) --
 
   /// Get document by ID.
   Future<Map<String, dynamic>> getDocument({
     required String documentId,
     required String requesterId,
   }) async {
-    final response = await _client.get(
-      '${ApiEndpoints.documentsBase}/documents/$documentId',
-      headers: {'requester-id': requesterId},
-    );
-    return response as Map<String, dynamic>;
+    final doc = await _firestore
+        .collection(AppConstants.documentsCollection)
+        .doc(documentId)
+        .get();
+    if (!doc.exists) return {};
+    return {...doc.data()!, 'id': doc.id};
   }
 
   /// Get all documents for a user.
@@ -30,16 +35,12 @@ class DocumentRemoteDataSource {
     required String userId,
     required String requesterId,
   }) async {
-    final uri = Uri.parse('${ApiEndpoints.documentsBase}/documents/user')
-        .replace(queryParameters: {'user_id': userId});
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-    final List<dynamic> data =
-        response is List ? response : (response['documents'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await _firestore
+        .collection(AppConstants.documentsCollection)
+        .where('user_id', isEqualTo: userId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   /// Get documents for a specific property.
@@ -47,16 +48,15 @@ class DocumentRemoteDataSource {
     required String propertyId,
     required String requesterId,
   }) async {
-    final response = await _client.get(
-      '${ApiEndpoints.documentsBase}/documents/user/$propertyId',
-      headers: {'requester-id': requesterId},
-    );
-    final List<dynamic> data =
-        response is List ? response : (response['documents'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await _firestore
+        .collection(AppConstants.documentsCollection)
+        .where('property_id', isEqualTo: propertyId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
-  /// Upload a document.
+  /// Upload a document (metadata to Firestore).
   Future<Map<String, dynamic>> uploadDocument({
     required String requesterId,
     required String userId,
@@ -68,23 +68,22 @@ class DocumentRemoteDataSource {
     String? propertyId,
     String? sellerId,
   }) async {
-    final body = <String, dynamic>{
+    final data = <String, dynamic>{
       'user_id': userId,
       'document_directory': documentDirectory,
       'document_file': documentFile,
       'document_type': documentType,
       'document_name': documentName,
       'document_size': documentSize,
+      'created_at': FieldValue.serverTimestamp(),
     };
-    if (propertyId != null) body['property_id'] = propertyId;
-    if (sellerId != null) body['seller_id'] = sellerId;
+    if (propertyId != null) data['property_id'] = propertyId;
+    if (sellerId != null) data['seller_id'] = sellerId;
 
-    final response = await _client.post(
-      '${ApiEndpoints.documentsBase}/documents/user',
-      headers: {'requester-id': requesterId},
-      body: body,
-    );
-    return response as Map<String, dynamic>;
+    final docRef =
+        await _firestore.collection(AppConstants.documentsCollection).add(data);
+    final snap = await docRef.get();
+    return {...snap.data()!, 'id': snap.id};
   }
 
   // -- DocuSeal E-Signature API --

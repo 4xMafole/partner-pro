@@ -1,18 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
-import '../network/api_client.dart';
-import '../network/api_endpoints.dart';
 
-/// Service for sending emails and SMS via the MuleSoft Email API.
+/// Service for sending emails and SMS via Firestore-triggered Cloud Functions.
+///
+/// Emails are written to the `mail` collection (compatible with Firebase
+/// "Trigger Email from Firestore" extension). SMS messages are written to
+/// the `sms_messages` collection for processing by a Cloud Function.
 @lazySingleton
 class EmailSmsService {
-  final ApiClient _client;
+  final FirebaseFirestore _firestore;
 
-  EmailSmsService(this._client);
+  EmailSmsService(this._firestore);
 
   static const String _fromEmail = 'support@mypartnerpro.com';
 
-  /// Send an email via MuleSoft.
-  /// Maps to: POST /api/v1/claude-email
+  /// Queue an email for sending via the `mail` collection.
   Future<void> sendEmail({
     required String to,
     required String subject,
@@ -23,37 +25,32 @@ class EmailSmsService {
     String requesterId = '',
   }) async {
     final data = <String, dynamic>{
-      'from': from,
       'to': to,
-      'subject': subject,
-      'contentType': contentType,
-      'body': body,
+      'from': from,
+      'message': {
+        'subject': subject,
+        'html': body,
+      },
+      'createdAt': FieldValue.serverTimestamp(),
     };
     if (cc != null && cc.isNotEmpty) data['cc'] = cc;
 
-    await _client.post(
-      '${ApiEndpoints.emailApiBase}/api/v1/claude-email',
-      headers: {'requester-id': requesterId},
-      body: data,
-    );
+    await _firestore.collection('mail').add(data);
   }
 
-  /// Send an SMS via MuleSoft.
-  /// Maps to: POST /api/v1/claude-sms
+  /// Queue an SMS for sending via the `sms_messages` collection.
   Future<void> sendSms({
     required String recipient,
     required String content,
     required String sender,
     String requesterId = '',
   }) async {
-    await _client.post(
-      '${ApiEndpoints.emailApiBase}/api/v1/claude-sms',
-      headers: {'requester-id': requesterId},
-      body: {
-        'sender': sender,
-        'recipient': recipient,
-        'content': content,
-      },
-    );
+    await _firestore.collection('sms_messages').add({
+      'sender': sender,
+      'recipient': recipient,
+      'content': content,
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 }

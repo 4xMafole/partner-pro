@@ -1,18 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_endpoints.dart';
 
-/// Remote data source for offer-related MuleSoft API calls.
+import '../../../../core/constants/app_constants.dart';
+
+/// Remote data source for offer-related Firestore operations.
 @lazySingleton
 class OfferRemoteDataSource {
-  final ApiClient _client;
+  final FirebaseFirestore _firestore;
 
-  OfferRemoteDataSource(this._client);
+  OfferRemoteDataSource(this._firestore);
 
   // -- Get Offers --
 
   /// Fetches offers for a buyer user.
-  /// Maps to: GET /offers/user
   Future<List<Map<String, dynamic>>> getUserOffers({
     required String requesterId,
     String? propertyId,
@@ -20,79 +20,79 @@ class OfferRemoteDataSource {
     String? sellerId,
     String? status,
   }) async {
-    final queryParams = <String, String>{};
-    if (propertyId != null) queryParams['property_id'] = propertyId;
-    if (buyerId != null) queryParams['buyer'] = buyerId;
-    if (sellerId != null) queryParams['seller'] = sellerId;
-    if (status != null) queryParams['status'] = status;
+    Query<Map<String, dynamic>> query =
+        _firestore.collection(AppConstants.offersCollection);
+    if (propertyId != null) {
+      query = query.where('property_id', isEqualTo: propertyId);
+    }
+    if (buyerId != null) query = query.where('buyer', isEqualTo: buyerId);
+    if (sellerId != null) query = query.where('seller', isEqualTo: sellerId);
+    if (status != null) query = query.where('status', isEqualTo: status);
 
-    final uri = Uri.parse('${ApiEndpoints.offersBase}/offers/user')
-        .replace(queryParameters: queryParams);
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data =
-        response is List ? response : (response['offers'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await query.orderBy('created_at', descending: true).get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   /// Fetches offers from agent perspective.
-  /// Maps to: GET /offers/admin
   Future<List<Map<String, dynamic>>> getAgentOffers({
     required String requesterId,
     String? status,
   }) async {
-    final queryParams = <String, String>{};
-    if (status != null) queryParams['status'] = status;
+    Query<Map<String, dynamic>> query = _firestore
+        .collection(AppConstants.offersCollection)
+        .where('agent_id', isEqualTo: requesterId);
+    if (status != null) query = query.where('status', isEqualTo: status);
 
-    final uri = Uri.parse('${ApiEndpoints.offersBase}/offers/admin')
-        .replace(queryParameters: queryParams);
-
-    final response = await _client.get(
-      uri.toString(),
-      headers: {'requester-id': requesterId},
-    );
-
-    final List<dynamic> data =
-        response is List ? response : (response['offers'] ?? []);
-    return data.cast<Map<String, dynamic>>();
+    final snap = await query.orderBy('created_at', descending: true).get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   // -- Create / Update Offers --
 
   /// Creates a new offer.
-  /// Maps to: POST /offers/user
-  /// Returns: { offerID, createdDate, userID }
   Future<Map<String, dynamic>> createOffer({
     required String requesterId,
     required Map<String, dynamic> offerData,
   }) async {
-    final response = await _client.post(
-      '${ApiEndpoints.offersBase}/offers/user',
-      headers: {'requester-id': requesterId},
-      body: offerData,
-    );
-    return response as Map<String, dynamic>;
+    final docRef =
+        await _firestore.collection(AppConstants.offersCollection).add({
+      ...offerData,
+      'created_by': requesterId,
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    return {
+      'offerID': docRef.id,
+      'createdDate': DateTime.now().toIso8601String(),
+      'userID': requesterId,
+    };
   }
 
-  /// Updates an existing offer via PATCH (transactions API).
-  /// Maps to: PATCH on dev-iwo-transactions endpoint
+  /// Updates an existing offer.
   Future<Map<String, dynamic>> updateOffer({
     required String requesterId,
     required Map<String, dynamic> offerData,
   }) async {
-    // The old code used a separate transactions API for patches
-    const transactionsBase =
-        'https://dev-iwo-transactions.us-w2.cloudhub.io/api/v1';
+    final offerId = offerData['offerID'] as String? ??
+        offerData['id'] as String? ??
+        '';
+    if (offerId.isEmpty) {
+      throw ArgumentError('offerData must contain offerID or id');
+    }
 
-    final response = await _client.put(
-      '$transactionsBase/offers/user',
-      headers: {'requester-id': requesterId},
-      body: offerData,
-    );
-    return response as Map<String, dynamic>;
+    final updateData = Map<String, dynamic>.from(offerData)
+      ..remove('offerID')
+      ..remove('id');
+    updateData['updated_at'] = FieldValue.serverTimestamp();
+    updateData['updated_by'] = requesterId;
+
+    await _firestore
+        .collection(AppConstants.offersCollection)
+        .doc(offerId)
+        .update(updateData);
+    final snap = await _firestore
+        .collection(AppConstants.offersCollection)
+        .doc(offerId)
+        .get();
+    return {...snap.data()!, 'id': snap.id};
   }
 }

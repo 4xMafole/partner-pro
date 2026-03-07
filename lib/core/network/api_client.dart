@@ -2,19 +2,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 
-import '../constants/app_constants.dart';
 import '../error/exceptions.dart';
 
-/// Central HTTP client for all API calls.
+/// Central HTTP client for external API calls (DocuSeal, ApiFlow, etc.).
 ///
-/// Endpoints can be either:
-/// - A full URL (starts with http/https) — used as-is
-/// - A relative path — prepended with [AppConstants.propertyApiBaseUrl]
+/// All endpoints must be full URLs starting with http:// or https://.
 @lazySingleton
 class ApiClient {
   final http.Client _client;
 
   ApiClient() : _client = http.Client();
+
+  static const _timeout = Duration(seconds: 30);
 
   Map<String, String> get _defaultHeaders => {
         'Content-Type': 'application/json',
@@ -25,7 +24,7 @@ class ApiClient {
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
       return Uri.parse(endpoint);
     }
-    return Uri.parse('${AppConstants.propertyApiBaseUrl}$endpoint');
+    throw ArgumentError('ApiClient requires a full URL. Received: $endpoint');
   }
 
   Future<dynamic> get(
@@ -44,7 +43,7 @@ class ApiClient {
     final response = await _client.get(
       uri,
       headers: {..._defaultHeaders, ...?headers},
-    ).timeout(AppConstants.apiTimeout);
+    ).timeout(_timeout);
 
     return _handleResponse(response);
   }
@@ -60,7 +59,7 @@ class ApiClient {
           headers: {..._defaultHeaders, ...?headers},
           body: body != null ? jsonEncode(body) : null,
         )
-        .timeout(AppConstants.apiTimeout);
+        .timeout(_timeout);
 
     return _handleResponse(response);
   }
@@ -76,7 +75,7 @@ class ApiClient {
           headers: {..._defaultHeaders, ...?headers},
           body: body != null ? jsonEncode(body) : null,
         )
-        .timeout(AppConstants.apiTimeout);
+        .timeout(_timeout);
 
     return _handleResponse(response);
   }
@@ -92,7 +91,7 @@ class ApiClient {
           headers: {..._defaultHeaders, ...?headers},
           body: body != null ? jsonEncode(body) : null,
         )
-        .timeout(AppConstants.apiTimeout);
+        .timeout(_timeout);
 
     return _handleResponse(response);
   }
@@ -108,7 +107,7 @@ class ApiClient {
           headers: {..._defaultHeaders, ...?headers},
           body: body != null ? jsonEncode(body) : null,
         )
-        .timeout(AppConstants.apiTimeout);
+        .timeout(_timeout);
 
     return _handleResponse(response);
   }
