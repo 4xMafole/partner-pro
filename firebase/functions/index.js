@@ -231,11 +231,12 @@ function getCharForIndex(charIdx) {
 }
 const stripeModule = require("stripe");
 
-// Credentials
+// Stripe credentials from Firebase Functions config.
+// Set with: firebase functions:config:set stripe.live_secret="sk_live_..." stripe.test_secret="sk_test_..."
 const kStripeProdSecretKey =
-  "STRIPE_LIVE_KEY_REMOVED";
+  (functions.config().stripe && functions.config().stripe.live_secret) || "";
 const kStripeTestSecretKey =
-  "STRIPE_TEST_KEY_REMOVED";
+  (functions.config().stripe && functions.config().stripe.test_secret) || "";
 
 const secretKey = (isProd) =>
   isProd ? kStripeProdSecretKey : kStripeTestSecretKey;

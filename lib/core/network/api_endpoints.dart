@@ -1,3 +1,5 @@
+import '../config/env_config.dart';
+
 /// Configuration for external API service URLs.
 ///
 /// MuleSoft endpoints have been removed — all data operations use Firestore.
@@ -8,6 +10,5 @@ class ApiEndpoints {
   // ── External Services ─────────────────────────────────
   static const String docuSealBase = 'https://api.docuseal.com';
 
-  static const String pdfGeneratorUrl =
-      'https://gw.apiflow.online/api/APIFLOW_ID_REMOVED/generate';
+  static String get pdfGeneratorUrl => EnvConfig.apiFlowUrl;
 }

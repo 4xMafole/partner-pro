@@ -13,17 +13,17 @@ import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '/core/config/env_config.dart';
 
 Future<PdfAssetStruct> generatePdf(String sellerName, String buyerName,
     String address, String purchasePrice, String loanType) async {
   Map<String, dynamic> requestQueryParameters = {};
-  final url = Uri.https('gw.apiflow.online',
-      'api/APIFLOW_ID_REMOVED/generate', requestQueryParameters);
+  final apiFlowUrl = Uri.parse(EnvConfig.apiFlowUrl);
+  final url = Uri.https(apiFlowUrl.host, apiFlowUrl.path, requestQueryParameters);
   Map<String, String> requestHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Authorization':
-        'Bearer APIFLOW_TOKEN_REMOVED'
+    'Authorization': 'Bearer ${EnvConfig.apiFlowToken}'
   };
   var requestBody = json.encode({
     'sellerName': sellerName,

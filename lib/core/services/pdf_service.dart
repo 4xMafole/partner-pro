@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
 
+import '../config/env_config.dart';
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
 
@@ -18,8 +19,7 @@ class PdfService {
 
   PdfService(this._client);
 
-  static const String _apiFlowToken =
-      'APIFLOW_TOKEN_REMOVED';
+  static String get _apiFlowToken => EnvConfig.apiFlowToken;
 
   /// Generate an offer PDF via ApiFlow.
   Future<GeneratedPdf> generateOfferPdf({

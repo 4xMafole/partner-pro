@@ -1,6 +1,7 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/core/config/env_config.dart';
 import '/flutter_flow/flutter_flow_google_map.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_place_picker.dart';
@@ -104,11 +105,11 @@ class _SellerAddPropertyLocationWidgetState
                           padding: EdgeInsets.all(4.0),
                           child: FlutterFlowPlacePicker(
                             iOSGoogleMapsApiKey:
-                                'GOOGLE_MAPS_KEY_REMOVED',
+                                EnvConfig.googleMapsKey,
                             androidGoogleMapsApiKey:
-                                'GOOGLE_MAPS_KEY_REMOVED',
+                                EnvConfig.googleMapsKey,
                             webGoogleMapsApiKey:
-                                'GOOGLE_MAPS_KEY_REMOVED',
+                                EnvConfig.googleMapsKey,
                             onSelect: (place) async {
                               safeSetState(
                                   () => _model.placePickerValue = place);

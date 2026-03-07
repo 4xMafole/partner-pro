@@ -21,7 +21,14 @@ build/
 *.swo
 
 # Environment secrets
+.env
+!.env.example
 assets/env/environment.json
+
+# Firebase platform config (download from Firebase Console)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase/functions/.runtimeconfig.json
 
 # iOS
 ios/Pods/
@@ -51,3 +58,6 @@ Thumbs.db
 # Logs
 *.log
 flutter_*.log
+
+# Build tools (may contain old code snapshots with secrets)
+tools/

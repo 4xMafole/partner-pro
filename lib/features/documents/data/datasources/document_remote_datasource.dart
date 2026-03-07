@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/config/env_config.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
@@ -13,7 +14,7 @@ class DocumentRemoteDataSource {
 
   DocumentRemoteDataSource(this._firestore, this._client);
 
-  static const _docuSealToken = 'DOCUSEAL_TOKEN_REMOVED';
+  static String get _docuSealToken => EnvConfig.docuSealToken;
 
   // -- Documents (Firestore) --
 
@@ -161,8 +162,7 @@ class DocumentRemoteDataSource {
     required String purchasePrice,
     required String loanType,
   }) async {
-    const authToken =
-        'APIFLOW_TOKEN_REMOVED';
+    final authToken = EnvConfig.apiFlowToken;
 
     final response = await _client.post(
       ApiEndpoints.pdfGeneratorUrl,

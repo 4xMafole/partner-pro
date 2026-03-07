@@ -77,7 +77,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="GOOGLE_MAPS_KEY_REMOVED"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${GOOGLE_MAPS_KEY}"/>
 
         <meta-data android:name="com.google.android.gms.wallet.api.enabled" android:value="true"/>
 

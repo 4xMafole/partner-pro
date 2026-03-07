@@ -1,3 +1,4 @@
+import '../../core/config/env_config.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import '../schema/structs/index.dart';
@@ -2157,7 +2158,7 @@ class DocuSealAPIGroup {
   static String getBaseUrl() => 'https://api.docuseal.com';
   static Map<String, String> headers = {
     'Accept': 'application/json',
-    'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+    'X-Auth-Token': EnvConfig.docuSealToken,
   };
   static GetTemplatesCall getTemplatesCall = GetTemplatesCall();
   static GetTemplateCall getTemplateCall = GetTemplateCall();
@@ -2202,7 +2203,7 @@ class GetTemplatesCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2228,7 +2229,7 @@ class GetTemplateCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2264,7 +2265,7 @@ class UpdateTemplateCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2293,7 +2294,7 @@ class ArchiveTemplateCall {
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2326,7 +2327,7 @@ class GetSubmissionsCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {
@@ -2690,7 +2691,7 @@ class CreateSubmissionCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -2728,7 +2729,7 @@ class GetSubmissionCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2755,7 +2756,7 @@ class ArchiveSubmissionCall {
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2791,7 +2792,7 @@ class CreateSubmissionsFromEmailsCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2820,7 +2821,7 @@ class GetSubmitterCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2873,7 +2874,7 @@ class UpdateSubmitterCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2909,7 +2910,7 @@ class GetSubmittersCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {
@@ -2959,7 +2960,7 @@ class AddDocumentToTemplateCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -2994,7 +2995,7 @@ class CloneTemplateCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -3038,7 +3039,7 @@ class CreateTemplateFromHtmlCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -3107,7 +3108,7 @@ class CreateTemplateFromDocxCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -3178,7 +3179,7 @@ class CreateTemplateFromPdfCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -3215,7 +3216,7 @@ class MergeTemplateCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': 'DOCUSEAL_TOKEN_REMOVED',
+        'X-Auth-Token': EnvConfig.docuSealToken,
         'X-Auth-Token': '${xAuthToken}',
       },
       params: {},
@@ -3808,7 +3809,7 @@ class GooglePlacePickerCall {
         'components': components,
         'location': location,
         'radius': radius,
-        'key': "GOOGLE_MAPS_KEY_REMOVED",
+        'key': EnvConfig.googleMapsKey,
       },
       returnBody: true,
       encodeBodyUtf8: false,
@@ -3844,7 +3845,7 @@ class GetPlaceNameCall {
     return ApiManager.instance.makeApiCall(
       callName: 'getPlaceName',
       apiUrl:
-          'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=GOOGLE_MAPS_KEY_REMOVED',
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${EnvConfig.googleMapsKey}',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -3873,7 +3874,7 @@ class GetGoogleGeoCodeCall {
     return ApiManager.instance.makeApiCall(
       callName: 'getGoogleGeoCode',
       apiUrl:
-          'https://maps.googleapis.com/maps/api/geocode/json?address=2101+West+82nd+Place,+Chicago,+IL,+USA&key=GOOGLE_MAPS_KEY_REMOVED',
+          'https://maps.googleapis.com/maps/api/geocode/json?address=2101+West+82nd+Place,+Chicago,+IL,+USA&key=${EnvConfig.googleMapsKey}',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
