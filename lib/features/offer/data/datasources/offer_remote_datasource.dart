@@ -72,9 +72,8 @@ class OfferRemoteDataSource {
     required String requesterId,
     required Map<String, dynamic> offerData,
   }) async {
-    final offerId = offerData['offerID'] as String? ??
-        offerData['id'] as String? ??
-        '';
+    final offerId =
+        offerData['offerID'] as String? ?? offerData['id'] as String? ?? '';
     if (offerId.isEmpty) {
       throw ArgumentError('offerData must contain offerID or id');
     }

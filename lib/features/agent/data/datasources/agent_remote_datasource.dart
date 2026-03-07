@@ -44,8 +44,7 @@ class UserAccountRemoteDataSource {
   Future<Map<String, dynamic>> createUserAccount({
     required Map<String, dynamic> userData,
   }) async {
-    final userId =
-        userData['uid'] as String? ?? userData['id'] as String?;
+    final userId = userData['uid'] as String? ?? userData['id'] as String?;
     if (userId != null && userId.isNotEmpty) {
       await _firestore
           .collection(AppConstants.usersCollection)
@@ -111,8 +110,7 @@ class UserAccountRemoteDataSource {
     required String requesterId,
     required Map<String, dynamic> agentData,
   }) async {
-    final agentId =
-        agentData['uid'] as String? ?? agentData['id'] as String?;
+    final agentId = agentData['uid'] as String? ?? agentData['id'] as String?;
     if (agentId != null && agentId.isNotEmpty) {
       await _firestore
           .collection(AppConstants.usersCollection)
@@ -171,15 +169,14 @@ class UserAccountRemoteDataSource {
     // Firestore 'in' queries support max 30 items per batch
     final clients = <Map<String, dynamic>>[];
     for (var i = 0; i < clientIds.length; i += 30) {
-      final end =
-          (i + 30 > clientIds.length) ? clientIds.length : i + 30;
+      final end = (i + 30 > clientIds.length) ? clientIds.length : i + 30;
       final batch = clientIds.sublist(i, end);
       final snap = await _firestore
           .collection(AppConstants.usersCollection)
           .where(FieldPath.documentId, whereIn: batch)
           .get();
-      clients.addAll(snap.docs.map(
-          (doc) => {...doc.data(), 'id': doc.id, 'clientID': doc.id}));
+      clients.addAll(snap.docs
+          .map((doc) => {...doc.data(), 'id': doc.id, 'clientID': doc.id}));
     }
     return clients;
   }
@@ -205,8 +202,7 @@ class UserAccountRemoteDataSource {
 
     final activities = <Map<String, dynamic>>[];
     for (var i = 0; i < clientIds.length; i += 30) {
-      final end =
-          (i + 30 > clientIds.length) ? clientIds.length : i + 30;
+      final end = (i + 30 > clientIds.length) ? clientIds.length : i + 30;
       final batch = clientIds.sublist(i, end);
       final snap = await _firestore
           .collection('activities')
@@ -214,8 +210,7 @@ class UserAccountRemoteDataSource {
           .orderBy('created_at', descending: true)
           .limit(50)
           .get();
-      activities
-          .addAll(snap.docs.map((doc) => {...doc.data(), 'id': doc.id}));
+      activities.addAll(snap.docs.map((doc) => {...doc.data(), 'id': doc.id}));
     }
     return activities;
   }

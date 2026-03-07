@@ -45,8 +45,7 @@ class PropertyRemoteDataSource {
 
     final snap = await query.limit(AppConstants.defaultPageSize).get();
     return snap.docs
-        .map((doc) =>
-            PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
+        .map((doc) => PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
   }
 
@@ -60,8 +59,7 @@ class PropertyRemoteDataSource {
         .where('zpId', isEqualTo: zpId)
         .get();
     return snap.docs
-        .map((doc) =>
-            PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
+        .map((doc) => PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
   }
 
