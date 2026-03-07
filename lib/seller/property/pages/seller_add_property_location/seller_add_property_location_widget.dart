@@ -104,12 +104,9 @@ class _SellerAddPropertyLocationWidgetState
                         child: Padding(
                           padding: EdgeInsets.all(4.0),
                           child: FlutterFlowPlacePicker(
-                            iOSGoogleMapsApiKey:
-                                EnvConfig.googleMapsKey,
-                            androidGoogleMapsApiKey:
-                                EnvConfig.googleMapsKey,
-                            webGoogleMapsApiKey:
-                                EnvConfig.googleMapsKey,
+                            iOSGoogleMapsApiKey: EnvConfig.googleMapsKey,
+                            androidGoogleMapsApiKey: EnvConfig.googleMapsKey,
+                            webGoogleMapsApiKey: EnvConfig.googleMapsKey,
                             onSelect: (place) async {
                               safeSetState(
                                   () => _model.placePickerValue = place);

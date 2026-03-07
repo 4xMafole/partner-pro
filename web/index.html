@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -25,17 +26,17 @@
   <meta name="apple-mobile-web-app-title" content="PartnerPro">
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-  window.addEventListener('load', (event) => {
-    const webApp = window.Telegram.WebApp;
+  <script>
+    window.addEventListener('load', (event) => {
+      const webApp = window.Telegram.WebApp;
 
-    // Развернуть приложение на весь экран
-    webApp.expand(true);
+      // Развернуть приложение на весь экран
+      webApp.expand(true);
 
-    // Отключить вертикальные свайпы для сворачивания/закрытия
-    webApp.disableVerticalSwipes(true);
-  });
-</script>
+      // Отключить вертикальные свайпы для сворачивания/закрытия
+      webApp.disableVerticalSwipes(true);
+    });
+  </script>
 
   <meta name="robots" content="noindex" />
 
@@ -44,42 +45,46 @@
 
   <!-- Open Graph & SEO tags -->
   <meta property="og:title" content="i Write Offers" />
-  <meta property="og:description" content="Find your future home, enter your information, and we write the offer for you!" />
-  <meta property="og:image" content="https://storage.googleapis.com/flutterflow-prod-hosting/og_splash_gradient.png" /> 
+  <meta property="og:description"
+    content="Find your future home, enter your information, and we write the offer for you!" />
+  <meta property="og:image" content="https://storage.googleapis.com/flutterflow-prod-hosting/og_splash_gradient.png" />
   <meta name="twitter:title" content="i Write Offers" />
-  <meta name="twitter:description" content="Find your future home, enter your information, and we write the offer for you!" />
+  <meta name="twitter:description"
+    content="Find your future home, enter your information, and we write the offer for you!" />
   <meta name="twitter:image" content="https://storage.googleapis.com/flutterflow-prod-hosting/og_splash_gradient.png" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <title> i Write Offers </title>
   <meta name="description" content="Find your future home, enter your information, and we write the offer for you!" />
-    
+
 
   <!-- Status Bar color in Safari browser (iOS) and PWA -->
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f1f4f8">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#f1f4f8">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#f1f4f8">
 
   <link rel="manifest" href="manifest.json">
-  
-</head>
-<body>
-  
-  <script src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_KEY_PLACEHOLDER"></script>
-    <script src='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs' type='module'></script>
-  <script type='module'>
-  var { pdfjsLib } = globalThis;
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.mjs';
 
-  var pdfRenderOptions = {
-    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/cmaps/',
-    cMapPacked: true,
-  }
+</head>
+
+<body>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_KEY_PLACEHOLDER"></script>
+  <script src='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs' type='module'></script>
+  <script type='module'>
+    var { pdfjsLib } = globalThis;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.mjs';
+
+    var pdfRenderOptions = {
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/cmaps/',
+      cMapPacked: true,
+    }
   </script>
-        
+
   <script src="https://js.stripe.com/v3/"></script>
-  
+
   <script>
-    {{flutter_bootstrap_js}}
+    { { flutter_bootstrap_js } }
   </script>
 </body>
+
 </html>

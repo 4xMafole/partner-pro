@@ -19,7 +19,8 @@ Future<PdfAssetStruct> generatePdf(String sellerName, String buyerName,
     String address, String purchasePrice, String loanType) async {
   Map<String, dynamic> requestQueryParameters = {};
   final apiFlowUrl = Uri.parse(EnvConfig.apiFlowUrl);
-  final url = Uri.https(apiFlowUrl.host, apiFlowUrl.path, requestQueryParameters);
+  final url =
+      Uri.https(apiFlowUrl.host, apiFlowUrl.path, requestQueryParameters);
   Map<String, String> requestHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

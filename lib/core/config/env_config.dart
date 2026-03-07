@@ -48,4 +48,13 @@ abstract final class EnvConfig {
   static const String firebaseMeasurementId = String.fromEnvironment(
     'FIREBASE_MEASUREMENT_ID',
   );
+
+  // ── Facebook Login ─────────────────────────────────────
+  static const String facebookAppId = String.fromEnvironment(
+    'FACEBOOK_APP_ID',
+  );
+
+  static const String facebookClientToken = String.fromEnvironment(
+    'FACEBOOK_CLIENT_TOKEN',
+  );
 }
