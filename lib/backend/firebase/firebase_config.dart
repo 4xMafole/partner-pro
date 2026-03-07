@@ -15,6 +15,10 @@ Future initFirebase() async {
             appId: EnvConfig.firebaseWebAppId,
             measurementId: EnvConfig.firebaseMeasurementId));
   } else {
-    await Firebase.initializeApp();
+    try {
+      await Firebase.initializeApp();
+    } catch (_) {
+      // Already initialized
+    }
   }
 }

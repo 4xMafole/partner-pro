@@ -214,7 +214,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:992691290881:android:cad3b1b2f79c02ef465100",
         "android_client_info": {
-          "package_name": "com.mycompany.partnerpro"
+          "package_name": "com.automaterealestate.partnerpro.dev"
         }
       },
       "oauth_client": [
@@ -222,7 +222,7 @@
           "client_id": "992691290881-2dvd76adbju09ofdmu09468hr524jl8t.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.mycompany.partnerpro",
+            "package_name": "com.automaterealestate.partnerpro.dev",
             "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
           }
         },

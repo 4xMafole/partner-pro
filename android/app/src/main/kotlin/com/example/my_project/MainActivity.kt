@@ -1,4 +1,4 @@
-package com.mycompany.partnerpro
+package com.automaterealestate.partnerpro.dev
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:get_it/get_it.dart';
+
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/onboard_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -37,6 +39,7 @@ import '../../features/documents/presentation/pages/signature_page.dart';
 import '../../features/schedule/presentation/pages/scheduled_showings_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/payments/presentation/pages/subscription_page.dart';
+import '../../features/payments/presentation/bloc/subscription_bloc.dart';
 import '../../features/onboarding/presentation/pages/onboarding_form_page.dart';
 import '../../features/legal/presentation/pages/legal_disclosure_page.dart';
 import '../../features/legal/presentation/pages/terms_of_use_page.dart';
@@ -300,7 +303,10 @@ class AppRouter {
         path: RouteNames.subscription,
         name: 'subscription',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, __) => const SubscriptionPage(),
+        builder: (_, __) => BlocProvider(
+          create: (_) => GetIt.I<SubscriptionBloc>(),
+          child: const SubscriptionPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.agentSubscription,

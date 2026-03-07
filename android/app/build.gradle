@@ -31,7 +31,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.mycompany.partnerpro"
+    namespace "com.automaterealestate.partnerpro.dev"
     compileSdkVersion 35
     
 
@@ -56,11 +56,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.mycompany.partnerpro"
-        minSdkVersion 23
+        applicationId "com.automaterealestate.partnerpro.dev"
+        minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        manifestPlaceholders += [GOOGLE_MAPS_KEY: localProperties.getProperty('GOOGLE_MAPS_KEY', '')]
     }
 
    signingConfigs {
