@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -14,7 +15,12 @@ import '../../data/models/property_model.dart';
 
 class PropertyDetailsPage extends StatefulWidget {
   final String propertyId;
-  const PropertyDetailsPage({super.key, required this.propertyId});
+  final bool isUserFromSearch;
+  const PropertyDetailsPage({
+    super.key,
+    required this.propertyId,
+    this.isUserFromSearch = false,
+  });
 
   @override
   State<PropertyDetailsPage> createState() => _PropertyDetailsPageState();
@@ -199,15 +205,44 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                         ),
                 ),
                 actions: [
-                  IconButton(
-                    onPressed: _toggleFavorite,
-                    icon: Icon(
-                      _isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorite ? AppColors.error : Colors.white,
-                    ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: Row(children: [
+                      GestureDetector(
+                        onTap: _toggleFavorite,
+                        child: Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: _isFavorite ? AppColors.error : Colors.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      GestureDetector(
+                        onTap: () {
+                          final address = p != null ? _buildAddress(p) : 'Property';
+                          final text = 'Check out this property: $address · \$${p?.listPrice ?? 0} · ID: ${widget.propertyId}';
+                          Share.share(text);
+                        },
+                        child: Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.28),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(LucideIcons.share2, color: Colors.white, size: 18.sp),
+                        ),
+                      ),
+                    ]),
                   ),
-                  IconButton(
-                      onPressed: () {}, icon: const Icon(LucideIcons.share2)),
                 ],
               ),
               SliverToBoxAdapter(

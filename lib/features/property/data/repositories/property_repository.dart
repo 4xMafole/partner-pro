@@ -18,6 +18,7 @@ class PropertyRepository {
     String? city,
     String? state,
     String? homeType,
+    String? statusType,
   }) async {
     try {
       final data = await _remote.getAllProperties(
@@ -26,6 +27,7 @@ class PropertyRepository {
         city: city,
         state: state,
         homeType: homeType,
+        statusType: statusType,
       );
       return Right(data);
     } on ServerException catch (e) {
@@ -64,6 +66,7 @@ class PropertyRepository {
     int? maxSquareFeet,
     int? minYearBuilt,
     int? maxYearBuilt,
+    List<String>? homeTypes,
   }) {
     return properties.where((p) {
       final price = p.listPrice;
@@ -81,6 +84,9 @@ class PropertyRepository {
       if (maxSquareFeet != null && sqft > maxSquareFeet) return false;
       if (minYearBuilt != null && year < minYearBuilt) return false;
       if (maxYearBuilt != null && year > maxYearBuilt) return false;
+      if (homeTypes != null && homeTypes.isNotEmpty) {
+        if (!homeTypes.contains(p.propertyType)) return false;
+      }
       return true;
     }).toList();
   }

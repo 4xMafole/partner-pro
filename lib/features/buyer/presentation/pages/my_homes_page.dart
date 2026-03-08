@@ -135,7 +135,8 @@ class _MyHomesPageState extends State<MyHomesPage>
                       }),
                   onTap: () {
                     if (propertyId.isNotEmpty) {
-                      context.push('${RouteNames.propertyDetails}/$propertyId');
+                      context.push(RouteNames.propertyDetails
+                          .replaceFirst(':id', propertyId));
                     }
                   },
                 ));
@@ -183,8 +184,8 @@ class _MyHomesPageState extends State<MyHomesPage>
                           .copyWith(color: _statusColor(statusStr))),
                   trailing: Icon(LucideIcons.chevronRight,
                       size: 18.sp, color: AppColors.textTertiary),
-                  onTap: () =>
-                      context.push('${RouteNames.offerDetails}/${offer.id}'),
+                  onTap: () => context.push(
+                      RouteNames.offerDetails.replaceFirst(':id', offer.id)),
                 ));
           });
     });

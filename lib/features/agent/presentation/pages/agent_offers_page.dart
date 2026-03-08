@@ -91,8 +91,8 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
                   : 'Property ${offer.propertyId}';
               return Card(
                   child: InkWell(
-                onTap: () =>
-                    context.push('${RouteNames.offerDetails}/${offer.id}'),
+                onTap: () => context.push(
+                    RouteNames.offerDetails.replaceFirst(':id', offer.id)),
                 borderRadius: BorderRadius.circular(12.r),
                 child: Padding(
                     padding: EdgeInsets.all(16.w),

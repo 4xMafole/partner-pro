@@ -48,7 +48,9 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       listener: (context, state) {
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.successMessage!), backgroundColor: AppColors.success),
+            SnackBar(
+                content: Text(state.successMessage!),
+                backgroundColor: AppColors.success),
           );
         }
       },
@@ -93,17 +95,21 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                   decoration: BoxDecoration(
                     color: _statusColor(statusStr).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: _statusColor(statusStr).withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: _statusColor(statusStr).withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(LucideIcons.fileText, color: _statusColor(statusStr)),
+                      Icon(LucideIcons.fileText,
+                          color: _statusColor(statusStr)),
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Status', style: AppTypography.labelSmall.copyWith(color: AppColors.textSecondary)),
+                            Text('Status',
+                                style: AppTypography.labelSmall
+                                    .copyWith(color: AppColors.textSecondary)),
                             Text(statusStr.toUpperCase(),
                                 style: AppTypography.titleMedium.copyWith(
                                   color: _statusColor(statusStr),
@@ -114,13 +120,15 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                       ),
                       if (offer.counteredCount > 0)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: AppColors.tertiary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text('${offer.counteredCount} counter(s)',
-                              style: AppTypography.labelSmall.copyWith(color: AppColors.tertiary)),
+                              style: AppTypography.labelSmall
+                                  .copyWith(color: AppColors.tertiary)),
                         ),
                     ],
                   ),
@@ -129,32 +137,45 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                 SizedBox(height: 24.h),
 
                 _SectionHeader('Property'),
-                _DetailRow('Property', offer.property.title.isNotEmpty
-                    ? offer.property.title
-                    : 'Property ${offer.propertyId}'),
+                _DetailRow(
+                    'Property',
+                    offer.property.title.isNotEmpty
+                        ? offer.property.title
+                        : 'Property ${offer.propertyId}'),
                 _DetailRow('Condition', offer.propertyCondition),
 
                 SizedBox(height: 20.h),
 
                 _SectionHeader('Pricing'),
-                _DetailRow('List Price', offer.listPrice.isNotEmpty ? '\${offer.listPrice}' : '-'),
-                _DetailRow('Purchase Price', '\${_formatCurrency(offer.purchasePrice)}'),
-                _DetailRow('Final Price', offer.finalPrice.isNotEmpty ? '\${offer.finalPrice}' : '-'),
+                _DetailRow('List Price',
+                    offer.listPrice.isNotEmpty ? '\${offer.listPrice}' : '-'),
+                _DetailRow('Purchase Price',
+                    '\${_formatCurrency(offer.purchasePrice)}'),
+                _DetailRow('Final Price',
+                    offer.finalPrice.isNotEmpty ? '\${offer.finalPrice}' : '-'),
 
                 SizedBox(height: 20.h),
 
                 _SectionHeader('Financials'),
                 _DetailRow('Loan Type', offer.loanType),
-                _DetailRow('Down Payment', '\${_formatCurrency(offer.downPaymentAmount)}'),
-                _DetailRow('Loan Amount', '\${_formatCurrency(offer.loanAmount)}'),
-                _DetailRow('Seller Credit', '\${_formatCurrency(offer.requestForSellerCredit)}'),
+                _DetailRow('Down Payment',
+                    '\${_formatCurrency(offer.downPaymentAmount)}'),
+                _DetailRow(
+                    'Loan Amount', '\${_formatCurrency(offer.loanAmount)}'),
+                _DetailRow('Seller Credit',
+                    '\${_formatCurrency(offer.requestForSellerCredit)}'),
                 _DetailRow('Deposit Type', offer.depositType),
-                _DetailRow('Deposit Amount', '\${_formatCurrency(offer.depositAmount)}'),
-                _DetailRow('Additional Earnest', '\${_formatCurrency(offer.additionalEarnest)}'),
-                _DetailRow('Option Fee', '\${_formatCurrency(offer.optionFee)}'),
-                _DetailRow('Coverage Amount', '\${_formatCurrency(offer.coverageAmount)}'),
+                _DetailRow('Deposit Amount',
+                    '\${_formatCurrency(offer.depositAmount)}'),
+                _DetailRow('Additional Earnest',
+                    '\${_formatCurrency(offer.additionalEarnest)}'),
+                _DetailRow(
+                    'Option Fee', '\${_formatCurrency(offer.optionFee)}'),
+                _DetailRow('Coverage Amount',
+                    '\${_formatCurrency(offer.coverageAmount)}'),
                 if (offer.closingDate != null)
-                  _DetailRow('Closing Date', '${offer.closingDate!.month}/${offer.closingDate!.day}/${offer.closingDate!.year}'),
+                  _DetailRow('Closing Date',
+                      '${offer.closingDate!.month}/${offer.closingDate!.day}/${offer.closingDate!.year}'),
 
                 SizedBox(height: 20.h),
 
@@ -176,35 +197,39 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                   SizedBox(height: 20.h),
                   _SectionHeader('Addendums (${offer.addendums.length})'),
                   ...offer.addendums.map((a) => Card(
-                    margin: EdgeInsets.only(bottom: 8.h),
-                    child: ListTile(
-                      leading: Icon(LucideIcons.fileText, size: 20.sp, color: AppColors.primary),
-                      title: Text(a.name, style: AppTypography.titleMedium),
-                      subtitle: a.description.isNotEmpty
-                          ? Text(a.description, style: AppTypography.bodySmall, maxLines: 2)
-                          : null,
-                    ),
-                  )),
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        child: ListTile(
+                          leading: Icon(LucideIcons.fileText,
+                              size: 20.sp, color: AppColors.primary),
+                          title: Text(a.name, style: AppTypography.titleMedium),
+                          subtitle: a.description.isNotEmpty
+                              ? Text(a.description,
+                                  style: AppTypography.bodySmall, maxLines: 2)
+                              : null,
+                        ),
+                      )),
                 ],
 
                 if (state.changedFields.isNotEmpty) ...[
                   SizedBox(height: 20.h),
                   _SectionHeader('Changes Detected'),
                   ...state.changedFields.map((field) => Padding(
-                    padding: EdgeInsets.only(bottom: 4.h),
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.arrowRight, size: 14.sp, color: AppColors.tertiary),
-                        SizedBox(width: 8.w),
-                        Text(field, style: AppTypography.bodyMedium.copyWith(color: AppColors.tertiary)),
-                      ],
-                    ),
-                  )),
+                        padding: EdgeInsets.only(bottom: 4.h),
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.arrowRight,
+                                size: 14.sp, color: AppColors.tertiary),
+                            SizedBox(width: 8.w),
+                            Text(field,
+                                style: AppTypography.bodyMedium
+                                    .copyWith(color: AppColors.tertiary)),
+                          ],
+                        ),
+                      )),
                 ],
               ],
             ),
           ),
-
           bottomNavigationBar: SafeArea(
             child: Padding(
               padding: EdgeInsets.all(16.w),
@@ -214,11 +239,13 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          context.push('${RouteNames.signContract}/${offer.id}');
+                          context.push(RouteNames.signContract
+                              .replaceFirst(':id', offer.id));
                         },
                         icon: const Icon(LucideIcons.penTool),
                         label: const Text('Sign Contract'),
-                        style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 14.h)),
+                        style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 14.h)),
                       ),
                     ),
                   if (statusStr == 'pending' || statusStr == 'accepted')
@@ -231,7 +258,8 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                       },
                       icon: const Icon(LucideIcons.download),
                       label: const Text('Download PDF'),
-                      style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 14.h)),
+                      style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 14.h)),
                     ),
                   ),
                 ],
@@ -283,7 +311,9 @@ class _DetailRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 130.w,
-            child: Text(label, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            child: Text(label,
+                style: AppTypography.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
           ),
           Expanded(child: Text(value, style: AppTypography.bodyMedium)),
         ],

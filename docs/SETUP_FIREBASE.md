@@ -7,19 +7,19 @@
 
 ## Project Configuration
 
-Project ID: `iwriteoffers`
+Project ID: `partnerpro-dev`
 
 ### Android
 
 1. Go to Firebase Console -> Project settings -> Add app -> Android
-2. Package name: `com.mycompany.partnerpro`
+2. Package name: `com.automaterealestate.partnerpro.dev`
 3. Download `google-services.json` to `android/app/`
 4. This file is gitignored  every developer must download their own copy
 
 ### iOS
 
 1. Go to Firebase Console -> Project settings -> Add app -> iOS
-2. Bundle ID: `com.mycompany.partnerpro`
+2. Bundle ID: `com.automaterealestate.partnerpro.dev`
 3. Download `GoogleService-Info.plist` to `ios/Runner/`
 4. This file is gitignored  every developer must download their own copy
 

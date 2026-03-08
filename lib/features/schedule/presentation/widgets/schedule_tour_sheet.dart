@@ -30,23 +30,9 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
       height: MediaQuery.sizeOf(context).height * 0.7,
       padding: EdgeInsets.fromLTRB(
           20.w, 16.h, 20.w, MediaQuery.of(context).padding.bottom + 16.h),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 36.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-          ),
           SizedBox(height: 16.h),
           Text('Schedule a Tour', style: AppTypography.headlineSmall),
           SizedBox(height: 4.h),

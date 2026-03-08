@@ -249,33 +249,16 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
           );
         }
       },
-      child: Container(
+      child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.85,
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
         child: Column(
           children: [
-            _buildHandle(),
             _buildHeader(),
             _buildStepIndicator(),
             Expanded(child: _buildStepContent()),
             _buildNavButtons(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHandle() {
-    return Container(
-      margin: EdgeInsets.only(top: 12.h),
-      width: 36.w,
-      height: 4.h,
-      decoration: BoxDecoration(
-        color: AppColors.textTertiary,
-        borderRadius: BorderRadius.circular(2.r),
       ),
     );
   }
@@ -724,15 +707,6 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
         return Container(
           padding: EdgeInsets.fromLTRB(
               20.w, 12.h, 20.w, MediaQuery.of(context).padding.bottom + 12.h),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: const Offset(0, -2))
-            ],
-          ),
           child: Row(
             children: [
               if (_currentStep > 0)

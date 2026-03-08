@@ -13,15 +13,17 @@ abstract class PropertyEvent extends Equatable {
 
 class LoadProperties extends PropertyEvent {
   final String requesterId;
-  final String? zipCode, city, state, homeType;
+  final String? zipCode, city, state, homeType, statusType;
   const LoadProperties(
       {required this.requesterId,
       this.zipCode,
       this.city,
       this.state,
-      this.homeType});
+      this.homeType,
+      this.statusType});
   @override
-  List<Object?> get props => [requesterId, zipCode, city, state, homeType];
+  List<Object?> get props =>
+      [requesterId, zipCode, city, state, homeType, statusType];
 }
 
 class LoadPropertiesByZip extends PropertyEvent {
@@ -42,6 +44,7 @@ class ApplyFilter extends PropertyEvent {
       maxSquareFeet,
       minYearBuilt,
       maxYearBuilt;
+  final List<String>? homeTypes;
   const ApplyFilter(
       {this.minPrice,
       this.maxPrice,
@@ -52,7 +55,8 @@ class ApplyFilter extends PropertyEvent {
       this.minSquareFeet,
       this.maxSquareFeet,
       this.minYearBuilt,
-      this.maxYearBuilt});
+      this.maxYearBuilt,
+      this.homeTypes});
   @override
   List<Object?> get props => [
         minPrice,
@@ -64,7 +68,8 @@ class ApplyFilter extends PropertyEvent {
         minSquareFeet,
         maxSquareFeet,
         minYearBuilt,
-        maxYearBuilt
+        maxYearBuilt,
+        homeTypes
       ];
 }
 
@@ -229,7 +234,8 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         zipCode: event.zipCode,
         city: event.city,
         state: event.state,
-        homeType: event.homeType);
+        homeType: event.homeType,
+        statusType: event.statusType);
     r.fold(
         (f) => emit(state.copyWith(isLoading: false, error: f.message)),
         (props) => emit(state.copyWith(
@@ -265,7 +271,8 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         minSquareFeet: event.minSquareFeet,
         maxSquareFeet: event.maxSquareFeet,
         minYearBuilt: event.minYearBuilt,
-        maxYearBuilt: event.maxYearBuilt);
+        maxYearBuilt: event.maxYearBuilt,
+        homeTypes: event.homeTypes);
     emit(state.copyWith(filteredProperties: filtered, isFilterActive: true));
   }
 

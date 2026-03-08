@@ -208,9 +208,13 @@ class AppRouter {
         path: RouteNames.propertyDetails,
         name: 'propertyDetails',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, state) => PropertyDetailsPage(
-          propertyId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return PropertyDetailsPage(
+            propertyId: state.pathParameters['id']!,
+            isUserFromSearch: extra['fromSearch'] == true,
+          );
+        },
       ),
       GoRoute(
         path: RouteNames.offerDetails,

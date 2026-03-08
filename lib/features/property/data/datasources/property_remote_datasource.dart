@@ -20,6 +20,7 @@ class PropertyRemoteDataSource {
     String? city,
     String? state,
     String? homeType,
+    String? statusType,
     bool? isPendingUnderContract,
     bool? zillowProperties,
   }) async {
@@ -37,6 +38,13 @@ class PropertyRemoteDataSource {
     }
     if (homeType != null && homeType.isNotEmpty) {
       query = query.where('home_type', isEqualTo: homeType);
+    }
+    if (statusType != null && statusType.isNotEmpty) {
+      if (statusType == 'Sold') {
+        query = query.where('isSold', isEqualTo: true);
+      } else {
+        query = query.where('isSold', isEqualTo: false);
+      }
     }
     if (isPendingUnderContract != null) {
       query = query.where('isPendingUnderContract',

@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "59466540742-2nn1k1vvub0t6t6tp2hfq3v4jnuuke0u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.automaterealestate.partnerpro.dev",
+            "certificate_hash": "aa59687bb46d5c677ccb28b9d21f39865ac8b471"
+          }
+        },
+        {
           "client_id": "59466540742-jo4doii9firgn17jfm3k5nttbv30j449.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "59466540742-jo4doii9firgn17jfm3k5nttbv30j449.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "59466540742-5uoqp2jsg61p8bitss3ivapbbs43rfqf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.automaterealestate.partnerpro.dev"
+              }
             }
           ]
         }

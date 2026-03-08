@@ -1,7 +1,7 @@
 abstract final class AppConstants {
-  static const String appName = 'PartnerPro';
-  static const String packageName = 'com.mycompany.partnerpro';
-  static const String firebaseProjectId = 'iwriteoffers';
+  static const String appName = 'PartnerPro Dev';
+  static const String packageName = 'com.automaterealestate.partnerpro.dev';
+  static const String firebaseProjectId = 'partnerpro-dev';
 
   // Collection names
   static const String usersCollection = 'users';
