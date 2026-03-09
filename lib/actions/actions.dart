@@ -54,8 +54,7 @@ Future hasActiveSubscription(BuildContext context) async {
                     content: Text(
                       'Subscriptions are now managed through RevenueCat.',
                       style: TextStyle(
-                        color:
-                            FlutterFlowTheme.of(context).secondaryBackground,
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
                       ),
                     ),
                     duration: Duration(milliseconds: 4000),

@@ -307,17 +307,22 @@ class _AgentDashboardWidgetState extends State<AgentDashboardWidget> {
                                       priceInUS: '\$49.99',
                                       onSubscribe: () async {
                                         // Stripe checkout removed - Sprint 1.2 (use RevenueCat)
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
                                             content: Text(
                                               'Subscriptions are now managed through RevenueCat.',
                                               style: TextStyle(
-                                                color: FlutterFlowTheme.of(context)
-                                                    .secondaryBackground,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                               ),
                                             ),
-                                            duration: Duration(milliseconds: 4000),
-                                            backgroundColor: FlutterFlowTheme.of(context).primary,
+                                            duration:
+                                                Duration(milliseconds: 4000),
+                                            backgroundColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primary,
                                           ),
                                         );
                                       },

@@ -104,10 +104,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
             FFAppState().currentOfferDraft.parties.secondBuyer.name, true);
       });
       safeSetState(() {
-        _model.secondBuyerLastNameTextController?.text =
-            functions.getNamePart(
-                FFAppState().currentOfferDraft.parties.secondBuyer.name,
-                false);
+        _model.secondBuyerLastNameTextController?.text = functions.getNamePart(
+            FFAppState().currentOfferDraft.parties.secondBuyer.name, false);
       });
       safeSetState(() {
         _model.secondBuyerPhoneTextController?.text =
@@ -154,7 +152,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
       _model.hasSecondBuyer =
           FFAppState().currentOfferDraft.parties.secondBuyer != null;
       safeSetState(() {});
-        });
+    });
 
     _model.firstBuyersNameTextController ??= TextEditingController();
     _model.firstBuyersNameFocusNode ??= FocusNode();
@@ -2035,7 +2033,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                     double.parse(price));
                                               }(
                                                   (_model.downPaymentTypePercentage !=
-                                                              ''
+                                                          ''
                                                       ? _model
                                                           .downPaymentTypePercentage
                                                       : '0'),
@@ -2064,7 +2062,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                             .toInt();
                                                       }(
                                                           (_model.downPaymentTypePercentage !=
-                                                                      ''
+                                                                  ''
                                                               ? _model
                                                                   .downPaymentTypePercentage
                                                               : '0'),
@@ -3725,9 +3723,10 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 },
                                                 controller: _model
                                                         .propertyConditionRadioButtonValueController ??=
-                                                    FormFieldController<
-                                                        String>(FFAppState()
-                                                            .currentOfferDraft.conditions
+                                                    FormFieldController<String>(
+                                                        FFAppState()
+                                                            .currentOfferDraft
+                                                            .conditions
                                                             .propertyCondition),
                                                 optionHeight: 32.0,
                                                 textStyle:
@@ -4653,8 +4652,10 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                   controller: _model
                                                           .choiceRadioButtonValueController ??=
                                                       FormFieldController<
-                                                          String>(FFAppState()
-                                                              .currentOfferDraft.titleCompany
+                                                              String>(
+                                                          FFAppState()
+                                                              .currentOfferDraft
+                                                              .titleCompany
                                                               .choice),
                                                   optionHeight: 32.0,
                                                   textStyle:
@@ -4916,8 +4917,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         closingDate:
                                             _model.closingDate?.toString(),
                                         pricing: PricingStruct(
-                                          listPrice:
-                                              widget.property?.listPrice,
+                                          listPrice: widget.property?.listPrice,
                                           purchasePrice: double.parse(
                                                   (_model.purchasePrice!))
                                               .toInt(),
@@ -5017,8 +5017,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                         ),
                                         titleCompany:
                                             _model.titileCompanyNameTextController
-                                                            .text !=
-                                                        ''
+                                                        .text !=
+                                                    ''
                                                 ? NewTitleCompanyStruct(
                                                     companyName: _model
                                                         .titileCompanyNameTextController
@@ -5216,9 +5216,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 ));
                                             if (_model
                                                 .agentDoc!.hasAcceptedSMS) {
-                                              _model.creationBuyerToAgent =
-                                                  actions
-                                                      .generateOfferEmailNotification(
+                                              _model.creationBuyerToAgent = actions
+                                                  .generateOfferEmailNotification(
                                                 EmailType.creationBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
                                                 null,
@@ -5417,9 +5416,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 ));
                                             if (_model
                                                 .clientDoc!.hasAcceptedSMS) {
-                                              _model.creationAgentToBuyer =
-                                                  actions
-                                                      .generateOfferEmailNotification(
+                                              _model.creationAgentToBuyer = actions
+                                                  .generateOfferEmailNotification(
                                                 EmailType.creationAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
                                                 null,
@@ -5741,9 +5739,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 ));
                                             if (_model
                                                 .agentDoc1!.hasAcceptedSMS) {
-                                              _model.updateBuyerToAgent =
-                                                  actions
-                                                      .generateOfferEmailNotification(
+                                              _model.updateBuyerToAgent = actions
+                                                  .generateOfferEmailNotification(
                                                 EmailType.updateBuyerToAgent,
                                                 _model.newOfferData!.toMap(),
                                                 widget.oldOffer?.toMap(),
@@ -5941,9 +5938,8 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                 ));
                                             if (_model
                                                 .clientDoc1!.hasAcceptedSMS) {
-                                              _model.updateAgentToBuyer =
-                                                  actions
-                                                      .generateOfferEmailNotification(
+                                              _model.updateAgentToBuyer = actions
+                                                  .generateOfferEmailNotification(
                                                 EmailType.updateAgentToBuyer,
                                                 _model.newOfferData!.toMap(),
                                                 widget.oldOffer?.toMap(),

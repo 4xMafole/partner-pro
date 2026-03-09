@@ -215,16 +215,10 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                               '${valueOrDefault<String>(
                                                 (int? var1) {
                                                   return var1 != null
-                                                      ? '\$${(var1 / 100.0)
-                                                              .toStringAsFixed(
-                                                                  2)}'
+                                                      ? '\$${(var1 / 100.0).toStringAsFixed(2)}'
                                                       : null;
-                                                }(_model
-                                                    .subscriptionDoc
-                                                    ?.items
-                                                    .firstOrNull
-                                                    ?.plan
-                                                    .amount),
+                                                }(_model.subscriptionDoc?.items
+                                                    .firstOrNull?.plan.amount),
                                                 '\$49.99',
                                               )}/monthly',
                                               style:
@@ -288,17 +282,23 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                                   );
 
                                                   // Stripe checkout removed - Sprint 1.2 (use RevenueCat)
-                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
                                                     SnackBar(
                                                       content: Text(
                                                         'Subscriptions are now managed through RevenueCat.',
                                                         style: TextStyle(
-                                                          color: FlutterFlowTheme.of(context)
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
                                                               .secondaryBackground,
                                                         ),
                                                       ),
-                                                      duration: Duration(milliseconds: 4000),
-                                                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                      duration: Duration(
+                                                          milliseconds: 4000),
+                                                      backgroundColor:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary,
                                                     ),
                                                   );
 
@@ -518,8 +518,7 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                       amount: valueOrDefault<String>(
                                         (int? var1) {
                                           return var1 != null
-                                              ? '\$${(var1 / 100.00)
-                                                      .toStringAsFixed(2)}'
+                                              ? '\$${(var1 / 100.00).toStringAsFixed(2)}'
                                               : null;
                                         }(listViewSubscriptionsRecord
                                             .items.firstOrNull?.plan.amount),
@@ -559,7 +558,8 @@ class _AgentSubscriptionWidgetState extends State<AgentSubscriptionWidget> {
                                     ),
                                   ),
                                   duration: Duration(milliseconds: 4000),
-                                  backgroundColor: FlutterFlowTheme.of(context).primary,
+                                  backgroundColor:
+                                      FlutterFlowTheme.of(context).primary,
                                 ),
                               );
 
