@@ -66,6 +66,11 @@ Firebase App Check protects your backend resources (Firestore, Storage, Cloud Fu
 3. Click **Register**
 4. Done! (DeviceCheck works automatically on physical iOS devices)
 
+**STATUS:** ⏸️ PENDING - iOS App Check registration not yet completed
+- Implementation code is ready in `lib/bootstrap.dart`
+- Device registration can be completed when iOS app distribution setup is ready
+- See [Status & Action Items](#status--action-items) below
+
 **For Development (Debug Provider):**
 1. Enable debug mode in your iOS app
 2. Run the app in Xcode
@@ -148,7 +153,35 @@ await FirebaseAppCheck.instance.activate(
 - Debug tokens must be registered in Firebase Console
 - Debug tokens expire after 7 days
 
-## Testing
+## Status & Action Items
+
+### Android ✅ COMPLETE
+- [x] App Check code implemented
+- [x] Play Integrity provider configured
+- [ ] Final registration (blocked on production app submission)
+
+### iOS ⏸️ PENDING
+- [x] App Check code implemented
+- [x] DeviceCheck provider configured in code
+- [ ] Firebase Console registration (deferred - see below)
+- [ ] DeviceCheck setup via Apple Developer account
+
+**Why Deferred?**
+- iOS App Check DeviceCheck requires specific setup on Apple Developer account
+- Will be enabled when iOS production app is ready for distribution
+- For now, debug tokens work for local development
+- Not blocking Android release
+
+**To Complete Later:**
+1. Ensure iOS app is registered with correct bundle ID
+2. Configure DeviceCheck in Apple Developer account
+3. Register iOS app in Firebase Console App Check
+4. Test with release iOS build
+
+### Web ⏸️ NOT YET CONFIGURED
+- [ ] reCAPTCHA V3 site key needed
+- [ ] Will be configured when web app is deployed
+- [ ] Placeholder in code: `ReCaptchaV3Provider('recaptcha-v3-site-key')`
 
 ### Verify App Check is Working
 

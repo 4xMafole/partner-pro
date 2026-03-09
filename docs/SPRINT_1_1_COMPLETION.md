@@ -85,22 +85,29 @@ match /notifications/{document} {
 - Added `firebase_app_check: ^0.3.3+1` to pubspec.yaml
 - Initialized App Check in `lib/bootstrap.dart`
 - Configured providers:
-  - **Android:** Play Integrity (production) | Debug (development)
-  - **iOS:** DeviceCheck (production) | Debug (development)
-  - **Web:** reCAPTCHA V3 (placeholder)
-- Added debug mode detection: Uses debug providers in `kDebugMode`
-- Added error handling for activation failures
+  - **Android:** Play Integrity (production) | Debug (development) ✅
+  - **iOS:** DeviceCheck (production) | Debug (development) ⏸️ PENDING Firebase registration
+  - **Web:** reCAPTCHA V3 (placeholder) ⏸️ DEFERRED
 
-**Benefits:**
-- ✅ Protects Firestore from bots and unauthorized clients
-- ✅ Prevents API quota abuse
+**Status:**
+- ✅ Android App Check: Ready for Firebase Console registration
+- ⏸️ iOS App Check: Code ready, console registration pending (deferred)
+- ⏸️ Web App Check: Code ready, will configure when deploying web app
+
+**Why iOS is Pending:**
+- DeviceCheck configuration requires Apple Developer account setup
+- Not blocking Android release
+- Code is ready, just needs Firebase Console registration when iOS distribution is ready
+
+**Benefits (Active):**
+- ✅ Protects Firestore from bots and unauthorized clients on Android
 - ✅ Client attestation ensures requests come from authentic app
 - ✅ Defense in depth: App Check + Firestore rules
 
 **Files Modified:**
 - `pubspec.yaml` - Added firebase_app_check dependency
-- `lib/bootstrap.dart` - Added App Check initialization
-- `docs/SETUP_FIREBASE_APP_CHECK.md` - Complete setup guide
+- `lib/bootstrap.dart` - Added App Check initialization with conditional provider selection
+- `docs/SETUP_FIREBASE_APP_CHECK.md` - Complete setup guide with status table
 
 ---
 
@@ -249,7 +256,10 @@ docs/
 ### Sprint 1.2: Clean Up Deprecated Code (1 week)
 - [ ] Remove Stripe payment code (replaced by RevenueCat)
 - [ ] Remove OneSignal integration (replaced by FCM)
-- [ ] Clean up legacy custom actions
+- [ ] **Archive (not delete) legacy custom actions** - excellent reference for feature recreation
+  - Create `lib/custom_code/ARCHIVED/` directory
+  - Move legacy action files there with README documenting original behavior
+  - These become reference material when implementing new clean architecture versions
 - [ ] Update dependencies (`flutter pub upgrade`)
 
 ### User Action Required (URGENT)
