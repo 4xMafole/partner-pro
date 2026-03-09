@@ -21,8 +21,7 @@ export 'generate_invitation_email_html.dart' show generateInvitationEmailHtml;
 export 'parse_activity_list.dart' show parseActivityList;
 export 'process_and_enrich_activity_feed.dart'
     show processAndEnrichActivityFeed;
-export 'initiate_stripe_checkout.dart' show initiateStripeCheckout;
-export 'call_stripe_portal_link.dart' show callStripePortalLink;
+// Stripe checkout and portal link removed - Sprint 1.2 (use RevenueCat)
 export 'get_valid_proof_of_funds.dart' show getValidProofOfFunds;
 export 'generate_invitation_sms_text.dart' show generateInvitationSmsText;
 export 'create_buyer_invitations.dart' show createBuyerInvitations;

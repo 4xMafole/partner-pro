@@ -6245,10 +6245,6 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                       context,
                                       'Payments are now handled through your subscription. Please check your subscription settings.',
                                     );
-                                  },
-                                        },
-                                      );
-                                    }
 
                                     safeSetState(() {});
                                   },

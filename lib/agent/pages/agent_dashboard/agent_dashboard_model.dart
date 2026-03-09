@@ -39,10 +39,10 @@ class AgentDashboardModel extends FlutterFlowModel<AgentDashboardWidget> {
   ApiCallResponse? getAllClientsActivity;
   // Stores action output result for [Custom Action - processAndEnrichActivityFeed] action in agent_dashboard widget.
   List<ActivityItemTypeStruct>? processedActivityList;
-  // Stores action output result for [Custom Action - initiateStripeCheckout] action in agent_dashboard widget.
+  // [DEPRECATED] Stripe checkout removed - Sprint 1.2.
   String? checkoutUrl1;
   List<SubscriptionsRecord>? stackPreviousSnapshot;
-  // Stores action output result for [Custom Action - initiateStripeCheckout] action in Stack widget.
+  // [DEPRECATED] Stripe checkout removed - Sprint 1.2.
   String? checkoutUrl;
   // Model for header component.
   late HeaderModel headerModel;

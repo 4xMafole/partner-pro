@@ -155,30 +155,20 @@ class _AgentDashboardWidgetState extends State<AgentDashboardWidget> {
                   child: AgentPaywallPopupWidget(
                     priceInUS: '\$49.99',
                     onSubscribe: () async {
-                      _model.checkoutUrl1 =
-                          await actions.initiateStripeCheckout(
-                        'price_1SEsKaF0ZKEuePkEaBARjrOB',
-                        'partnerpro://app.page/agentDashboard',
-                        'partnerpro://app.page/agentDashboard',
-                      );
-                      if (_model.checkoutUrl1 != null &&
-                          _model.checkoutUrl1 != '') {
-                        await launchURL(_model.checkoutUrl1!);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Something went wrong. Please try agein.',
-                              style: TextStyle(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                              ),
+                      // Stripe checkout removed - Sprint 1.2 (use RevenueCat)
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Subscriptions are now managed through RevenueCat.',
+                            style: TextStyle(
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
                             ),
-                            duration: Duration(milliseconds: 4000),
-                            backgroundColor: FlutterFlowTheme.of(context).error,
                           ),
-                        );
-                      }
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor: FlutterFlowTheme.of(context).primary,
+                        ),
+                      );
                     },
                     onTry: () async {
                       GoRouter.of(context).prepareAuthEvent();
@@ -316,35 +306,20 @@ class _AgentDashboardWidgetState extends State<AgentDashboardWidget> {
                                     child: AgentPaywallPopupWidget(
                                       priceInUS: '\$49.99',
                                       onSubscribe: () async {
-                                        _model.checkoutUrl = await actions
-                                            .initiateStripeCheckout(
-                                          'price_1SEsKaF0ZKEuePkEaBARjrOB',
-                                          'partnerpro://app.page/agentDashboard',
-                                          'partnerpro://app.page/agentDashboard',
-                                        );
-                                        if (_model.checkoutUrl != null &&
-                                            _model.checkoutUrl != '') {
-                                          await launchURL(_model.checkoutUrl!);
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'Something went wrong. Please try agein.',
-                                                style: TextStyle(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryBackground,
-                                                ),
+                                        // Stripe checkout removed - Sprint 1.2 (use RevenueCat)
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Subscriptions are now managed through RevenueCat.',
+                                              style: TextStyle(
+                                                color: FlutterFlowTheme.of(context)
+                                                    .secondaryBackground,
                                               ),
-                                              duration:
-                                                  Duration(milliseconds: 4000),
-                                              backgroundColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
                                             ),
-                                          );
-                                        }
+                                            duration: Duration(milliseconds: 4000),
+                                            backgroundColor: FlutterFlowTheme.of(context).primary,
+                                          ),
+                                        );
                                       },
                                       onTry: () async {
                                         GoRouter.of(context).prepareAuthEvent();

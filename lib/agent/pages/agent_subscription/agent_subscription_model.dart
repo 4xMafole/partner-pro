@@ -18,12 +18,12 @@ class AgentSubscriptionModel extends FlutterFlowModel<AgentSubscriptionWidget> {
   CustomersRecord? customerDoc;
   // Stores action output result for [Firestore Query - Query a collection] action in agent_subscription widget.
   SubscriptionsRecord? subscriptionDoc;
-  // Stores action output result for [Custom Action - initiateStripeCheckout] action in Button widget.
+  // [DEPRECATED] Stripe checkout removed - Sprint 1.2.
   String? checkoutUrl;
   List<SubscriptionsRecord>? listViewPreviousSnapshot;
   // Models for billing_item dynamic component.
   late FlutterFlowDynamicModels<BillingItemModel> billingItemModels;
-  // Stores action output result for [Custom Action - callStripePortalLink] action in Button widget.
+  // [DEPRECATED] Stripe portal removed - Sprint 1.2.
   String? stripePortailLink;
 
   @override
