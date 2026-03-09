@@ -8,6 +8,7 @@
 
 * [Setup - API Keys](SETUP_API_KEYS.md)
 * [Setup - Firebase](SETUP_FIREBASE.md)
+* [Setup - Firebase App Check](SETUP_FIREBASE_APP_CHECK.md)
 * [Setup - GitHub Actions](SETUP_GITHUB.md)
 * [Setup - iOS Deploy](SETUP_IOS_DEPLOY.md)
 * [Setup - RevenueCat](SETUP_REVENUECAT.md)

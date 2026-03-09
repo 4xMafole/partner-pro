@@ -1977,8 +1977,7 @@ class FetchAnEntryFromDocumentsCollectionWithTheDocumentIdWhereTheSellerIdEquals
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch an entry from documents collection with the documentId where the seller_id equals to the requester_id, property_id first uri param and user_id is the second one.',
-      apiUrl:
-          '$baseUrl/documents/seller/$propertyId/$userId/$documentId',
+      apiUrl: '$baseUrl/documents/seller/$propertyId/$userId/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
@@ -2129,8 +2128,7 @@ class FetchAnEntryFromDocumentsCollectionWithTheDocumentIdForTheGivePropertyAndU
     return ApiManager.instance.makeApiCall(
       callName:
           'Fetch an entry from documents collection with the documentId for the give property and user',
-      apiUrl:
-          '$baseUrl/documents/admin/$propertyId/$userId/$documentId',
+      apiUrl: '$baseUrl/documents/admin/$propertyId/$userId/$documentId',
       callType: ApiCallType.GET,
       headers: {},
       params: {},

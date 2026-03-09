@@ -2,108 +2,236 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Users ──
-    match /users/{userId} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
-      allow delete: if request.auth.uid == userId;
+    // ── Helper Functions ──────────────────────────────────────────────
+    
+    // Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Check if user is the owner of a document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Check if user is owner of the resource
+    function isResourceOwner() {
+      return isSignedIn() && isOwner(resource.data.user_id);
+    }
+    
+    // Check if user has agent role
+    function isAgent() {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.user_type == 'agent';
     }
 
-    // ── User sub-collections ──
+    // ── Users ─────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn(); // Users can view other profiles for agent-buyer matching
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // ── User Subcollections ───────────────────────────────────────────
     match /users/{userId}/favorites/{document} {
-      allow create: if request.auth.uid == userId;
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
-      allow delete: if request.auth.uid == userId;
+      allow create: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     match /users/{userId}/offer/{document} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
 
     match /users/{userId}/suggestions/{document} {
-      allow create: if request.auth.uid == userId;
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
-      allow delete: if request.auth.uid == userId;
+      allow create: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     match /users/{userId}/showami/{document} {
-      allow create: if request.auth.uid == userId;
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
-      allow delete: if request.auth.uid == userId;
+      allow create: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
-    // ── Root-level Favorites ──
+    // ── Root-level Favorites ──────────────────────────────────────────
     match /favorites/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == resource.data.user_id;
-      allow delete: if request.auth.uid == resource.data.user_id;
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow read: if isSignedIn();
+      allow update: if isResourceOwner();
+      allow delete: if isResourceOwner();
     }
 
-    // ── Collection group queries for user sub-collections ──
+    // ── Collection group queries (RESTRICTED) ─────────────────────────
     match /{path=**}/favorites/{document} {
-      allow read: if request.auth != null;
+      allow read: if isResourceOwner();
     }
 
     match /{path=**}/suggestions/{document} {
-      allow read: if request.auth != null;
+      allow read: if isResourceOwner();
     }
 
     match /{path=**}/showami/{document} {
-      allow read: if request.auth != null;
+      allow read: if isResourceOwner();
     }
 
-    // ── Properties ──
+    // ── Properties ────────────────────────────────────────────────────
     match /properties/{document} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow read: if isSignedIn(); // All users can browse properties
+      allow create: if isSignedIn() && (isAgent() || request.resource.data.user_id == request.auth.uid);
+      allow update: if isResourceOwner() || isAgent();
+      allow delete: if isResourceOwner();
     }
 
-    // ── Notifications ──
+    // ── Notifications ─────────────────────────────────────────────────
     match /notifications/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if false;
+      allow create: if isSignedIn();
+      // Users can only read their own notifications
+      allow read: if isSignedIn() && resource.data.recipient_id == request.auth.uid;
+      // Users can mark their own notifications as read
+      allow update: if isSignedIn() && resource.data.recipient_id == request.auth.uid;
+      allow delete: if false; // Soft delete via status update only
     }
 
-    // ── Invitations ──
+    // ── Invitations ───────────────────────────────────────────────────
     match /invitations/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if isSignedIn();
+      // Can read if you're the sender or recipient
+      allow read: if isSignedIn() && 
+                     (resource.data.sender_id == request.auth.uid || 
+                      resource.data.recipient_id == request.auth.uid);
+      // Can update if you're the recipient (accepting/declining)
+      allow update: if isSignedIn() && resource.data.recipient_id == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.sender_id == request.auth.uid;
     }
 
-    // ── Relationships ──
+    // ── Relationships ─────────────────────────────────────────────────
     match /relationships/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if isSignedIn();
+      // Can read if you're the buyer or agent in the relationship
+      allow read: if isSignedIn() && 
+                     (resource.data.buyer_id == request.auth.uid || 
+                      resource.data.agent_id == request.auth.uid);
+      // Only parties in the relationship can update
+      allow update: if isSignedIn() && 
+                       (resource.data.buyer_id == request.auth.uid || 
+                        resource.data.agent_id == request.auth.uid);
+      // Only parties can delete their relationship
+      allow delete: if isSignedIn() && 
+                       (resource.data.buyer_id == request.auth.uid || 
+                        resource.data.agent_id == request.auth.uid);
     }
 
-    // ── Support ──
+    // ── Support ───────────────────────────────────────────────────────
     match /support/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      // Can only read your own support tickets
+      allow read: if isResourceOwner();
+      allow update: if isResourceOwner(); 
+      allow delete: if false; // Support tickets should not be deleted
     }
 
-    // ── Saved Searches ──
+    // ── Saved Searches ────────────────────────────────────────────────
     match /saved_searches/{document} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow read: if isResourceOwner();
+      allow update: if isResourceOwner();
+      allow delete: if isResourceOwner();
     }
+
+    // ── Showings ──────────────────────────────────────────────────────
+    match /showings/{document} {
+      allow create: if isSignedIn();
+      // Can read if you're involved (buyer, agent, or seller)
+      allow read: if isSignedIn() && 
+                     (resource.data.buyer_id == request.auth.uid || 
+                      resource.data.agent_id == request.auth.uid ||
+                      resource.data.seller_id == request.auth.uid);
+      // Can update if you're involved
+      allow update: if isSignedIn() && 
+                       (resource.data.buyer_id == request.auth.uid || 
+                        resource.data.agent_id == request.auth.uid ||
+                        resource.data.seller_id == request.auth.uid);
+      allow delete: if isSignedIn() && resource.data.buyer_id == request.auth.uid;
+    }
+
+    // ── Offers (root-level) ───────────────────────────────────────────
+    match /offer/{offerId} {
+      allow create: if isSignedIn() && request.resource.data.buyer_id == request.auth.uid;
+      // Can read if you're the buyer, agent, or seller
+      allow read: if isSignedIn() && 
+                     (resource.data.buyer_id == request.auth.uid || 
+                      resource.data.buyer_agent_id == request.auth.uid ||
+                      resource.data.seller_id == request.auth.uid ||
+                      resource.data.seller_agent_id == request.auth.uid);
+      // Can update if you're involved (buyer can edit, agent can accept/decline)
+      allow update: if isSignedIn() && 
+                       (resource.data.buyer_id == request.auth.uid || 
+                        resource.data.buyer_agent_id == request.auth.uid ||
+                        resource.data.seller_id == request.auth.uid ||
+                        resource.data.seller_agent_id == request.auth.uid);
+      allow delete: if false; // Soft delete via status only
+    }
+
+    // ── Offer Payments ────────────────────────────────────────────────
+    match /offer_payments/{document} {
+      allow create: if isSignedIn();
+      // Can read if you're the buyer who made the payment
+      allow read: if isSignedIn() && 
+                     (resource.data.buyer_id == request.auth.uid || 
+                      resource.data.agent_id == request.auth.uid);
+      allow update: if false; // Payments are immutable
+      allow delete: if false; // Payments should never be deleted
+    }
+
+    // ── DEPRECATED: Stripe Collections (to be removed in Sprint 1.2) ──
+    // Keeping minimal read-only access during migration period
+    match /customers/{document} {
+      allow create: if false; // No new Stripe customers
+      allow read: if isOwner(document); // Only for migration
+      allow update, delete: if false;
+    }
+
+    match /customers/{parent}/checkout_sessions/{document} {
+      allow create: if false;
+      allow read: if isOwner(parent);
+      allow update, delete: if false;
+    }
+
+    match /{path=**}/checkout_sessions/{document} {
+      allow read: if false; // Blocked
+    }
+
+    match /customers/{parent}/subscriptions/{document} {
+      allow create: if false;
+      allow read: if isOwner(parent);
+      allow update, delete: if false;
+    }
+
+    match /{path=**}/subscriptions/{document} {
+      allow read: if false; // Blocked
+    }
+
+    // ── Push Notifications (FlutterFlow legacy) ───────────────────────
+    match /ff_user_push_notifications/{id} {
+      allow read, update, delete: if false;
+      allow create: if isSignedIn() && 
+                       /databases/$(database)/documents/users/$(request.auth.uid) == request.resource.data.sender;
+    }
+
+    // ── Mail Queue (Firestore-triggered email extension) ─────────────
+    match /mail/{emailId} {
+      allow create: if isSignedIn(); // Users can queue emails
+      allow read: if false; // Email content is private
+      allow update, delete: if false; // Let Cloud Functions handle delivery
+    }
+  }
+}
 
     // ── Showings ──
     match /showings/{document} {
