@@ -1,6 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'range_filter_item_model.dart';
 export 'range_filter_item_model.dart';
 
@@ -18,6 +20,28 @@ class RangeFilterItemWidget extends StatefulWidget {
 
 class _RangeFilterItemWidgetState extends State<RangeFilterItemWidget> {
   late RangeFilterItemModel _model;
+  final NumberFormat _currencyFormatter = NumberFormat('#,##0', 'en_US');
+
+  bool get _isPriceField =>
+      (widget.label ?? '').toLowerCase().contains('price');
+
+  void _formatCurrencyInput(TextEditingController controller, String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      if (controller.text.isNotEmpty) {
+        controller.value = const TextEditingValue(text: '');
+      }
+      return;
+    }
+
+    final formatted = _currencyFormatter.format(int.parse(digits));
+    if (formatted == controller.text) return;
+
+    controller.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 
   @override
   void setState(VoidCallback callback) {
@@ -82,8 +106,18 @@ class _RangeFilterItemWidgetState extends State<RangeFilterItemWidget> {
                   focusNode: _model.minTextFieldFocusNode,
                   autofocus: true,
                   obscureText: false,
+                  onChanged: _isPriceField
+                      ? (val) => _formatCurrencyInput(
+                            _model.minTextFieldTextController!,
+                            val,
+                          )
+                      : null,
+                  inputFormatters: _isPriceField
+                      ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))]
+                      : null,
                   decoration: InputDecoration(
                     hintText: 'No Min',
+                    prefixText: _isPriceField ? '\$ ' : null,
                     hintStyle: FlutterFlowTheme.of(context)
                         .labelMedium
                         .override(
@@ -157,8 +191,18 @@ class _RangeFilterItemWidgetState extends State<RangeFilterItemWidget> {
                 focusNode: _model.maxTextFieldFocusNode,
                 autofocus: true,
                 obscureText: false,
+                onChanged: _isPriceField
+                    ? (val) => _formatCurrencyInput(
+                          _model.maxTextFieldTextController!,
+                          val,
+                        )
+                    : null,
+                inputFormatters: _isPriceField
+                    ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))]
+                    : null,
                 decoration: InputDecoration(
                   hintText: 'No Max',
+                  prefixText: _isPriceField ? '\$ ' : null,
                   hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                         fontFamily:
                             FlutterFlowTheme.of(context).labelMediumFamily,

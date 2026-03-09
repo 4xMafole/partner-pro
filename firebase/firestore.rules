@@ -36,6 +36,14 @@ service cloud.firestore {
       allow delete: if request.auth.uid == userId;
     }
 
+    // ── Root-level Favorites ──
+    match /favorites/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == resource.data.user_id;
+      allow delete: if request.auth.uid == resource.data.user_id;
+    }
+
     // ── Collection group queries for user sub-collections ──
     match /{path=**}/favorites/{document} {
       allow read: if request.auth != null;
@@ -133,6 +141,14 @@ service cloud.firestore {
 
     match /{path=**}/subscriptions/{document} {
       allow read: if request.auth != null;
+    }
+
+    // ── Offers (root-level) ──
+    match /offer/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if false;
     }
 
     // ── Offer Payments ──

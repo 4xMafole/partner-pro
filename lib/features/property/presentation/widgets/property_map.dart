@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -41,9 +42,10 @@ class PropertyMap extends StatefulWidget {
 
 class _PropertyMapState extends State<PropertyMap> {
   GoogleMapController? _mapController;
+  final CustomInfoWindowController _infoWindowController =
+      CustomInfoWindowController();
   final Map<String, Marker> _markers = {};
   String? _selectedId;
-  PropertyDataClass? _selectedProperty;
   MapType _mapType = MapType.normal;
 
   // ── Draw mode ──
@@ -54,10 +56,6 @@ class _PropertyMapState extends State<PropertyMap> {
 
   /// Marker IDs visible after draw filter (null = show all)
   Set<String>? _filteredMarkerIds;
-
-  /// Screen position of selected marker (updated on camera idle)
-  Offset? _selectedScreenPoint;
-  bool _isCameraMoving = false;
 
   // Marker colors
   static const _markerDefault = Color(0xFF0070E0); // Vibrant blue
@@ -89,15 +87,16 @@ class _PropertyMapState extends State<PropertyMap> {
   void didUpdateWidget(covariant PropertyMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.properties != widget.properties) {
+      _infoWindowController.hideInfoWindow?.call();
       _markers.clear();
       _selectedId = null;
-      _selectedProperty = null;
       _loadMarkers();
     }
   }
 
   @override
   void dispose() {
+    _infoWindowController.dispose();
     _mapController?.dispose();
     super.dispose();
   }
@@ -145,22 +144,47 @@ class _PropertyMapState extends State<PropertyMap> {
     if (_selectedId == property.id) {
       // Toggle off
       await _updateMarker(property.id, isSelected: false);
+      _infoWindowController.hideInfoWindow?.call();
       setState(() {
         _selectedId = null;
-        _selectedProperty = null;
       });
     } else {
       // Select
       await _updateMarker(property.id, isSelected: true);
       setState(() {
         _selectedId = property.id;
-        _selectedProperty = property;
-        _selectedScreenPoint = null; // will be set on camera idle
       });
+      _showInfoWindow(property);
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(LatLng(property.latitude, property.longitude)),
       );
     }
+  }
+
+  void _showInfoWindow(PropertyDataClass property) {
+    final cardWidth = _infoCardWidth();
+    final cardHeight = _infoCardHeight();
+    _infoWindowController.addInfoWindow?.call(
+      SizedBox(
+        width: cardWidth,
+        height: cardHeight,
+        child: _PropertyInfoCard(
+          property: property,
+          onTap: () => widget.onPropertyTap?.call(property),
+        ),
+      ),
+      LatLng(property.latitude, property.longitude),
+    );
+  }
+
+  double _infoCardWidth() {
+    final screenW = MediaQuery.of(context).size.width;
+    return (screenW * 0.67).clamp(280.0, 360.0);
+  }
+
+  double _infoCardHeight() {
+    final screenH = MediaQuery.of(context).size.height;
+    return (screenH * 0.23).clamp(220.0, 300.0);
   }
 
   Future<void> _updateMarker(String id, {required bool isSelected}) async {
@@ -360,6 +384,7 @@ class _PropertyMapState extends State<PropertyMap> {
   }
 
   void _clearDraw() {
+    _infoWindowController.hideInfoWindow?.call();
     setState(() {
       _drawPoints = [];
       _mapPolygons = {};
@@ -395,20 +420,6 @@ class _PropertyMapState extends State<PropertyMap> {
   int get _visibleCount {
     if (_filteredMarkerIds == null) return widget.properties.length;
     return _filteredMarkerIds!.length;
-  }
-
-  Future<void> _updateCardPosition() async {
-    if (_selectedProperty == null || _mapController == null) return;
-    try {
-      final sc = await _mapController!.getScreenCoordinate(
-        LatLng(_selectedProperty!.latitude, _selectedProperty!.longitude),
-      );
-      if (!mounted) return;
-      final dpr = MediaQuery.of(context).devicePixelRatio;
-      setState(() {
-        _selectedScreenPoint = Offset(sc.x / dpr, sc.y / dpr);
-      });
-    } catch (_) {}
   }
 
   Future<void> _goToMyLocation() async {
@@ -478,9 +489,6 @@ class _PropertyMapState extends State<PropertyMap> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final mapW = constraints.maxWidth;
-      final mapH = constraints.maxHeight;
-
       return Stack(
         children: [
           // Google Map
@@ -503,6 +511,7 @@ class _PropertyMapState extends State<PropertyMap> {
             tiltGesturesEnabled: !_isDrawMode,
             onMapCreated: (controller) {
               _mapController = controller;
+              _infoWindowController.googleMapController = controller;
               if (widget.initialProperty != null) {
                 _mapController!.animateCamera(CameraUpdate.newLatLng(
                   LatLng(widget.initialProperty!.latitude,
@@ -514,21 +523,19 @@ class _PropertyMapState extends State<PropertyMap> {
               if (_selectedId != null) {
                 _updateMarker(_selectedId!, isSelected: false);
               }
+              _infoWindowController.hideInfoWindow?.call();
               setState(() {
-                _selectedProperty = null;
                 _selectedId = null;
-                _selectedScreenPoint = null;
               });
             },
-            onCameraMove: (_) {
-              if (!_isCameraMoving) {
-                setState(() => _isCameraMoving = true);
-              }
-            },
-            onCameraIdle: () {
-              _isCameraMoving = false;
-              if (_selectedProperty != null) _updateCardPosition();
-            },
+            onCameraMove: (_) => _infoWindowController.onCameraMove?.call(),
+          ),
+
+          CustomInfoWindow(
+            controller: _infoWindowController,
+            height: _infoCardHeight(),
+            width: _infoCardWidth(),
+            offset: 44,
           ),
 
           // ── Draw gesture overlay (above map to intercept touches) ──
@@ -653,10 +660,9 @@ class _PropertyMapState extends State<PropertyMap> {
                   } else {
                     setState(() {
                       _isDrawMode = true;
-                      _selectedProperty = null;
                       _selectedId = null;
-                      _selectedScreenPoint = null;
                     });
+                    _infoWindowController.hideInfoWindow?.call();
                   }
                 },
                 isActive: _isDrawMode,
@@ -700,42 +706,6 @@ class _PropertyMapState extends State<PropertyMap> {
               ),
             ]),
           ),
-
-          // ── Popup card at marker (visible when camera is idle) ──
-          if (_selectedProperty != null &&
-              _selectedScreenPoint != null &&
-              !_isCameraMoving)
-            Builder(builder: (_) {
-              final cardW = 200.w;
-              final arrowH = 10.h;
-              final left = (_selectedScreenPoint!.dx - cardW / 2)
-                  .clamp(8.0, mapW - cardW - 8);
-              final bottom = (mapH - _selectedScreenPoint!.dy + arrowH + 4)
-                  .clamp(8.0, mapH - 100);
-              return Positioned(
-                left: left,
-                bottom: bottom,
-                child: SizedBox(
-                  width: cardW,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _PropertyInfoCard(
-                        property: _selectedProperty!,
-                        onTap: () =>
-                            widget.onPropertyTap?.call(_selectedProperty!),
-                      ),
-                    ],
-                  ),
-                )
-                    .animate()
-                    .scale(
-                        begin: const Offset(0.9, 0.9),
-                        duration: 180.ms,
-                        curve: Curves.easeOut)
-                    .fadeIn(duration: 150.ms),
-              );
-            }),
         ],
       );
     });
@@ -839,10 +809,19 @@ class _PropertyInfoCard extends StatelessWidget {
         .join(' ');
     final cityState =
         [addr.city, addr.state].where((s) => s.isNotEmpty).join(', ');
-    final fullAddr = [street, cityState].where((s) => s.isNotEmpty).join(', ');
+    final fullAddr =
+        [street, cityState, addr.zip].where((s) => s.isNotEmpty).join(', ');
     final imageUrl = property.media.isNotEmpty ? property.media.first : null;
     final priceStr = NumberFormat.currency(symbol: '\$', decimalDigits: 0)
         .format(property.listPrice);
+    final listedDate = _parseListedDate(
+      property.onMarketDate,
+      property.listDate,
+      property.createdAt,
+    );
+    final daysOnMarket = _daysOnMarket(listedDate);
+    final listedLabel =
+        listedDate != null ? DateFormat('MMM d, y').format(listedDate) : 'N/A';
 
     return GestureDetector(
       onTap: onTap,
@@ -869,15 +848,16 @@ class _PropertyInfoCard extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image (top)
-            SizedBox(
-              height: 90.h,
-              child: Stack(children: [
-                Positioned.fill(
-                  child: imageUrl != null
+            // ── Image with overlaid price ──────────────────────────────────
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Photo
+                  imageUrl != null
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
@@ -885,86 +865,205 @@ class _PropertyInfoCard extends StatelessWidget {
                             color: AppColors.shimmerBase,
                             child: Center(
                                 child: Icon(LucideIcons.image,
-                                    size: 20.sp,
+                                    size: 24.sp,
                                     color: AppColors.textTertiary)),
                           ),
                           errorWidget: (_, __, ___) => _imagePlaceholder(),
                         )
                       : _imagePlaceholder(),
-                ),
-                // Status badge
-                Positioned(
-                  top: 6.h,
-                  left: 6.w,
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: property.isSold
-                          ? AppColors.error
-                          : property.isPending
-                              ? AppColors.warning
-                              : AppColors.success,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                    child: Text(
-                      property.isSold
-                          ? 'SOLD'
-                          : property.isPending
-                              ? 'PENDING'
-                              : 'FOR SALE',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: property.isPending
-                            ? AppColors.textPrimary
-                            : Colors.white,
-                        fontSize: 8.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+
+                  // Gradient overlay at bottom (so price text is readable)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 64,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.65),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ]),
+
+                  // Status badge – top left
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: property.isSold
+                            ? AppColors.error
+                            : property.isPending
+                                ? AppColors.warning
+                                : AppColors.success,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        property.isSold
+                            ? 'SOLD'
+                            : property.isPending
+                                ? 'PENDING'
+                                : 'FOR SALE',
+                        style: TextStyle(
+                          color: property.isPending
+                              ? AppColors.textPrimary
+                              : Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Photo count – top right
+                  if (property.media.length > 1)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.camera,
+                                size: 11, color: Colors.white),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${property.media.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Price – bottom left, overlaid on gradient
+                  Positioned(
+                    bottom: 8,
+                    left: 10,
+                    right: 10,
+                    child: Text(
+                      priceStr,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black45,
+                              blurRadius: 4,
+                              offset: Offset(0, 1))
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
-            // Details (bottom)
-            Padding(
-              padding: EdgeInsets.all(8.w),
+            // ── Details below image ────────────────────────────────────────
+            Container(
+              color: AppColors.surface,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(priceStr,
-                      style: AppTypography.labelLarge.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      )),
-                  SizedBox(height: 3.h),
                   // Beds · Baths · Sqft
-                  Row(children: [
-                    Text('${property.bedrooms}bd',
-                        style: AppTypography.labelSmall.copyWith(
-                            fontWeight: FontWeight.w600, fontSize: 10.sp)),
-                    SizedBox(width: 6.w),
-                    Text('${property.bathrooms}ba',
-                        style: AppTypography.labelSmall.copyWith(
-                            fontWeight: FontWeight.w600, fontSize: 10.sp)),
-                    SizedBox(width: 6.w),
-                    Flexible(
-                      child: Text(
-                          '${NumberFormat('#,###').format(property.squareFootage)}sf',
-                          style: AppTypography.labelSmall.copyWith(
-                              fontWeight: FontWeight.w600, fontSize: 10.sp),
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                  ]),
-                  SizedBox(height: 2.h),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.bedSingle,
+                          size: 12, color: AppColors.textSecondary),
+                      const SizedBox(width: 3),
+                      Text('${property.bedrooms} bd',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
+                      const SizedBox(width: 8),
+                      Icon(LucideIcons.bath,
+                          size: 12, color: AppColors.textSecondary),
+                      const SizedBox(width: 3),
+                      Text('${property.bathrooms} ba',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
+                      const SizedBox(width: 8),
+                      Icon(LucideIcons.ruler,
+                          size: 12, color: AppColors.textSecondary),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          '${NumberFormat('#,###').format(property.squareFootage)} sqft',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Address
                   Text(
                     fullAddr.isNotEmpty ? fullAddr : property.propertyName,
-                    style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary, fontSize: 9.sp),
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w400),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  // Metadata: days on market + listed date
+                  Row(
+                    children: [
+                      Icon(LucideIcons.calendarDays,
+                          size: 13, color: AppColors.info),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$daysOnMarket days on market',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.info,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Listed: $listedLabel',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -973,6 +1072,20 @@ class _PropertyInfoCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  DateTime? _parseListedDate(
+      String onMarketDate, String listDate, String createdAt) {
+    final raw = [onMarketDate, listDate, createdAt]
+        .firstWhere((v) => v.trim().isNotEmpty, orElse: () => '');
+    if (raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  int _daysOnMarket(DateTime? listedDate) {
+    if (listedDate == null) return 0;
+    final days = DateTime.now().difference(listedDate).inDays;
+    return days < 0 ? 0 : days;
   }
 
   Widget _imagePlaceholder() {

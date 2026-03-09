@@ -22,6 +22,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/data/models/property_model.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../property/presentation/widgets/property_map.dart';
+import '../widgets/property_filter_sheet.dart';
 
 class BuyerSearchPage extends StatefulWidget {
   const BuyerSearchPage({super.key});
@@ -367,410 +368,75 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   void _showFilterSheet() {
-    // Initialize text controllers with current values
-    final minPriceCtrl = TextEditingController(
-        text:
-            _priceRange.start == 0 ? '' : _priceRange.start.toInt().toString());
-    final maxPriceCtrl = TextEditingController(
-        text: _priceRange.end >= 5000000
-            ? ''
-            : _priceRange.end.toInt().toString());
-
-    final minSqftCtrl = TextEditingController(
-        text: _sqftRange.start == 0 ? '' : _sqftRange.start.toInt().toString());
-    final maxSqftCtrl = TextEditingController(
-        text: _sqftRange.end >= 10000 ? '' : _sqftRange.end.toInt().toString());
-
-    final minYearCtrl = TextEditingController(
-        text: _yearRange.start <= 1900
-            ? ''
-            : _yearRange.start.toInt().toString());
-    final maxYearCtrl = TextEditingController(
-        text: _yearRange.end >= 2025 ? '' : _yearRange.end.toInt().toString());
-
-    var tempBeds = _minBeds;
-    var tempBaths = _minBaths;
-    var tempHomeTypes = Set<String>.from(_selectedHomeTypes);
-
-    // Helper to build clean text inputs
-    Widget buildRangeInput(String label, TextEditingController ctrl,
-        String? prefix, String? suffix) {
-      return TextField(
-        controller: ctrl,
-        keyboardType: TextInputType.number,
-        cursorColor: AppColors.primary,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: AppTypography.labelMedium.copyWith(color: Colors.grey),
-          floatingLabelStyle:
-              AppTypography.labelMedium.copyWith(color: AppColors.primary),
-          prefixText: prefix,
-          suffixText: suffix,
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-          ),
-        ),
-      );
-    }
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      showDragHandle: false, // Prevents default system handle from appearing
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
-      builder: (ctx) => StatefulBuilder(builder: (ctx, setModalState) {
-        return Theme(
-          // OVERRIDE THE BLUE SPLASH COLOR HERE
-          data: Theme.of(context).copyWith(
-            splashColor: AppColors.primary.withValues(alpha: 0.15),
-            highlightColor: AppColors.primary.withValues(alpha: 0.15),
-          ),
-          child: Padding(
-            // Pushes content up when keyboard opens
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.85,
-              minChildSize: 0.5,
-              maxChildSize: 0.95,
-              builder: (_, scrollController) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // HEADER (Clean, no buttons/handles)
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
-                      child: Text('Filter Properties',
-                          style: AppTypography.headlineSmall),
-                    ),
-                    const Divider(height: 1),
+      builder: (_) => PropertyFilterSheet(
+        initialPriceRange: _priceRange,
+        initialSqftRange: _sqftRange,
+        initialYearRange: _yearRange,
+        initialMinBeds: _minBeds,
+        initialMinBaths: _minBaths,
+        initialHomeTypes: _selectedHomeTypes,
+        onApply: ({
+          int? minPrice,
+          int? maxPrice,
+          int? minBeds,
+          int? minBaths,
+          int? minSquareFeet,
+          int? maxSquareFeet,
+          int? minYearBuilt,
+          int? maxYearBuilt,
+          List<String>? homeTypes,
+        }) {
+          setState(() {
+            _priceRange = RangeValues(
+              minPrice?.toDouble() ?? 0,
+              maxPrice?.toDouble() ?? 5000000,
+            );
+            _sqftRange = RangeValues(
+              minSquareFeet?.toDouble() ?? 0,
+              maxSquareFeet?.toDouble() ?? 10000,
+            );
+            _yearRange = RangeValues(
+              minYearBuilt?.toDouble() ?? 1900,
+              maxYearBuilt?.toDouble() ?? 2025,
+            );
+            _minBeds = minBeds ?? 0;
+            _minBaths = minBaths ?? 0;
+            _selectedHomeTypes
+              ..clear()
+              ..addAll(homeTypes ?? []);
+          });
 
-                    // SCROLLABLE CONTENT
-                    Expanded(
-                      child: ListView(
-                        controller: scrollController,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24.w, vertical: 16.h),
-                        children: [
-                          // HOME TYPE
-                          Text('Home Type', style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Wrap(
-                            spacing: 10.w,
-                            runSpacing: 10.h,
-                            children: _homeTypeOptions.map((type) {
-                              final selected = tempHomeTypes.contains(type);
-                              return FilterChip(
-                                label: Text(type),
-                                selected: selected,
-                                backgroundColor: AppColors.surfaceVariant,
-                                selectedColor:
-                                    AppColors.primary.withValues(alpha: 0.15),
-                                checkmarkColor: AppColors.primaryDark,
-                                surfaceTintColor: Colors.transparent,
-                                side: BorderSide(
-                                  color: selected
-                                      ? AppColors.primary
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                ),
-                                labelStyle: AppTypography.labelSmall.copyWith(
-                                  color: selected
-                                      ? AppColors.primaryDark
-                                      : AppColors.textPrimary,
-                                  fontWeight: selected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                                onSelected: (v) => setModalState(() {
-                                  if (v) {
-                                    tempHomeTypes.add(type);
-                                  } else {
-                                    tempHomeTypes.remove(type);
-                                  }
-                                }),
-                              );
-                            }).toList(),
-                          ),
-                          SizedBox(height: 30.h),
-
-                          // PRICE INPUTS
-                          Text('Price Range', style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Min Price', minPriceCtrl, '\$ ', null)),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Max Price', maxPriceCtrl, '\$ ', null)),
-                            ],
-                          ),
-                          SizedBox(height: 30.h),
-
-                          // BEDROOMS
-                          Text('Min Bedrooms',
-                              style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Wrap(
-                            spacing: 10.w,
-                            runSpacing: 10.h,
-                            children: List.generate(
-                              6,
-                              (i) => ChoiceChip(
-                                label: Text(i == 0 ? 'Any' : '$i+'),
-                                selected: tempBeds == i,
-                                backgroundColor: AppColors.surfaceVariant,
-                                selectedColor:
-                                    AppColors.primary.withValues(alpha: 0.15),
-                                surfaceTintColor: Colors.transparent,
-                                side: BorderSide(
-                                  color: tempBeds == i
-                                      ? AppColors.primary
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                ),
-                                labelStyle: AppTypography.labelSmall.copyWith(
-                                  color: tempBeds == i
-                                      ? AppColors.primaryDark
-                                      : AppColors.textPrimary,
-                                  fontWeight: tempBeds == i
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                                onSelected: (_) =>
-                                    setModalState(() => tempBeds = i),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 30.h),
-
-                          // BATHROOMS
-                          Text('Min Bathrooms',
-                              style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Wrap(
-                            spacing: 10.w,
-                            runSpacing: 10.h,
-                            children: List.generate(
-                              5,
-                              (i) => ChoiceChip(
-                                label: Text(i == 0 ? 'Any' : '$i+'),
-                                selected: tempBaths == i,
-                                backgroundColor: AppColors.surfaceVariant,
-                                selectedColor:
-                                    AppColors.primary.withValues(alpha: 0.15),
-                                surfaceTintColor: Colors.transparent,
-                                side: BorderSide(
-                                  color: tempBaths == i
-                                      ? AppColors.primary
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                ),
-                                labelStyle: AppTypography.labelSmall.copyWith(
-                                  color: tempBaths == i
-                                      ? AppColors.primaryDark
-                                      : AppColors.textPrimary,
-                                  fontWeight: tempBaths == i
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                                onSelected: (_) =>
-                                    setModalState(() => tempBaths = i),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 30.h),
-
-                          // SQUARE FOOTAGE INPUTS
-                          Text('Square Footage',
-                              style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Min Sqft', minSqftCtrl, null, ' sqft')),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Max Sqft', maxSqftCtrl, null, ' sqft')),
-                            ],
-                          ),
-                          SizedBox(height: 30.h),
-
-                          // YEAR BUILT INPUTS
-                          Text('Year Built', style: AppTypography.titleMedium),
-                          SizedBox(height: 12.h),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Min Year', minYearCtrl, null, null)),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                  child: buildRangeInput(
-                                      'Max Year', maxYearCtrl, null, null)),
-                            ],
-                          ),
-                          SizedBox(height: 16.h),
-                        ],
-                      ),
-                    ),
-
-                    // BOTTOM BUTTONS
-                    Container(
-                      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 16.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, -4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                                side: BorderSide(color: AppColors.primary),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _priceRange = const RangeValues(0, 5000000);
-                                  _minBeds = 0;
-                                  _minBaths = 0;
-                                  _sqftRange = const RangeValues(0, 10000);
-                                  _yearRange = const RangeValues(1900, 2025);
-                                  _selectedHomeTypes.clear();
-                                });
-                                context.read<PropertyBloc>().add(ClearFilter());
-                                Navigator.pop(ctx);
-                              },
-                              child: Text(
-                                'Clear',
-                                style: AppTypography.titleSmall
-                                    .copyWith(color: AppColors.primary),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 16.w),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                              ),
-                              onPressed: () {
-                                // Parse text fields gracefully (remove commas if typed)
-                                int parseVal(String txt, int fallback) {
-                                  return int.tryParse(
-                                          txt.replaceAll(',', '')) ??
-                                      fallback;
-                                }
-
-                                final parsedMinPrice =
-                                    parseVal(minPriceCtrl.text, 0);
-                                final parsedMaxPrice = parseVal(
-                                    maxPriceCtrl.text,
-                                    5000000); // Or use a very high number
-                                final parsedMinSqft =
-                                    parseVal(minSqftCtrl.text, 0);
-                                final parsedMaxSqft =
-                                    parseVal(maxSqftCtrl.text, 10000);
-                                final parsedMinYear =
-                                    parseVal(minYearCtrl.text, 1900);
-                                final parsedMaxYear =
-                                    parseVal(maxYearCtrl.text, 2025);
-
-                                setState(() {
-                                  // Update your local state so reopening works smoothly
-                                  _priceRange = RangeValues(
-                                      parsedMinPrice.toDouble(),
-                                      parsedMaxPrice.toDouble());
-                                  _sqftRange = RangeValues(
-                                      parsedMinSqft.toDouble(),
-                                      parsedMaxSqft.toDouble());
-                                  _yearRange = RangeValues(
-                                      parsedMinYear.toDouble(),
-                                      parsedMaxYear.toDouble());
-                                  _minBeds = tempBeds;
-                                  _minBaths = tempBaths;
-                                  _selectedHomeTypes
-                                    ..clear()
-                                    ..addAll(tempHomeTypes);
-                                });
-
-                                context.read<PropertyBloc>().add(ApplyFilter(
-                                      minPrice: parsedMinPrice > 0
-                                          ? parsedMinPrice
-                                          : null,
-                                      maxPrice: parsedMaxPrice < 5000000
-                                          ? parsedMaxPrice
-                                          : null,
-                                      minBeds: tempBeds > 0 ? tempBeds : null,
-                                      minBaths:
-                                          tempBaths > 0 ? tempBaths : null,
-                                      minSquareFeet: parsedMinSqft > 0
-                                          ? parsedMinSqft
-                                          : null,
-                                      maxSquareFeet: parsedMaxSqft < 10000
-                                          ? parsedMaxSqft
-                                          : null,
-                                      minYearBuilt: parsedMinYear > 1900
-                                          ? parsedMinYear
-                                          : null,
-                                      maxYearBuilt: parsedMaxYear < 2025
-                                          ? parsedMaxYear
-                                          : null,
-                                      homeTypes: tempHomeTypes.isNotEmpty
-                                          ? tempHomeTypes.toList()
-                                          : null,
-                                    ));
-                                Navigator.pop(ctx);
-                              },
-                              child: Text(
-                                'Apply',
-                                style: AppTypography.titleSmall
-                                    .copyWith(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      }),
+          context.read<PropertyBloc>().add(ApplyFilter(
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                minBeds: minBeds,
+                minBaths: minBaths,
+                minSquareFeet: minSquareFeet,
+                maxSquareFeet: maxSquareFeet,
+                minYearBuilt: minYearBuilt,
+                maxYearBuilt: maxYearBuilt,
+                homeTypes: homeTypes,
+              ));
+        },
+        onClear: () {
+          setState(() {
+            _priceRange = const RangeValues(0, 5000000);
+            _minBeds = 0;
+            _minBaths = 0;
+            _sqftRange = const RangeValues(0, 10000);
+            _yearRange = const RangeValues(1900, 2025);
+            _selectedHomeTypes.clear();
+          });
+          context.read<PropertyBloc>().add(ClearFilter());
+        },
+      ),
     );
   }
 
@@ -962,30 +628,47 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
         Expanded(
           child: SizedBox(
             height: 32.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: PropertySortUtil.sortLabels.length,
-              separatorBuilder: (_, __) => SizedBox(width: 6.w),
-              itemBuilder: (_, i) {
-                final label = PropertySortUtil.sortLabels[i];
-                final type = PropertySortUtil.fromLabel(label);
-                final isSelected = type == _sortType;
-                return ChoiceChip(
-                  label: Text(label,
-                      style: AppTypography.labelSmall.copyWith(
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.textSecondary)),
-                  selected: isSelected,
-                  selectedColor: AppColors.secondary,
-                  backgroundColor: AppColors.surface,
-                  onSelected: (_) => setState(() => _sortType = type),
-                  visualDensity: VisualDensity.compact,
-                  side: BorderSide.none,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r)),
-                );
-              },
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                splashFactory: NoSplash.splashFactory,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+              ),
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: PropertySortUtil.sortLabels.length,
+                separatorBuilder: (_, __) => SizedBox(width: 6.w),
+                itemBuilder: (_, i) {
+                  final label = PropertySortUtil.sortLabels[i];
+                  final type = PropertySortUtil.fromLabel(label);
+                  final isSelected = type == _sortType;
+                  return ChoiceChip(
+                    label: Text(label,
+                        style: AppTypography.labelSmall.copyWith(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textSecondary)),
+                    selected: isSelected,
+                    color: MaterialStateProperty.resolveWith<Color?>((states) {
+                      final selected = states.contains(MaterialState.selected);
+                      final pressed = states.contains(MaterialState.pressed);
+                      if (selected) {
+                        return AppColors.secondary
+                            .withValues(alpha: pressed ? 0.92 : 1);
+                      }
+                      return pressed
+                          ? AppColors.secondary.withValues(alpha: 0.15)
+                          : AppColors.surface;
+                    }),
+                    onSelected: (_) => setState(() => _sortType = type),
+                    visualDensity: VisualDensity.compact,
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.r)),
+                  );
+                },
+              ),
             ),
           ),
         ),

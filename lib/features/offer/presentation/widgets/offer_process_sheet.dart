@@ -1,9 +1,11 @@
+import 'package:aligned_tooltip/aligned_tooltip.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
+import '../../../../app_components/custom_dialog/custom_dialog_widget.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
@@ -205,12 +207,36 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
 
   void _onNext() {
     if (_currentStep < 4) {
+      final error = _validateCurrentStep();
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: AppColors.error),
+        );
+        return;
+      }
       if (_currentStep == 0 && !_formKey.currentState!.validate()) return;
       // Save draft
       context
           .read<OfferBloc>()
           .add(UpdateOfferDraft(draftData: _buildOfferData()));
       setState(() => _currentStep++);
+    }
+  }
+
+  String? _validateCurrentStep() {
+    switch (_currentStep) {
+      case 1:
+        if (_purchasePrice <= 0) return 'Purchase price is required.';
+        if (_loanType.isEmpty) return 'Please select a down payment type.';
+        return null;
+      case 2:
+        // Conditions step — all have defaults, no strict requirement
+        return null;
+      case 3:
+        // Title company step — optional but choice must be set
+        return null;
+      default:
+        return null;
     }
   }
 
@@ -234,12 +260,36 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     return BlocListener<OfferBloc, OfferState>(
       listener: (context, state) {
         if (state.successMessage != null) {
-          widget.onComplete?.call();
           Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(state.successMessage!),
-                backgroundColor: AppColors.success),
+          showDialog(
+            context: context,
+            builder: (dialogContext) => Dialog(
+              elevation: 0,
+              insetPadding: EdgeInsets.zero,
+              backgroundColor: Colors.transparent,
+              alignment: Alignment.center,
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(dialogContext).unfocus();
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                child: CustomDialogWidget(
+                  icon: Icon(LucideIcons.checkCircle,
+                      color: Colors.white, size: 32.0),
+                  title: widget.existingOffer != null
+                      ? 'Offer Updated'
+                      : 'Offer Submitted',
+                  description: widget.existingOffer != null
+                      ? 'Your offer has been updated successfully.'
+                      : 'Your offer has been submitted successfully. We will notify you once it is reviewed.',
+                  buttonLabel: 'Continue',
+                  iconBackgroundColor: AppColors.success,
+                  onDone: () async {
+                    widget.onComplete?.call();
+                  },
+                ),
+              ),
+            ),
           );
         }
         if (state.error != null) {
@@ -409,6 +459,7 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
   // STEP 2: Pricing & Financials
   // ────────────────────────────────────────────
   Widget _buildPricingStep() {
+    final loanAmount = _purchasePrice - _downPaymentAmount;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -435,7 +486,13 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
         CurrencyInput(
           label: 'Purchase Price *',
           initialValue: _purchasePrice,
-          onChanged: (v) => _purchasePrice = v,
+          onChanged: (v) {
+            _purchasePrice = v;
+            // Auto-calculate deposit as 1% of purchase price if not manually set
+            if (_depositAmount == 0 && v > 0) {
+              setState(() => _depositAmount = (v * 0.01).roundToDouble());
+            }
+          },
         ),
         SizedBox(height: 16.h),
         DownPaymentSelector(
@@ -446,7 +503,8 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
             if (_purchasePrice > 0) {
               final pctVal = double.tryParse(pct.split('-').first) ?? 0;
               setState(() {
-                _downPaymentAmount = _purchasePrice * pctVal / 100;
+                _downPaymentAmount =
+                    (_purchasePrice * pctVal / 100).roundToDouble();
               });
             }
           },
@@ -455,26 +513,62 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
         CurrencyInput(
           label: 'Down Payment Amount',
           initialValue: _downPaymentAmount,
-          onChanged: (v) => _downPaymentAmount = v,
+          onChanged: (v) => setState(() => _downPaymentAmount = v),
         ),
+        // Calculated loan amount display
+        if (_purchasePrice > 0) ...[
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8.r),
+              border:
+                  Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Estimated Loan Amount',
+                    style: AppTypography.bodySmall
+                        .copyWith(color: AppColors.success)),
+                Text(
+                    '\$${_formatNumber(loanAmount > 0 ? loanAmount.toInt() : 0)}',
+                    style: AppTypography.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700, color: AppColors.success)),
+              ],
+            ),
+          ),
+        ],
         SizedBox(height: 16.h),
-        // Deposit type dropdown
-        DropdownButtonFormField<String>(
+        // Deposit type dropdown — styled custom
+        _buildLabelWithTooltip(
+          'Earnest Money Deposit Type',
+          'The earnest money funds sent to the title company via check or wire transfer.',
+        ),
+        SizedBox(height: 8.h),
+        _buildStyledDropdown(
           value: _depositType,
-          decoration:
-              const InputDecoration(labelText: 'Earnest Money Deposit Type'),
-          items: ['None', 'Check', 'Wire Transfer', 'Cash']
-              .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-              .toList(),
+          items: ['None', 'Check', 'Wire Transfer', 'Cash'],
           onChanged: (v) => setState(() => _depositType = v ?? 'None'),
         ),
         SizedBox(height: 16.h),
+        _buildLabelWithTooltip(
+          'Deposit Amount',
+          '1% is the standard minimum deposit. You can adjust this amount up or down to suit your needs. However, please note that this could impact the strength of your offer.',
+        ),
+        SizedBox(height: 8.h),
         CurrencyInput(
           label: 'Deposit Amount',
           initialValue: _depositAmount,
           onChanged: (v) => _depositAmount = v,
         ),
         SizedBox(height: 16.h),
+        _buildLabelWithTooltip(
+          'Request for Seller Credit',
+          'This is when the seller gives you money to help cover repairs or closing costs.',
+        ),
+        SizedBox(height: 8.h),
         CurrencyInput(
           label: 'Seller Credit Request',
           initialValue: _creditRequest,
@@ -487,12 +581,22 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
           onChanged: (v) => _additionalEarnest = v,
         ),
         SizedBox(height: 16.h),
+        _buildLabelWithTooltip(
+          'Option Fee',
+          'A non-refundable fee paid to the seller for the buyer\'s right to cancel the contract within a set number of days (usually 1–10). If the buyer cancels during this option period, the fee goes to the seller, and the deposit is refunded.',
+        ),
+        SizedBox(height: 8.h),
         CurrencyInput(
           label: 'Option Fee',
           initialValue: _optionFee,
           onChanged: (v) => _optionFee = v,
         ),
         SizedBox(height: 16.h),
+        _buildLabelWithTooltip(
+          'Home Warranty Coverage',
+          'A home warranty is a service contract that covers repairs or replacements of major home systems and appliances due to normal wear and tear. It typically includes HVAC systems, plumbing, electrical and kitchen appliances.',
+        ),
+        SizedBox(height: 8.h),
         CurrencyInput(
           label: 'Home Warranty Coverage',
           initialValue: _coverageAmount,
@@ -500,6 +604,11 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
         ),
         SizedBox(height: 16.h),
         // Closing days
+        _buildLabelWithTooltip(
+          'Closing Days',
+          'Default: 30 days or sooner.',
+        ),
+        SizedBox(height: 8.h),
         AppTextField(
           controller: _closingDaysCtrl,
           label: 'Closing Days',
@@ -565,7 +674,10 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
               contentPadding: EdgeInsets.zero,
             )),
         SizedBox(height: 20.h),
-        Text('Survey Required', style: AppTypography.labelLarge),
+        _buildLabelWithTooltip(
+          'Survey Required',
+          'A survey is a detailed map of a property that shows its boundaries, dimensions, and any structures or features. It helps buyers and sellers understand the exact size and layout of the land being bought or sold.',
+        ),
         SizedBox(height: 8.h),
         ...['Yes', 'No'].map((v) => RadioListTile<bool>(
               value: v == 'Yes',
@@ -587,13 +699,21 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildLabelWithTooltip(
+          'Title Company',
+          'The title company is a neutral party that makes sure both sides follow the contract, checks for any liens, and ensures the property transfer goes smoothly. If the seller is paying for title services, they will choose the title company.',
+        ),
+        SizedBox(height: 8.h),
         AppTextField(
           controller: _titleCompanyCtrl,
           label: 'Title Company Name',
           prefixIcon: Icons.business,
         ),
         SizedBox(height: 20.h),
-        Text('Title Company Choice', style: AppTypography.labelLarge),
+        _buildLabelWithTooltip(
+          'Title Company Choice',
+          'Title fees can vary by county. Each area has its own customs for who — the buyer or seller — is responsible. Always check with your title company to confirm.',
+        ),
         SizedBox(height: 8.h),
         ...['Buyer', 'Seller', 'Mutual'].map((c) => RadioListTile<String>(
               value: c,
@@ -757,5 +877,68 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
       buf.write(s[i]);
     }
     return buf.toString();
+  }
+
+  /// Builds a label row with an info tooltip icon.
+  Widget _buildLabelWithTooltip(String label, String tooltip) {
+    return Row(
+      children: [
+        Text(label, style: AppTypography.labelLarge),
+        SizedBox(width: 6.w),
+        AlignedTooltip(
+          content: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              tooltip,
+              textAlign: TextAlign.justify,
+              style: AppTypography.bodySmall.copyWith(color: Colors.white),
+            ),
+          ),
+          offset: 4.0,
+          preferredDirection: AxisDirection.up,
+          borderRadius: BorderRadius.circular(8.0),
+          backgroundColor: AppColors.textPrimary,
+          elevation: 4.0,
+          tailBaseWidth: 24.0,
+          tailLength: 12.0,
+          waitDuration: const Duration(milliseconds: 100),
+          showDuration: const Duration(milliseconds: 2000),
+          triggerMode: TooltipTriggerMode.tap,
+          child: Icon(LucideIcons.helpCircle,
+              color: AppColors.textSecondary, size: 18.sp),
+        ),
+      ],
+    );
+  }
+
+  /// Custom styled dropdown matching the app design system.
+  Widget _buildStyledDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surface,
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          borderRadius: BorderRadius.circular(12.r),
+          dropdownColor: AppColors.surface,
+          style: AppTypography.bodyMedium,
+          icon: Icon(LucideIcons.chevronDown,
+              color: AppColors.textSecondary, size: 18.sp),
+          items: items
+              .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
   }
 }

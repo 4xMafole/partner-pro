@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:share_plus/share_plus.dart';
 
+import '../../../../app_components/custom_dialog/custom_dialog_widget.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -12,6 +12,7 @@ import '../../../offer/presentation/widgets/offer_process_sheet.dart';
 import '../../../schedule/presentation/widgets/schedule_tour_sheet.dart';
 import '../bloc/property_bloc.dart';
 import '../../data/models/property_model.dart';
+import '../widgets/property_share_card.dart';
 
 class PropertyDetailsPage extends StatefulWidget {
   final String propertyId;
@@ -29,6 +30,9 @@ class PropertyDetailsPage extends StatefulWidget {
 class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   bool _isFavorite = false;
   int _currentImageIndex = 0;
+  bool _isDescriptionExpanded = false;
+  bool _isSchedulingTour = false;
+  int _showingsBeforeSchedule = 0;
 
   PropertyDataClass? get _property {
     final state = context.read<PropertyBloc>().state;
@@ -55,19 +59,14 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   void _toggleFavorite() {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
-    final uid = authState.user.uid ?? '';
+    final uid = authState.user.uid;
 
     if (_isFavorite) {
-      final propState = context.read<PropertyBloc>().state;
-      final fav = propState.favorites.firstWhere(
-        (f) => f['property_id'] == widget.propertyId,
-        orElse: () => {},
-      );
-      final favId = fav['id'] as String?;
-      if (favId != null) {
-        context.read<PropertyBloc>().add(
-            RemoveFavorite(userId: uid, favoriteId: favId, requesterId: uid));
-      }
+      // Remove favorite using propertyId, not favoriteId
+      context.read<PropertyBloc>().add(RemoveFavorite(
+          userId: uid,
+          favoriteId: widget.propertyId, // This is actually propertyId
+          requesterId: uid));
     } else {
       context.read<PropertyBloc>().add(
             AddFavorite(
@@ -80,7 +79,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   void _scheduleTour() {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
-    final uid = authState.user.uid ?? '';
+    final uid = authState.user.uid;
     final p = _property;
     final address = p != null ? _buildAddress(p) : 'Property';
 
@@ -97,6 +96,9 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
               '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
           final time =
               '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+          _showingsBeforeSchedule =
+              context.read<PropertyBloc>().state.showings.length;
+          _isSchedulingTour = true;
           context.read<PropertyBloc>().add(CreateShowing(
                 userId: uid,
                 propertyId: widget.propertyId,
@@ -104,21 +106,54 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 time: time,
                 requesterId: uid,
               ));
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Tour scheduled!'),
-                backgroundColor: AppColors.success),
-          );
         },
       ),
+    );
+  }
+
+  Future<void> _showStatusPopup({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+  }) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          elevation: 0,
+          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          alignment: AlignmentDirectional(0.0, 0.0)
+              .resolve(Directionality.of(context)),
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(dialogContext).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: CustomDialogWidget(
+              icon: Icon(
+                icon,
+                color: Colors.white,
+                size: 32.0,
+              ),
+              title: title,
+              description: description,
+              buttonLabel: 'Continue',
+              iconBackgroundColor: color,
+              onDone: () async {},
+            ),
+          ),
+        );
+      },
     );
   }
 
   void _makeOffer() {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
-    final uid = authState.user.uid ?? '';
+    final uid = authState.user.uid;
     final p = _property;
     if (p == null) return;
 
@@ -141,7 +176,38 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PropertyBloc, PropertyState>(
+    return BlocConsumer<PropertyBloc, PropertyState>(
+      listener: (context, state) {
+        if (!_isSchedulingTour) return;
+
+        if ((state.error ?? '').trim().isNotEmpty) {
+          _isSchedulingTour = false;
+          Future.delayed(const Duration(milliseconds: 220), () {
+            if (!mounted) return;
+            _showStatusPopup(
+              title: 'Unable to Schedule Tour',
+              description: state.error!,
+              icon: LucideIcons.alertCircle,
+              color: AppColors.error,
+            );
+          });
+          return;
+        }
+
+        if (state.showings.length > _showingsBeforeSchedule) {
+          _isSchedulingTour = false;
+          Future.delayed(const Duration(milliseconds: 220), () {
+            if (!mounted) return;
+            _showStatusPopup(
+              title: 'Tour Scheduled',
+              description:
+                  'Your showing request has been submitted successfully. We will notify you as soon as it is confirmed.',
+              icon: LucideIcons.calendarCheck,
+              color: AppColors.success,
+            );
+          });
+        }
+      },
       builder: (context, state) {
         final p = _property;
 
@@ -149,8 +215,9 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 280.h,
+                expandedHeight: 320.h,
                 pinned: true,
+                elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
                   background: p != null && p.media.isNotEmpty
                       ? Stack(
@@ -170,6 +237,26 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 ),
                               ),
                             ),
+                            // Gradient overlay at bottom
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: 80,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withValues(alpha: 0.4),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Image indicators
                             if (p.media.length > 1)
                               Positioned(
                                 bottom: 16.h,
@@ -180,17 +267,49 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                   children: List.generate(
                                     p.media.length,
                                     (i) => Container(
-                                      width: 8.w,
-                                      height: 8.w,
+                                      width:
+                                          i == _currentImageIndex ? 24.w : 8.w,
+                                      height: 4.h,
                                       margin:
                                           EdgeInsets.symmetric(horizontal: 3.w),
                                       decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
+                                        borderRadius:
+                                            BorderRadius.circular(2.r),
                                         color: i == _currentImageIndex
                                             ? Colors.white
                                             : Colors.white54,
                                       ),
                                     ),
+                                  ),
+                                ),
+                              ),
+                            // Photo count badge
+                            if (p.media.length > 1)
+                              Positioned(
+                                top: 16.h,
+                                right: 16.w,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.w, vertical: 6.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.45),
+                                    borderRadius: BorderRadius.circular(20.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(LucideIcons.camera,
+                                          size: 14.sp, color: Colors.white),
+                                      SizedBox(width: 4.w),
+                                      Text(
+                                        '${_currentImageIndex + 1}/${p.media.length}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -206,39 +325,59 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 ),
                 actions: [
                   Padding(
-                    padding: EdgeInsets.only(right: 8.w),
+                    padding:
+                        EdgeInsets.only(right: 12.w, top: 8.h, bottom: 8.h),
                     child: Row(children: [
                       GestureDetector(
                         onTap: _toggleFavorite,
                         child: Container(
-                          width: 40.w,
-                          height: 40.w,
+                          width: 44.w,
+                          height: 44.w,
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.35),
+                            color: _isFavorite
+                                ? AppColors.error.withValues(alpha: 0.9)
+                                : Colors.black.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              )
+                            ],
                           ),
                           child: Icon(
-                            _isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: _isFavorite ? AppColors.error : Colors.white,
-                            size: 20.sp,
+                            _isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: Colors.white,
+                            size: 22.sp,
                           ),
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: 10.w),
                       GestureDetector(
                         onTap: () {
-                          final address = p != null ? _buildAddress(p) : 'Property';
-                          final text = 'Check out this property: $address · \$${p?.listPrice ?? 0} · ID: ${widget.propertyId}';
-                          Share.share(text);
+                          if (p != null) {
+                            sharePropertyCard(context, p, widget.propertyId);
+                          }
                         },
                         child: Container(
-                          width: 40.w,
-                          height: 40.w,
+                          width: 44.w,
+                          height: 44.w,
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.28),
+                            color: Colors.black.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              )
+                            ],
                           ),
-                          child: Icon(LucideIcons.share2, color: Colors.white, size: 18.sp),
+                          child: Icon(LucideIcons.share2,
+                              color: Colors.white, size: 20.sp),
                         ),
                       ),
                     ]),
@@ -246,95 +385,247 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 ],
               ),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(24.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p != null
-                            ? _buildAddress(p)
-                            : 'Property #${widget.propertyId}',
-                        style: AppTypography.headlineLarge,
-                      ),
-                      SizedBox(height: 8.h),
-                      if (p != null && p.mlsId.isNotEmpty)
-                        Text('MLS# ${p.mlsId}',
-                            style: AppTypography.bodyMedium
-                                .copyWith(color: AppColors.textSecondary)),
-                      SizedBox(height: 16.h),
-                      Text(
-                        '\$${_formatNumber(p?.listPrice ?? 0)}',
-                        style: AppTypography.displaySmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (p != null) ...[
-                        SizedBox(height: 12.h),
-                        Wrap(
-                          spacing: 8.w,
-                          children: [
-                            if (p.inContract)
-                              _StatusBadge('In Contract', AppColors.tertiary),
-                            if (p.isPending)
-                              _StatusBadge('Pending', AppColors.tertiary),
-                            if (p.isSold) _StatusBadge('Sold', AppColors.error),
-                            if (p.listAsIs)
-                              _StatusBadge('As-Is', AppColors.textSecondary),
-                            if (p.listPriceReduction)
-                              _StatusBadge('Price Reduced', AppColors.success),
-                          ],
-                        ),
-                      ],
-                      SizedBox(height: 24.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header section
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 12.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Stat(LucideIcons.bedDouble, '${p?.bedrooms ?? 0}',
-                              'Beds'),
-                          _Stat(LucideIcons.bath, '${p?.bathrooms ?? 0}',
-                              'Baths'),
-                          _Stat(LucideIcons.maximize,
-                              '${p?.squareFootage ?? 0}', 'Sqft'),
-                          _Stat(LucideIcons.calendar, '${p?.yearBuilt ?? 0}',
-                              'Year'),
+                          Text(
+                            p != null
+                                ? _buildAddress(p)
+                                : 'Property #${widget.propertyId}',
+                            style: AppTypography.headlineLarge.copyWith(
+                              fontSize: 24.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (p != null && p.mlsId.isNotEmpty)
+                            Padding(
+                              padding: EdgeInsets.only(top: 4.h),
+                              child: Text('MLS# ${p.mlsId}',
+                                  style: AppTypography.bodyMedium
+                                      .copyWith(color: AppColors.textTertiary)),
+                            ),
                         ],
                       ),
-                      SizedBox(height: 24.h),
-                      if (p != null) ...[
-                        Text('Property Details',
-                            style: AppTypography.headlineSmall),
-                        SizedBox(height: 12.h),
-                        _DetailRow('Type', p.propertyType),
-                        _DetailRow('Lot Size', p.lotSize),
-                        _DetailRow('County', p.countyParishPrecinct),
-                        if (p.listDate.isNotEmpty)
-                          _DetailRow('Listed', p.listDate),
-                        if (p.onMarketDate.isNotEmpty)
-                          _DetailRow('On Market', p.onMarketDate),
-                        if (p.agentName.isNotEmpty) ...[
-                          SizedBox(height: 24.h),
-                          Text('Listing Agent',
-                              style: AppTypography.headlineSmall),
-                          SizedBox(height: 12.h),
-                          _DetailRow('Name', p.agentName),
-                          if (p.agentEmail.isNotEmpty)
-                            _DetailRow('Email', p.agentEmail),
-                          if (p.agentPhoneNumber.isNotEmpty)
-                            _DetailRow('Phone', p.agentPhoneNumber),
+                    ),
+
+                    // Price and status badges
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '\$${_formatListPrice(p?.listPrice ?? 0)}',
+                            style: AppTypography.displaySmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 32.sp,
+                            ),
+                          ),
+                          if (p != null &&
+                              [
+                                p.inContract,
+                                p.isPending,
+                                p.isSold,
+                                p.listAsIs,
+                                p.listPriceReduction
+                              ].any((x) => x)) ...[
+                            SizedBox(height: 12.h),
+                            Wrap(
+                              spacing: 8.w,
+                              runSpacing: 8.h,
+                              children: [
+                                if (p.isSold)
+                                  _StatusBadge('Sold', AppColors.error),
+                                if (p.isPending)
+                                  _StatusBadge('Pending', AppColors.warning),
+                                if (p.inContract)
+                                  _StatusBadge(
+                                      'In Contract', AppColors.tertiary),
+                                if (p.listAsIs)
+                                  _StatusBadge(
+                                      'As-Is', AppColors.textSecondary),
+                                if (p.listPriceReduction)
+                                  _StatusBadge(
+                                      'Price Reduced', AppColors.success),
+                              ],
+                            ),
+                          ],
                         ],
-                        if (p.notes.isNotEmpty) ...[
-                          SizedBox(height: 24.h),
-                          Text('Notes', style: AppTypography.headlineSmall),
-                          SizedBox(height: 8.h),
-                          Text(p.notes,
-                              style: AppTypography.bodyMedium
-                                  .copyWith(color: AppColors.textSecondary)),
+                      ),
+                    ),
+
+                    SizedBox(height: 24.h),
+
+                    // Key stats - simple horizontal row
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _SimpleStat(
+                            icon: LucideIcons.bedDouble,
+                            value: '${p?.bedrooms ?? 0}',
+                            label: 'Beds',
+                          ),
+                          _SimpleStat(
+                            icon: LucideIcons.bath,
+                            value: '${p?.bathrooms ?? 0}',
+                            label: 'Baths',
+                          ),
+                          _SimpleStat(
+                            icon: LucideIcons.maximize,
+                            value: _formatArea(p?.squareFootage ?? 0),
+                            label: 'Sqft',
+                          ),
+                          _SimpleStat(
+                            icon: LucideIcons.calendar,
+                            value: '${p?.yearBuilt ?? 0}',
+                            label: 'Year',
+                          ),
                         ],
-                      ],
+                      ),
+                    ),
+
+                    SizedBox(height: 28.h),
+
+                    if (p != null) ...[
+                      // Property details card
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          padding: EdgeInsets.all(16.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(LucideIcons.info,
+                                      size: 20.sp, color: AppColors.primary),
+                                  SizedBox(width: 8.w),
+                                  Text('Property Details',
+                                      style: AppTypography.titleLarge),
+                                ],
+                              ),
+                              SizedBox(height: 16.h),
+                              if (p.propertyType.isNotEmpty)
+                                _DetailItem('Property Type', p.propertyType),
+                              if (p.lotSize.isNotEmpty)
+                                _DetailItem('Lot Size', p.lotSize),
+                              if (p.countyParishPrecinct.isNotEmpty)
+                                _DetailItem('County', p.countyParishPrecinct),
+                              if (p.listDate.isNotEmpty)
+                                _DetailItem('Listed Date', p.listDate),
+                              if (p.onMarketDate.isNotEmpty)
+                                _DetailItem('On Market', p.onMarketDate),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      // Description section - expandable
+                      if (p.notes.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: _ExpandableDescription(
+                            description: p.notes,
+                            isExpanded: _isDescriptionExpanded,
+                            onToggle: () {
+                              setState(() {
+                                _isDescriptionExpanded =
+                                    !_isDescriptionExpanded;
+                              });
+                            },
+                          ),
+                        ),
+
+                      SizedBox(height: 20.h),
+
+                      // Listing agent card
+                      if (p.agentName.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(
+                                color: Colors.black.withValues(alpha: 0.06),
+                              ),
+                            ),
+                            padding: EdgeInsets.all(16.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 44.w,
+                                      height: 44.w,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(LucideIcons.user,
+                                          size: 24.sp,
+                                          color: AppColors.primary),
+                                    ),
+                                    SizedBox(width: 12.w),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Listing Agent',
+                                              style: AppTypography.labelSmall
+                                                  .copyWith(
+                                                color: AppColors.textSecondary,
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                          Text(p.agentName,
+                                              style: AppTypography.titleMedium),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (p.agentEmail.isNotEmpty ||
+                                    p.agentPhoneNumber.isNotEmpty) ...[
+                                  SizedBox(height: 16.h),
+                                  Container(
+                                    color: AppColors.background,
+                                    height: 1,
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  if (p.agentEmail.isNotEmpty)
+                                    _DetailItem('Email', p.agentEmail),
+                                  if (p.agentPhoneNumber.isNotEmpty)
+                                    _DetailItem('Phone', p.agentPhoneNumber),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
-                  ),
+
+                    SizedBox(height: 20.h),
+                  ],
                 ),
               ),
             ],
@@ -350,7 +641,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                       icon: const Icon(LucideIcons.calendar),
                       label: const Text('Schedule Tour'),
                       style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.h)),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        side: BorderSide(
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -360,7 +655,8 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                       icon: const Icon(LucideIcons.fileText),
                       label: const Text('Make Offer'),
                       style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.h)),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                      ),
                     ),
                   ),
                 ],
@@ -378,56 +674,79 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     return parts.isNotEmpty ? parts.join(', ') : p.propertyName;
   }
 
-  String _formatNumber(int n) {
-    if (n >= 1000000) {
-      return '${(n / 1000000).toStringAsFixed(n % 1000000 == 0 ? 0 : 1)}M';
+  String _formatArea(int sqft) {
+    if (sqft >= 1000) {
+      return '${(sqft / 1000).toStringAsFixed(sqft % 1000 == 0 ? 0 : 1)}K';
     }
-    if (n >= 1000) {
-      return '${(n / 1000).toStringAsFixed(0)},${(n % 1000).toString().padLeft(3, '0')}';
-    }
-    return n.toString();
+    return sqft.toString();
+  }
+
+  String _formatListPrice(int n) {
+    return n.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
   }
 }
 
-class _Stat extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  const _Stat(this.icon, this.value, this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 20.sp, color: AppColors.primary),
-        SizedBox(height: 4.h),
-        Text(value, style: AppTypography.titleLarge),
-        Text(label, style: AppTypography.caption),
-      ],
-    );
-  }
+/// Simple stat widget - clean and minimal
+Widget _SimpleStat({
+  required IconData icon,
+  required String value,
+  required String label,
+}) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        icon,
+        size: 20.sp,
+        color: AppColors.primary,
+      ),
+      SizedBox(height: 6.h),
+      Text(
+        value,
+        style: AppTypography.titleSmall.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      SizedBox(height: 4.h),
+      Text(
+        label,
+        style: AppTypography.labelSmall.copyWith(
+          color: AppColors.textSecondary,
+          fontSize: 9.sp,
+        ),
+      ),
+    ],
+  );
 }
 
-class _DetailRow extends StatelessWidget {
+class _DetailItem extends StatelessWidget {
   final String label;
   final String value;
-  const _DetailRow(this.label, this.value);
+  const _DetailItem(this.label, this.value);
 
   @override
   Widget build(BuildContext context) {
     if (value.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Row(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 110.w,
-            child: Text(label,
-                style: AppTypography.bodyMedium
-                    .copyWith(color: AppColors.textSecondary)),
-          ),
-          Expanded(child: Text(value, style: AppTypography.bodyMedium)),
+          Text(label,
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              )),
+          SizedBox(height: 4.h),
+          Text(value,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              )),
         ],
       ),
     );
@@ -442,14 +761,131 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Text(label,
-          style: AppTypography.labelSmall
-              .copyWith(color: color, fontWeight: FontWeight.w600)),
+          style: AppTypography.labelSmall.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontSize: 10.sp,
+          )),
+    );
+  }
+}
+
+/// Expandable description widget with gradient fade and animated chevron indicator
+class _ExpandableDescription extends StatelessWidget {
+  final String description;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _ExpandableDescription({
+    required this.description,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onToggle,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(LucideIcons.fileText,
+                    size: 20.sp, color: AppColors.primary),
+                SizedBox(width: 8.w),
+                Text('Description', style: AppTypography.titleLarge),
+                const Spacer(),
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Icon(
+                    LucideIcons.chevronDown,
+                    size: 20.sp,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            AnimatedCrossFade(
+              firstChild: _CollapsedDescription(description: description),
+              secondChild: Text(
+                description,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+              crossFadeState: isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Collapsed description with gradient fade at bottom
+class _CollapsedDescription extends StatelessWidget {
+  final String description;
+
+  const _CollapsedDescription({required this.description});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Text(
+          description,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.5,
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: 30.h,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.surface.withValues(alpha: 0),
+                  AppColors.surface,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

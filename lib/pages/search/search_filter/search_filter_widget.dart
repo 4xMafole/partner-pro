@@ -11,6 +11,7 @@ import '/flutter_flow/form_field_controller.dart';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 import 'search_filter_model.dart';
 export 'search_filter_model.dart';
 
@@ -35,6 +36,23 @@ class SearchFilterWidget extends StatefulWidget {
 
 class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   late SearchFilterModel _model;
+  final NumberFormat _currencyFormatter = NumberFormat('#,##0', 'en_US');
+
+  int? _toInt(String text) {
+    final cleaned = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleaned.isEmpty) return null;
+    return int.tryParse(cleaned);
+  }
+
+  String _formatPriceText(String text) {
+    final cleaned = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleaned.isEmpty) return '';
+    final parsed = int.tryParse(cleaned);
+    if (parsed == null) return '';
+    return _currencyFormatter.format(parsed);
+  }
+
+  String _digitsOnly(String text) => text.replaceAll(RegExp(r'[^0-9]'), '');
 
   @override
   void setState(VoidCallback callback) {
@@ -52,11 +70,11 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       if (widget.filterData != null) {
         safeSetState(() {
           _model.priceRangeItemModel.minTextFieldTextController?.text =
-              widget.filterData!.minPrice;
+              _formatPriceText(widget.filterData!.minPrice);
         });
         safeSetState(() {
           _model.priceRangeItemModel.maxTextFieldTextController?.text =
-              widget.filterData!.maxPrice;
+              _formatPriceText(widget.filterData!.maxPrice);
         });
         safeSetState(() {
           _model.bedsRangeItemModel.minTextFieldTextController?.text =
@@ -377,8 +395,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                           .call(
                         user: currentUserUid,
                         city: widget.propertyItems?.firstOrNull?.address.city,
-                        state:
-                            widget.propertyItems?.firstOrNull?.address.state,
+                        state: widget.propertyItems?.firstOrNull?.address.state,
                         homeType: (List<String> var1) {
                           return var1
                               .where((item) => item.trim().isNotEmpty)
@@ -396,48 +413,48 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                                   as Iterable<PropertyDataClassStruct?>)
                               .withoutNulls
                               .toList(),
-                          int.tryParse(_model.priceRangeItemModel
+                          _toInt(_model.priceRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.priceRangeItemModel
+                          _toInt(_model.priceRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.bedsRangeItemModel
+                          _toInt(_model.bedsRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.bedsRangeItemModel
+                          _toInt(_model.bedsRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.bathRangeItemModel
+                          _toInt(_model.bathRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.bathRangeItemModel
+                          _toInt(_model.bathRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.sqftRangeItemModel
+                          _toInt(_model.sqftRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.sqftRangeItemModel
+                          _toInt(_model.sqftRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.yearRangeItemModel
+                          _toInt(_model.yearRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.yearRangeItemModel
+                          _toInt(_model.yearRangeItemModel
                               .maxTextFieldTextController.text),
                         );
                         _model.newFilterData = SearchFilterDataStruct(
-                          minPrice: _model.priceRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxPrice: _model.priceRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minBeds: _model.bedsRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxBeds: _model.bedsRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minBaths: _model.bathRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxBaths: _model.bathRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minSqft: _model.sqftRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxSqft: _model.sqftRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minYearBuilt: _model.yearRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxYearBuilt: _model.yearRangeItemModel
-                              .maxTextFieldTextController.text,
+                          minPrice: _digitsOnly(_model.priceRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxPrice: _digitsOnly(_model.priceRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minBeds: _digitsOnly(_model.bedsRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxBeds: _digitsOnly(_model.bedsRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minBaths: _digitsOnly(_model.bathRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxBaths: _digitsOnly(_model.bathRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minSqft: _digitsOnly(_model.sqftRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxSqft: _digitsOnly(_model.sqftRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minYearBuilt: _digitsOnly(_model.yearRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxYearBuilt: _digitsOnly(_model.yearRangeItemModel
+                              .maxTextFieldTextController.text),
                           homeTypes: _model.choiceChipsValues,
                         );
                         safeSetState(() {});
@@ -449,48 +466,48 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                         _model.defaultFilteredItems =
                             await actions.filterProperties(
                           widget.propertyItems!.toList(),
-                          int.tryParse(_model.priceRangeItemModel
+                          _toInt(_model.priceRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.priceRangeItemModel
+                          _toInt(_model.priceRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.bedsRangeItemModel
+                          _toInt(_model.bedsRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.bedsRangeItemModel
+                          _toInt(_model.bedsRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.bathRangeItemModel
+                          _toInt(_model.bathRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.bathRangeItemModel
+                          _toInt(_model.bathRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.sqftRangeItemModel
+                          _toInt(_model.sqftRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.sqftRangeItemModel
+                          _toInt(_model.sqftRangeItemModel
                               .maxTextFieldTextController.text),
-                          int.tryParse(_model.yearRangeItemModel
+                          _toInt(_model.yearRangeItemModel
                               .minTextFieldTextController.text),
-                          int.tryParse(_model.yearRangeItemModel
+                          _toInt(_model.yearRangeItemModel
                               .maxTextFieldTextController.text),
                         );
                         _model.newFilterData = SearchFilterDataStruct(
-                          minPrice: _model.priceRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxPrice: _model.priceRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minBeds: _model.bedsRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxBeds: _model.bedsRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minBaths: _model.bathRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxBaths: _model.bathRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minSqft: _model.sqftRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxSqft: _model.sqftRangeItemModel
-                              .maxTextFieldTextController.text,
-                          minYearBuilt: _model.yearRangeItemModel
-                              .minTextFieldTextController.text,
-                          maxYearBuilt: _model.yearRangeItemModel
-                              .maxTextFieldTextController.text,
+                          minPrice: _digitsOnly(_model.priceRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxPrice: _digitsOnly(_model.priceRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minBeds: _digitsOnly(_model.bedsRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxBeds: _digitsOnly(_model.bedsRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minBaths: _digitsOnly(_model.bathRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxBaths: _digitsOnly(_model.bathRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minSqft: _digitsOnly(_model.sqftRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxSqft: _digitsOnly(_model.sqftRangeItemModel
+                              .maxTextFieldTextController.text),
+                          minYearBuilt: _digitsOnly(_model.yearRangeItemModel
+                              .minTextFieldTextController.text),
+                          maxYearBuilt: _digitsOnly(_model.yearRangeItemModel
+                              .maxTextFieldTextController.text),
                         );
                         safeSetState(() {});
                         await widget.onApply?.call(
