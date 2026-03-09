@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -16,6 +14,7 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/services/google_maps_service.dart';
 import '../../../../core/utils/property_sort_util.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -53,6 +52,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   final _searchFocusNode = FocusNode();
   final _searchLayerLink = LayerLink();
   OverlayEntry? _overlayEntry;
+  final GoogleMapsService _mapsService = GoogleMapsService();
 
   static const _homeTypeOptions = [
     'Houses',
@@ -114,26 +114,10 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
 
     setState(() => _isAutoCompleteLoading = true);
     try {
-      final uri = Uri.https(
-          'maps.googleapis.com', '/maps/api/place/autocomplete/json', {
-        'input': input,
-        'types': '(regions)',
-        'components': 'country:us',
-        'key': key,
-      });
-      final resp = await http.get(uri).timeout(const Duration(seconds: 5));
-      if (resp.statusCode != 200) return;
-
-      final data = json.decode(resp.body);
-      final preds = (data['predictions'] as List?) ?? [];
+      final preds = await _mapsService.autocompleteRegions(input);
       if (!mounted) return;
       setState(() {
-        _predictions = preds
-            .map<Map<String, String>>((p) => {
-                  'description': p['description'] as String? ?? '',
-                  'place_id': p['place_id'] as String? ?? '',
-                })
-            .toList();
+        _predictions = preds;
       });
       if (_predictions.isNotEmpty) {
         _showOverlay();
@@ -231,33 +215,8 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   Future<Map<String, String>?> _reverseGeocode(double lat, double lng) async {
-    final key = EnvConfig.googleMapsKey;
-    if (key.isEmpty) return null;
-
     try {
-      final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
-        'latlng': '$lat,$lng',
-        'key': key,
-      });
-      final resp = await http.get(uri).timeout(const Duration(seconds: 5));
-      if (resp.statusCode != 200) return null;
-
-      final data = json.decode(resp.body);
-      final results = data['results'] as List?;
-      if (results == null || results.isEmpty) return null;
-
-      String? city, state;
-      final components = results[0]['address_components'] as List? ?? [];
-      for (final c in components) {
-        final types = (c['types'] as List).cast<String>();
-        if (types.contains('locality')) city = c['long_name'] as String?;
-        if (types.contains('administrative_area_level_1')) {
-          state = c['short_name'] as String?;
-        }
-      }
-      if (city != null) {
-        return {'city': city, if (state != null) 'state': state};
-      }
+      return await _mapsService.reverseGeocodeCityState(lat, lng);
     } catch (_) {}
     return null;
   }

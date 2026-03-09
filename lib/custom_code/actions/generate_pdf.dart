@@ -6,32 +6,23 @@ import '/backend/schema/structs/index.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '/core/config/env_config.dart';
+import '/core/network/api_client.dart';
+import '/core/services/pdf_service.dart';
 
 Future<PdfAssetStruct> generatePdf(String sellerName, String buyerName,
     String address, String purchasePrice, String loanType) async {
-  Map<String, dynamic> requestQueryParameters = {};
-  final apiFlowUrl = Uri.parse(EnvConfig.apiFlowUrl);
-  final url =
-      Uri.https(apiFlowUrl.host, apiFlowUrl.path, requestQueryParameters);
-  Map<String, String> requestHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Bearer ${EnvConfig.apiFlowToken}'
-  };
-  var requestBody = json.encode({
-    'sellerName': sellerName,
-    'buyerName': buyerName,
-    'address': address,
-    'purchasePrice': purchasePrice,
-    'loanType': loanType
-  });
-  var response =
-      await http.post(url, body: requestBody, headers: requestHeaders);
-  var responseData =
-      json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-  var result = PdfAssetStruct.fromMap(responseData);
-  return result;
+  final pdfService = PdfService(ApiClient());
+  final generated = await pdfService.generateOfferPdf(
+    sellerName: sellerName,
+    buyerName: buyerName,
+    address: address,
+    purchasePrice: double.tryParse(purchasePrice) ?? 0,
+    loanType: loanType,
+  );
+
+  return PdfAssetStruct(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    link: generated.url,
+    name: 'Generated Offer PDF',
+  );
 }

@@ -5,6 +5,7 @@ import '../../../../core/config/env_config.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../../core/services/pdf_service.dart';
 
 /// Remote data source for document Firestore operations + DocuSeal/ApiFlow external APIs.
 @lazySingleton
@@ -162,22 +163,18 @@ class DocumentRemoteDataSource {
     required String purchasePrice,
     required String loanType,
   }) async {
-    final authToken = EnvConfig.apiFlowToken;
-
-    final response = await _client.post(
-      ApiEndpoints.pdfGeneratorUrl,
-      headers: {
-        'Authorization': 'Bearer $authToken',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        'seller_name': sellerName,
-        'buyer_name': buyerName,
-        'address': address,
-        'purchase_price': purchasePrice,
-        'loan_type': loanType,
-      },
+    final pdfService = PdfService(_client);
+    final generated = await pdfService.generateOfferPdf(
+      sellerName: sellerName,
+      buyerName: buyerName,
+      address: address,
+      purchasePrice: double.tryParse(purchasePrice) ?? 0,
+      loanType: loanType,
     );
-    return response as Map<String, dynamic>;
+
+    return <String, dynamic>{
+      'url': generated.url,
+      'content': generated.base64Content,
+    };
   }
 }

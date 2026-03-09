@@ -174,18 +174,18 @@ firestore/
 #### Sprint 1.3: Standardize Integrations (1 week)
 
 **Tasks:**
-- [ ] Centralize ApiFlow PDF generation
+- [x] Centralize ApiFlow PDF generation
   - Move all custom actions to PdfService
   - Add error handling & retry logic
   - Add request/response logging
-- [ ] Standardize email/SMS service
+- [x] Standardize email/SMS service
   - Create unified EmailSmsService
   - Plan Firestore-triggered migration
   - Create Firestore schema for mail collection
-- [ ] Consolidate Google Maps integration
+- [x] Consolidate Google Maps integration
   - Migrate legacy API calls to new service
   - Cache geocoding results (reduce API costs)
-- [ ] Standardize DocuSeal integration
+- [x] Standardize DocuSeal integration
   - Ensure all calls go through repository
   - Add proper error handling
 

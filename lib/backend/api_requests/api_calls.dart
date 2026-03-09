@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/services/email_sms_service.dart';
+
 import '/flutter_flow/flutter_flow_util.dart';
 import 'api_manager.dart';
 
@@ -3390,28 +3392,41 @@ class PostEmailCall {
     String? requesterId = '',
     dynamic dataJson,
   }) async {
-    final baseUrl = EmailApiGroup.getBaseUrl();
+    try {
+      final raw = dataJson is String ? jsonDecode(dataJson) : dataJson;
+      final payload = raw is Map<String, dynamic>
+          ? raw
+          : Map<String, dynamic>.from(raw as Map);
 
-    final data = _serializeJson(dataJson);
-    final ffApiRequestBody = data;
-    return ApiManager.instance.makeApiCall(
-      callName: 'postEmail',
-      apiUrl: '$baseUrl/claude-email',
-      callType: ApiCallType.POST,
-      headers: {
-        'requester-id': '$requesterId',
-        'Content-Type': 'application/json',
-      },
-      params: {},
-      body: ffApiRequestBody,
-      bodyType: BodyType.JSON,
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+      final service = EmailSmsService(FirebaseFirestore.instance);
+      await service.sendEmail(
+        to: payload['to']?.toString() ?? '',
+        subject: payload['subject']?.toString() ??
+            payload['message']?['subject']?.toString() ??
+            '',
+        body: payload['body']?.toString() ??
+            payload['html']?.toString() ??
+            payload['message']?['html']?.toString() ??
+            '',
+        cc: payload['cc']?.toString(),
+        from: payload['from']?.toString() ?? 'support@mypartnerpro.com',
+        contentType: payload['contentType']?.toString() ?? 'text/html',
+        requesterId: requesterId ?? '',
+      );
+
+      return ApiCallResponse(
+        {'queued': true, 'channel': 'email'},
+        const <String, String>{},
+        202,
+      );
+    } catch (e) {
+      return ApiCallResponse(
+        {'queued': false, 'error': e.toString()},
+        const <String, String>{},
+        500,
+        exception: e,
+      );
+    }
   }
 }
 
@@ -3420,27 +3435,33 @@ class PostSMSCall {
     String? requesterId = '',
     dynamic dataJson,
   }) async {
-    final baseUrl = EmailApiGroup.getBaseUrl();
+    try {
+      final raw = dataJson is String ? jsonDecode(dataJson) : dataJson;
+      final payload = raw is Map<String, dynamic>
+          ? raw
+          : Map<String, dynamic>.from(raw as Map);
 
-    final data = _serializeJson(dataJson);
-    final ffApiRequestBody = data;
-    return ApiManager.instance.makeApiCall(
-      callName: 'postSMS',
-      apiUrl: '$baseUrl/claude-sms',
-      callType: ApiCallType.POST,
-      headers: {
-        'requester-id': '$requesterId',
-      },
-      params: {},
-      body: ffApiRequestBody,
-      bodyType: BodyType.JSON,
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+      final service = EmailSmsService(FirebaseFirestore.instance);
+      await service.sendSms(
+        recipient: payload['recipient']?.toString() ?? '',
+        content: payload['content']?.toString() ?? '',
+        sender: payload['sender']?.toString() ?? 'PartnerPro',
+        requesterId: requesterId ?? '',
+      );
+
+      return ApiCallResponse(
+        {'queued': true, 'channel': 'sms'},
+        const <String, String>{},
+        202,
+      );
+    } catch (e) {
+      return ApiCallResponse(
+        {'queued': false, 'error': e.toString()},
+        const <String, String>{},
+        500,
+        exception: e,
+      );
+    }
   }
 }
 
