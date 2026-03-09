@@ -1,4 +1,10 @@
-﻿# iOS Deployment
+﻿---
+title: Setup - iOS Deployment
+description: Code signing and App Store deployment configuration
+order: 5
+---
+
+# iOS Deployment
 
 ## Prerequisites
 

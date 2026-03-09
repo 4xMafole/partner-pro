@@ -1,3 +1,9 @@
+---
+title: Documents & E-Signature
+description: DocuSeal integration and document management system
+order: 18
+---
+
 # Document & Contract/Signature System Comparison
 
 **Generated:** March 9, 2026  

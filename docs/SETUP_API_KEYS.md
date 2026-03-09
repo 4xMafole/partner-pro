@@ -1,4 +1,10 @@
-﻿# API Keys Setup
+﻿---
+title: Setup - API Keys
+description: Environment variable configuration for all external services
+order: 2
+---
+
+# API Keys Setup
 
 All API keys are managed via environment variables and injected at build time.
 

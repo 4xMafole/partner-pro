@@ -1,3 +1,9 @@
+---
+title: Offer Flow Migration
+description: Feature parity matrix and migration strategy for offer system
+order: 14
+---
+
 # Offer Flow Comparison and Migration Map
 
 ## Purpose

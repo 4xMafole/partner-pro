@@ -1,3 +1,9 @@
+---
+title: Offer User Flow
+description: Legacy buyer-agent offer workflow documentation
+order: 15
+---
+
 # Offer User Flow (Buyer <-> Agent)
 
 ## Scope

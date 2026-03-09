@@ -1,4 +1,10 @@
-﻿# PartnerPro Architecture
+﻿---
+title: Architecture Overview
+description: Clean architecture implementation with BLoC pattern
+order: 1
+---
+
+# PartnerPro Architecture
 
 ## Overview
 

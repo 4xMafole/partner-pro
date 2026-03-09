@@ -1,3 +1,9 @@
+---
+title: State Management & BLoC
+description: BLoC pattern deep dive with testing and performance optimization
+order: 11
+---
+
 # State Management Patterns & Architecture
 
 **Generated:** March 9, 2026  

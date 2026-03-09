@@ -1,3 +1,9 @@
+---
+title: Authentication System
+description: Auth implementation analysis with Firebase integration
+order: 17
+---
+
 # Authentication System Comparison Report
 
 **Date:** March 9, 2026  

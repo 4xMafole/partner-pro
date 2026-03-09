@@ -1,3 +1,9 @@
+---
+title: Quick Ref - Auth Migration
+description: Condensed authentication migration status
+order: 20
+---
+
 # Authentication Migration Summary - Quick Reference
 
 **Status:** Under Review  

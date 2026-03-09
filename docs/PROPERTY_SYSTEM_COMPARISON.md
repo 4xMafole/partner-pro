@@ -1,3 +1,9 @@
+---
+title: Property System Migration
+description: Legacy vs new property architecture comparison
+order: 16
+---
+
 # Property Management System Comparison Report
 
 **Date**: March 9, 2026  

@@ -1,4 +1,10 @@
-﻿# RevenueCat Setup
+﻿---
+title: Setup - RevenueCat
+description: In-app purchase and subscription management
+order: 6
+---
+
+# RevenueCat Setup
 
 PartnerPro uses [RevenueCat](https://www.revenuecat.com/) for subscription
 and payment management via the `purchases_flutter` SDK.

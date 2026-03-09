@@ -1,4 +1,10 @@
-﻿# GitHub Setup
+﻿---
+title: Setup - GitHub Actions
+description: CI/CD workflows for automated releases
+order: 4
+---
+
+# GitHub Setup
 
 ## Repository
 

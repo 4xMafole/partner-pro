@@ -1,3 +1,9 @@
+---
+title: Migration Guide
+description: Complete 22-week migration roadmap with budget and team structure
+order: 10
+---
+
 # PartnerPro Migration Guide - Complete Blueprint
 
 **Version:** 1.0  

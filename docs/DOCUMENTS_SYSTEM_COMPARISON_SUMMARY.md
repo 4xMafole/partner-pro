@@ -1,3 +1,9 @@
+---
+title: Quick Ref - Documents
+description: Condensed document system migration summary
+order: 21
+---
+
 # Documents System Comparison - Quick Reference
 
 **Full Report:** See [DOCUMENTS_SYSTEM_COMPARISON.md](./DOCUMENTS_SYSTEM_COMPARISON.md)

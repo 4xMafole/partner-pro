@@ -1,3 +1,9 @@
+---
+title: External Integrations
+description: Complete audit of 18+ services with security analysis
+order: 13
+---
+
 # External Integrations & API Systems Comparison Report
 
 **Generated:** March 9, 2026  

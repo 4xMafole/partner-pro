@@ -1,3 +1,9 @@
+---
+title: Agent & Seller Workflows
+description: Role-specific workflow analysis and migration plan
+order: 19
+---
+
 # Agent and Seller Workflow System Comparison Report
 
 **Date:** March 9, 2026  

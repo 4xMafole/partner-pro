@@ -1,4 +1,10 @@
-﻿# Firebase Setup
+﻿---
+title: Setup - Firebase
+description: Firebase project configuration for iOS and Android
+order: 3
+---
+
+# Firebase Setup
 
 ## Prerequisites
 

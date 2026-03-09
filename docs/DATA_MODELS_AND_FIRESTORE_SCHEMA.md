@@ -1,3 +1,9 @@
+---
+title: Data Models & Schema
+description: Complete Firestore schema with data migration strategy
+order: 12
+---
+
 # Data Models & Firestore Schema Comprehensive Guide
 
 **Generated:** March 9, 2026  
