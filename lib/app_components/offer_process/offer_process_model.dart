@@ -230,8 +230,6 @@ class OfferProcessModel extends FlutterFlowModel<OfferProcessWidget> {
   String? updateToTC;
   // Stores action output result for [Backend Call - API (postEmail)] action in makeOfferButton widget.
   ApiCallResponse? postEmail13j1;
-  // Stores action output result for [Stripe Payment] action in unlockButton widget.
-  String? stripePaymentID;
   // Stores action output result for [Backend Call - Create Document] action in unlockButton widget.
   OfferPaymentsRecord? offerPaymentDoc;
 

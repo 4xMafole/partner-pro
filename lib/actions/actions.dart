@@ -3,7 +3,6 @@ import '/backend/backend.dart';
 import '/components/agent_paywall_popup_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ Future isNewUser(BuildContext context) async {
 Future hasActiveSubscription(BuildContext context) async {
   CustomersRecord? customerDoc;
   SubscriptionsRecord? activeSubscription;
-  String? checkoutUrl12;
 
   customerDoc = await queryCustomersRecordOnce(
     queryBuilder: (customersRecord) => customersRecord.where(
