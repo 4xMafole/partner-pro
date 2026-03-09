@@ -27,6 +27,11 @@ abstract final class EnvConfig {
     'GOOGLE_MAPS_KEY',
   );
 
+  // ── RapidAPI ──────────────────────────────────────────
+  static const String rapidApiKey = String.fromEnvironment(
+    'RAPIDAPI_KEY',
+  );
+
   // ── OneSignal ─────────────────────────────────────────
   static const String oneSignalAppId = String.fromEnvironment(
     'ONESIGNAL_APP_ID',

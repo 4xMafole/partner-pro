@@ -3729,7 +3729,7 @@ class PropertyEstimateCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'us-housing-market-data1.p.rapidapi.com',
-        'x-rapidapi-key': '915dfbfba8msh724d11796631b15p11a9e7jsn74599d4844f4',
+        'x-rapidapi-key': EnvConfig.rapidApiKey,
       },
       params: {
         'zpid': zpid,
@@ -3759,7 +3759,7 @@ class PropertyComparablesCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'us-housing-market-data1.p.rapidapi.com',
-        'x-rapidapi-key': '915dfbfba8msh724d11796631b15p11a9e7jsn74599d4844f4',
+        'x-rapidapi-key': EnvConfig.rapidApiKey,
       },
       params: {
         'address': address,
@@ -3887,7 +3887,7 @@ class GetPropertyzpidCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'us-housing-market-data1.p.rapidapi.com',
-        'x-rapidapi-key': '915dfbfba8msh724d11796631b15p11a9e7jsn74599d4844f4',
+        'x-rapidapi-key': EnvConfig.rapidApiKey,
       },
       params: {
         'location': location,

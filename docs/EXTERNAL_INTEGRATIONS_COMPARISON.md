@@ -1600,7 +1600,7 @@ await IwoPatchesAPIGroup.updateOfferByIdCall.call(
 
 **API Key:** Hardcoded in source (🔴 SECURITY RISK!)
 ```dart
-'x-rapidapi-key': '915dfbfba8msh724d11796631b15p11a9e7jsn74599d4844f4'
+'x-rapidapi-key': '<REDACTED_USE_RAPIDAPI_KEY_ENV>'
 ```
 
 #### Endpoints
@@ -2214,7 +2214,7 @@ class PropertyRemoteDataSource {
 **RapidAPI Key Hardcoded:**
 ```dart
 // lib/backend/api_requests/api_calls.dart
-'x-rapidapi-key': '915dfbfba8msh724d11796631b15p11a9e7jsn74599d4844f4'
+'x-rapidapi-key': '<REDACTED_USE_RAPIDAPI_KEY_ENV>'
 ```
 
 **Impact:**

@@ -39,6 +39,7 @@ jobs:
           APIFLOW_TOKEN=${{ secrets.APIFLOW_TOKEN }}
           APIFLOW_URL=${{ secrets.APIFLOW_URL }}
           GOOGLE_MAPS_KEY=${{ secrets.GOOGLE_MAPS_KEY }}
+          RAPIDAPI_KEY=${{ secrets.RAPIDAPI_KEY }}
           ONESIGNAL_APP_ID=${{ secrets.ONESIGNAL_APP_ID }}
           FIREBASE_WEB_API_KEY=${{ secrets.FIREBASE_WEB_API_KEY }}
           FIREBASE_WEB_APP_ID=${{ secrets.FIREBASE_WEB_APP_ID }}

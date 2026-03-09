@@ -10,6 +10,7 @@ All API keys are managed via environment variables and injected at build time.
 | `APIFLOW_TOKEN`                   | ApiFlow PDF generation | [ApiFlow Console](https://apiflow.online)            |
 | `APIFLOW_URL`                     | ApiFlow endpoint       | ApiFlow Console -> API details                       |
 | `GOOGLE_MAPS_KEY`                 | Google Maps            | [Google Cloud Console](https://console.cloud.google.com) |
+| `RAPIDAPI_KEY`                    | RapidAPI Property Data | [RapidAPI Dashboard](https://rapidapi.com)           |
 | `ONESIGNAL_APP_ID`                | OneSignal push         | [OneSignal Dashboard](https://onesignal.com)         |
 | `FIREBASE_WEB_API_KEY`            | Firebase (web)         | Firebase Console -> Project settings -> Web app      |
 | `FIREBASE_WEB_APP_ID`             | Firebase (web)         | Firebase Console -> Project settings -> Web app      |
