@@ -609,9 +609,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
                                 ? Colors.white
                                 : AppColors.textSecondary)),
                     selected: isSelected,
-                    color: MaterialStateProperty.resolveWith<Color?>((states) {
-                      final selected = states.contains(MaterialState.selected);
-                      final pressed = states.contains(MaterialState.pressed);
+                    color: WidgetStateProperty.resolveWith<Color?>((states) {
+                      final selected = states.contains(WidgetState.selected);
+                      final pressed = states.contains(WidgetState.pressed);
                       if (selected) {
                         return AppColors.secondary
                             .withValues(alpha: pressed ? 0.92 : 1);

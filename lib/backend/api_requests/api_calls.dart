@@ -10,8 +10,6 @@ import 'api_manager.dart';
 
 export 'api_manager.dart' show ApiCallResponse;
 
-const _kPrivateApiFunctionName = 'ffPrivateApiCall';
-
 /// Start iwo-seller-properties-api Group Code
 
 class IwoSellerPropertiesApiGroup {
@@ -2223,8 +2221,9 @@ class GetTemplateCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2259,8 +2258,9 @@ class UpdateTemplateCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -2288,8 +2288,9 @@ class ArchiveTemplateCall {
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2321,8 +2322,9 @@ class GetSubmissionsCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {
         'template_id': templateId,
@@ -2723,8 +2725,9 @@ class GetSubmissionCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2750,8 +2753,9 @@ class ArchiveSubmissionCall {
       callType: ApiCallType.DELETE,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2786,8 +2790,9 @@ class CreateSubmissionsFromEmailsCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -2815,8 +2820,9 @@ class GetSubmitterCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       returnBody: true,
@@ -2868,8 +2874,9 @@ class UpdateSubmitterCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -2904,8 +2911,9 @@ class GetSubmittersCall {
       callType: ApiCallType.GET,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {
         'submission_id': submissionId,
@@ -2954,8 +2962,9 @@ class AddDocumentToTemplateCall {
       callType: ApiCallType.PUT,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -2989,8 +2998,9 @@ class CloneTemplateCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -3033,8 +3043,9 @@ class CreateTemplateFromHtmlCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -3102,8 +3113,9 @@ class CreateTemplateFromDocxCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -3173,8 +3185,9 @@ class CreateTemplateFromPdfCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -3210,8 +3223,9 @@ class MergeTemplateCall {
       callType: ApiCallType.POST,
       headers: {
         'Accept': 'application/json',
-        'X-Auth-Token': EnvConfig.docuSealToken,
-        'X-Auth-Token': '$xAuthToken',
+        'X-Auth-Token': (xAuthToken != null && xAuthToken.isNotEmpty)
+            ? xAuthToken
+            : EnvConfig.docuSealToken,
       },
       params: {},
       body: ffApiRequestBody,
@@ -3982,18 +3996,6 @@ String _toEncodable(dynamic item) {
     return item.path;
   }
   return item;
-}
-
-String _serializeList(List? list) {
-  list ??= <String>[];
-  try {
-    return json.encode(list, toEncodable: _toEncodable);
-  } catch (_) {
-    if (kDebugMode) {
-      print("List serialization failed. Returning empty list.");
-    }
-    return '[]';
-  }
 }
 
 String _serializeJson(dynamic jsonVar, [bool isList = false]) {

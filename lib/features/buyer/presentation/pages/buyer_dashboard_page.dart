@@ -129,14 +129,16 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                 height: 260.h,
                 child: BlocBuilder<PropertyBloc, PropertyState>(
                     builder: (context, propState) {
-                  if (propState.isLoading)
+                  if (propState.isLoading) {
                     return const Center(child: CircularProgressIndicator());
+                  }
                   final properties = propState.filteredProperties;
-                  if (properties.isEmpty)
+                  if (properties.isEmpty) {
                     return const AppEmptyState(
                         icon: LucideIcons.home,
                         title: 'No featured properties yet',
                         subtitle: 'Start searching to see recommendations');
+                  }
                   return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 24.w),

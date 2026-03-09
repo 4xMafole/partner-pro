@@ -38,17 +38,6 @@ bool compareOffers(
     return newValue.toString() != oldValue.toString();
   }
 
-  // Helper function to safely get nested value
-  dynamic getNestedValue(Map data, List<String> keys) {
-    dynamic current = data;
-    for (String key in keys) {
-      if (current is! Map) return null;
-      current = current[key];
-      if (current == null) return null;
-    }
-    return current;
-  }
-
   // Extract nested data structures
   final newPricing = newOffer['pricing'] ?? {};
   final oldPricing = oldOffer['pricing'] ?? {};

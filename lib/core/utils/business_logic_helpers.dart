@@ -37,7 +37,7 @@ Future<List<Map<String, dynamic>>?> getValidProofOfFunds({
 
       results.add({
         'id': ref.fullPath,
-        'name': metadata.name ?? ref.name,
+        'name': metadata.name,
         'url': url,
         'createdDate': metadata.timeCreated?.toIso8601String() ?? '',
         'content': base64Encode(data),

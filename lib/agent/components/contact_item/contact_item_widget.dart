@@ -19,8 +19,7 @@ class ContactItemWidget extends StatefulWidget {
     Color? suggestionIconColor,
   })  : hasCheck = hasCheck ?? false,
         isSuggest = isSuggest ?? false,
-        suggestionIconColor =
-            suggestionIconColor ?? const Color(0xFF57636C);
+        suggestionIconColor = suggestionIconColor ?? const Color(0xFF57636C);
 
   final Future Function(bool value)? onSelected;
   final bool hasCheck;
@@ -238,18 +237,15 @@ class _ContactItemWidgetState extends State<ContactItemWidget>
                         );
                       }
                     },
-                    side: (FlutterFlowTheme.of(context).alternate != null)
-                        ? BorderSide(
-                            width: 2,
-                            color: FlutterFlowTheme.of(context).alternate,
-                          )
-                        : null,
+                    side: BorderSide(
+                      width: 2,
+                      color: FlutterFlowTheme.of(context).alternate,
+                    ),
                     activeColor: FlutterFlowTheme.of(context).primary,
                     checkColor: FlutterFlowTheme.of(context).info,
                   ),
                 ),
-              if ((widget.member?.status == Status.Pending) &&
-                  !widget.hasCheck)
+              if ((widget.member?.status == Status.Pending) && !widget.hasCheck)
                 InkWell(
                   splashColor: Colors.transparent,
                   focusColor: Colors.transparent,

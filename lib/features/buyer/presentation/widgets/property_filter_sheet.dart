@@ -119,10 +119,10 @@ class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
     return int.tryParse(digitsOnly) ?? fallback;
   }
 
-  MaterialStateProperty<Color?> get _chipColor {
-    return MaterialStateProperty.resolveWith<Color?>((states) {
-      final isSelected = states.contains(MaterialState.selected);
-      final isPressed = states.contains(MaterialState.pressed);
+  WidgetStateProperty<Color?> get _chipColor {
+    return WidgetStateProperty.resolveWith<Color?>((states) {
+      final isSelected = states.contains(WidgetState.selected);
+      final isPressed = states.contains(WidgetState.pressed);
 
       if (isSelected) {
         return AppColors.primary.withValues(alpha: isPressed ? 0.22 : 0.15);

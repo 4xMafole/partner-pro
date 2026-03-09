@@ -4,7 +4,6 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 
@@ -70,8 +69,6 @@ class AuthLoginModel extends FlutterFlowModel<AuthLoginWidget> {
 
   /// Action blocks.
   Future apiRegister(BuildContext context) async {
-    ApiCallResponse? apiAddUserResults;
-
     updateApiUserStruct(
       (e) => e
         ..createdBy = 'system'
@@ -82,7 +79,7 @@ class AuthLoginModel extends FlutterFlowModel<AuthLoginWidget> {
         ..userId = currentUserUid
         ..displayName = currentUserDisplayName,
     );
-    apiAddUserResults = await IwoAccountGroup.addUserCall.call(
+    await IwoAccountGroup.addUserCall.call(
       bodyJson: apiUser?.toMap(),
     );
 

@@ -162,8 +162,9 @@ class _PlacesSearchDelegate extends SearchDelegate<_PlacePrediction?> {
     return FutureBuilder<List<_PlacePrediction>>(
       future: _fetchSuggestions(query),
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
         final predictions = snapshot.data!;
         return ListView.builder(
           itemCount: predictions.length,

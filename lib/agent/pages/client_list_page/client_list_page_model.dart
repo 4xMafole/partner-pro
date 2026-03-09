@@ -65,7 +65,7 @@ class ClientListPageModel extends FlutterFlowModel<ClientListPageWidget> {
       agentId: currentUserUid,
     );
 
-    if ((apiResult3rk.succeeded ?? true)) {
+    if (apiResult3rk.succeeded) {
       membersList = ((apiResult3rk.jsonBody ?? '')
               .toList()
               .map<MemberStruct?>(MemberStruct.maybeFromMap)

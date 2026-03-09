@@ -59,12 +59,12 @@ String generatePropertySuggestionEmail(
 
   // Get property details
   final price = formatCurrency(propertyData.listPrice);
-  final beds = propertyData.bedrooms.toString() ?? 'N/A';
-  final baths = propertyData.bathrooms.toString() ?? 'N/A';
+  final beds = propertyData.bedrooms.toString();
+  final baths = propertyData.bathrooms.toString();
   final sqft = propertyData.squareFootage;
-  final yearBuilt = propertyData.yearBuilt.toString() ?? '';
-  final propertyType = propertyData.propertyType ?? 'Home';
-  final lotSize = propertyData.lotSize ?? '';
+  final yearBuilt = propertyData.yearBuilt.toString();
+  final propertyType = propertyData.propertyType;
+  final lotSize = propertyData.lotSize;
 
   // Format property image URL (get first image from media list)
   final propertyImage =
@@ -399,7 +399,7 @@ body {
                         <span class="stat-value">$baths</span>
                         <span class="stat-label">Baths</span>
                     </div>
-                    ${sqft != null ? '''
+                    ${sqft > 0 ? '''
                     <div class="stat-item">
                         <span class="stat-value">$formattedSqft</span>
                         <span class="stat-label">Sq Ft</span>
@@ -430,7 +430,7 @@ body {
                     ''' : ''}
                     <div class="info-item">
                         <div class="info-label">MLS ID</div>
-                        <div class="info-value">${propertyData.mlsId ?? 'N/A'}</div>
+                        <div class="info-value">${propertyData.mlsId}</div>
                     </div>
                 </div>
             </div>

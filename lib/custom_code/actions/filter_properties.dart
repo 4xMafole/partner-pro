@@ -25,57 +25,51 @@ Future<List<PropertyDataClassStruct>> filterProperties(
 
   // Filter by price range
   if (minPrice != null) {
-    filteredProperties
-        .removeWhere((property) => (property.listPrice ?? 0) < minPrice);
+    filteredProperties.removeWhere((property) => property.listPrice < minPrice);
   }
 
   if (maxPrice != null) {
-    filteredProperties
-        .removeWhere((property) => (property.listPrice ?? 0) > maxPrice);
+    filteredProperties.removeWhere((property) => property.listPrice > maxPrice);
   }
 
   // Filter by number of bedrooms
   if (minBeds != null) {
-    filteredProperties
-        .removeWhere((property) => (property.bedrooms ?? 0) < minBeds);
+    filteredProperties.removeWhere((property) => property.bedrooms < minBeds);
   }
 
   if (maxBeds != null) {
-    filteredProperties
-        .removeWhere((property) => (property.bedrooms ?? 0) > maxBeds);
+    filteredProperties.removeWhere((property) => property.bedrooms > maxBeds);
   }
 
   // Filter by number of bathrooms
   if (minBaths != null) {
-    filteredProperties
-        .removeWhere((property) => (property.bathrooms ?? 0) < minBaths);
+    filteredProperties.removeWhere((property) => property.bathrooms < minBaths);
   }
 
   if (maxBaths != null) {
-    filteredProperties
-        .removeWhere((property) => (property.bathrooms ?? 0) > maxBaths);
+    filteredProperties.removeWhere((property) => property.bathrooms > maxBaths);
   }
 
   // Filter by square footage
   if (minSquareFeet != null) {
-    filteredProperties.removeWhere(
-        (property) => (property.squareFootage ?? 0) < minSquareFeet);
+    filteredProperties
+        .removeWhere((property) => property.squareFootage < minSquareFeet);
   }
 
   if (maxSquareFeet != null) {
-    filteredProperties.removeWhere(
-        (property) => (property.squareFootage ?? 0) > maxSquareFeet);
+    filteredProperties
+        .removeWhere((property) => property.squareFootage > maxSquareFeet);
   }
 
   // Filter by year built
   if (minYearBuilt != null) {
     filteredProperties
-        .removeWhere((property) => (property.yearBuilt ?? 0) < minYearBuilt);
+        .removeWhere((property) => property.yearBuilt < minYearBuilt);
   }
 
   if (maxYearBuilt != null) {
     filteredProperties
-        .removeWhere((property) => (property.yearBuilt ?? 0) > maxYearBuilt);
+        .removeWhere((property) => property.yearBuilt > maxYearBuilt);
   }
 
   return filteredProperties;

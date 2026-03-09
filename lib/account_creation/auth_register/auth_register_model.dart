@@ -150,8 +150,6 @@ class AuthRegisterModel extends FlutterFlowModel<AuthRegisterWidget> {
 
   /// Action blocks.
   Future apiRegister(BuildContext context) async {
-    ApiCallResponse? apiAddUserResults;
-
     updateApiUserStruct(
       (e) => e
         ..createdBy = 'system'
@@ -164,7 +162,7 @@ class AuthRegisterModel extends FlutterFlowModel<AuthRegisterWidget> {
         ..userId = currentUserUid
         ..displayName = currentUserDisplayName,
     );
-    apiAddUserResults = await IwoAccountGroup.addUserCall.call(
+    await IwoAccountGroup.addUserCall.call(
       bodyJson: apiUser?.toMap(),
     );
   }

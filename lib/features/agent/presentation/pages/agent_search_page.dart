@@ -54,10 +54,12 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
   }
 
   String _formatNumber(int n) {
-    if (n >= 1000000)
+    if (n >= 1000000) {
       return '${(n / 1000000).toStringAsFixed(n % 1000000 == 0 ? 0 : 1)}M';
-    if (n >= 1000)
+    }
+    if (n >= 1000) {
       return '${(n / 1000).toStringAsFixed(n % 1000 == 0 ? 0 : 1)}K';
+    }
     return n.toString();
   }
 
@@ -87,16 +89,18 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
             )),
         Expanded(child:
             BlocBuilder<PropertyBloc, PropertyState>(builder: (context, state) {
-          if (state.isLoading && state.allProperties.isEmpty)
+          if (state.isLoading && state.allProperties.isEmpty) {
             return const Center(child: CircularProgressIndicator());
+          }
           final properties = state.isFilterActive
               ? state.filteredProperties
               : state.allProperties;
-          if (properties.isEmpty)
+          if (properties.isEmpty) {
             return const AppEmptyState(
                 icon: LucideIcons.search,
                 title: 'No properties found',
                 subtitle: 'Try a different search query.');
+          }
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             itemCount: properties.length,

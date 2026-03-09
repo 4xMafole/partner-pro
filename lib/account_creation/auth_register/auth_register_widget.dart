@@ -804,16 +804,12 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                   _model.consentCheckboxValue =
                                                       newValue!);
                                             },
-                                            side: (FlutterFlowTheme.of(context)
-                                                        .primary !=
-                                                    null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                  )
-                                                : null,
+                                            side: BorderSide(
+                                              width: 2,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                            ),
                                             activeColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primary,
@@ -922,16 +918,12 @@ class _AuthRegisterWidgetState extends State<AuthRegisterWidget> {
                                                   _model.tosCheckboxValue =
                                                       newValue!);
                                             },
-                                            side: (FlutterFlowTheme.of(context)
-                                                        .primary !=
-                                                    null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                  )
-                                                : null,
+                                            side: BorderSide(
+                                              width: 2,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                            ),
                                             activeColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primary,

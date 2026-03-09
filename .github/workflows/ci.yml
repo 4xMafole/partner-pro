@@ -33,5 +33,28 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-      - name: Run tests
-        run: flutter test
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Check test coverage
+        run: |
+          dart pub global activate coverage
+          dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib/
+          
+          # Extract auth coverage
+          AUTH_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep -A 3 "lib/auth" | grep "lines" | awk '{print $2}' | sed 's/%//')
+          echo "Auth Coverage: ${AUTH_COVERAGE}%"
+          
+          # Check if coverage meets threshold (70%)
+          if [ $(echo "$AUTH_COVERAGE < 70" | bc) -eq 1 ]; then
+            echo "❌ Auth coverage $AUTH_COVERAGE% is below 70% threshold"
+            exit 1
+          fi
+          echo "✅ Auth coverage $AUTH_COVERAGE% meets 70% threshold"
