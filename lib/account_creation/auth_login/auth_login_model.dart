@@ -86,9 +86,7 @@ class AuthLoginModel extends FlutterFlowModel<AuthLoginWidget> {
       bodyJson: apiUser?.toMap(),
     );
 
-    await actions.oneSignalLogin(
-      currentUserUid,
-    );
+    // OneSignal removed - Sprint 1.2 (use FCM instead)
 
     context.goNamed(FlowChooserPageWidget.routeName);
   }

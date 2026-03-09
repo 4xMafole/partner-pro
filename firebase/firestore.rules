@@ -189,32 +189,18 @@ service cloud.firestore {
       allow delete: if false; // Payments should never be deleted
     }
 
-    // ── DEPRECATED: Stripe Collections (to be removed in Sprint 1.2) ──
-    // Keeping minimal read-only access during migration period
+    // ── DEPRECATED: Stripe Collections (removed in Sprint 1.2) ──
+    // Left read-only rules during migration, now completely disabled
     match /customers/{document} {
-      allow create: if false; // No new Stripe customers
-      allow read: if isOwner(document); // Only for migration
-      allow update, delete: if false;
+      allow create, read, update, delete: if false;
     }
 
     match /customers/{parent}/checkout_sessions/{document} {
-      allow create: if false;
-      allow read: if isOwner(parent);
-      allow update, delete: if false;
-    }
-
-    match /{path=**}/checkout_sessions/{document} {
-      allow read: if false; // Blocked
+      allow create, read, update, delete: if false;
     }
 
     match /customers/{parent}/subscriptions/{document} {
-      allow create: if false;
-      allow read: if isOwner(parent);
-      allow update, delete: if false;
-    }
-
-    match /{path=**}/subscriptions/{document} {
-      allow read: if false; // Blocked
+      allow create, read, update, delete: if false;
     }
 
     // ── Push Notifications (FlutterFlow legacy) ───────────────────────

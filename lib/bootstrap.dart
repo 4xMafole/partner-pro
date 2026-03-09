@@ -30,12 +30,10 @@ Future<void> bootstrap() async {
   try {
     await FirebaseAppCheck.instance.activate(
       // Use Play Integrity on Android, DeviceCheck on iOS
-      androidProvider: kDebugMode 
-          ? AndroidProvider.debug 
-          : AndroidProvider.playIntegrity,
-      appleProvider: kDebugMode
-          ? AppleProvider.debug
-          : AppleProvider.deviceCheck,
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider:
+          kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
       // Use reCAPTCHA for web
       webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
     );

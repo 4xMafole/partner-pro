@@ -8,9 +8,7 @@ export 'fill_transaction00472.dart' show fillTransaction00472;
 export 'generate_pdf.dart' show generatePdf;
 export 'google_map_price_tag.dart' show googleMapPriceTag;
 export 'fetch_image_as_file.dart' show fetchImageAsFile;
-export 'one_signal.dart' show oneSignal;
-export 'one_signal_login.dart' show oneSignalLogin;
-export 'one_signal_logout.dart' show oneSignalLogout;
+// OneSignal integration removed - Sprint 1.2 cleanup (use FCM instead)
 export 'change_password.dart' show changePassword;
 export 'filter_properties.dart' show filterProperties;
 export 'upload_picked_file.dart' show uploadPickedFile;

@@ -32,11 +32,6 @@ abstract final class EnvConfig {
     'RAPIDAPI_KEY',
   );
 
-  // ── OneSignal ─────────────────────────────────────────
-  static const String oneSignalAppId = String.fromEnvironment(
-    'ONESIGNAL_APP_ID',
-  );
-
   // ── Firebase (web only — native uses google-services.json / GoogleService-Info.plist)
   static const String firebaseWebApiKey = String.fromEnvironment(
     'FIREBASE_WEB_API_KEY',

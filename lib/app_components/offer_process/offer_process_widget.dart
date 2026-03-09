@@ -5,7 +5,6 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/stripe/payment_manager.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_radio_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6240,85 +6239,13 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                               return Builder(
                                 builder: (context) => FFButtonWidget(
                                   onPressed: () async {
-                                    final paymentResponse =
-                                        await processStripePayment(
+                                    // Stripe payment processing removed - Sprint 1.2
+                                    // Payments now handled by RevenueCat subscription
+                                    showSnackbar(
                                       context,
-                                      amount: 2500,
-                                      currency: 'USD',
-                                      customerEmail: currentUserEmail,
-                                      customerName: currentUserDisplayName,
-                                      description:
-                                          'We charge \$25 for offers written to the agent.',
-                                      allowGooglePay: false,
-                                      allowApplePay: false,
-                                      buttonColor:
-                                          FlutterFlowTheme.of(context).primary,
-                                      buttonTextColor:
-                                          FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
+                                      'Payments are now handled through your subscription. Please check your subscription settings.',
                                     );
-                                    if (paymentResponse.paymentId == null &&
-                                        paymentResponse.errorMessage != null) {
-                                      showSnackbar(
-                                        context,
-                                        'Error: ${paymentResponse.errorMessage}',
-                                      );
-                                    }
-                                    _model.stripePaymentID =
-                                        paymentResponse.paymentId ?? '';
-
-                                    if (_model.stripePaymentID != null &&
-                                        _model.stripePaymentID != '') {
-                                      var offerPaymentsRecordReference =
-                                          OfferPaymentsRecord.collection.doc();
-                                      await offerPaymentsRecordReference
-                                          .set(createOfferPaymentsRecordData(
-                                        userRef: currentUserReference,
-                                        propertyID: widget.property?.id,
-                                        createdAt: getCurrentTimestamp,
-                                        paymentID: _model.stripePaymentID,
-                                      ));
-                                      _model.offerPaymentDoc =
-                                          OfferPaymentsRecord
-                                              .getDocumentFromData(
-                                                  createOfferPaymentsRecordData(
-                                                    userRef:
-                                                        currentUserReference,
-                                                    propertyID:
-                                                        widget.property?.id,
-                                                    createdAt:
-                                                        getCurrentTimestamp,
-                                                    paymentID:
-                                                        _model.stripePaymentID,
-                                                  ),
-                                                  offerPaymentsRecordReference);
-                                    } else {
-                                      await showDialog(
-                                        context: context,
-                                        builder: (dialogContext) {
-                                          return Dialog(
-                                            elevation: 0,
-                                            insetPadding: EdgeInsets.zero,
-                                            backgroundColor: Colors.transparent,
-                                            alignment: AlignmentDirectional(
-                                                    0.0, 0.0)
-                                                .resolve(
-                                                    Directionality.of(context)),
-                                            child: CustomDialogWidget(
-                                              icon: FaIcon(
-                                                FontAwesomeIcons.stripe,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryBackground,
-                                                size: 48.0,
-                                              ),
-                                              title: 'Payment Failed',
-                                              description:
-                                                  ' We couldn\'t process your payment. Please try again or contact support if the issue persists.',
-                                              buttonLabel: 'Cancel',
-                                              onDone: () async {},
-                                            ),
-                                          );
+                                  },
                                         },
                                       );
                                     }
