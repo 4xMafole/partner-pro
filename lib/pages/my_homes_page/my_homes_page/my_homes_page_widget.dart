@@ -100,81 +100,173 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 16.0, 0.0, 16.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'My Homes',
-                                    style: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .override(
-                                          fontFamily:
-                                              FlutterFlowTheme.of(context)
-                                                  .headlineLargeFamily,
-                                          fontSize: 24.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          useGoogleFonts:
-                                              !FlutterFlowTheme.of(context)
-                                                  .headlineLargeIsCustom,
-                                        ),
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                            0.0, 16.0, 0.0, 8.0),
+                        child: Text(
+                          'My Homes',
+                          style: FlutterFlowTheme.of(context)
+                              .headlineLarge
+                              .override(
+                                fontFamily:
+                                    FlutterFlowTheme.of(context)
+                                        .headlineLargeFamily,
+                                fontSize: 26.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.bold,
+                                useGoogleFonts:
+                                    !FlutterFlowTheme.of(context)
+                                        .headlineLargeIsCustom,
+                              ),
+                        ),
+                      ),
+                      // Segmented toggle: Properties vs Offers
+                      Container(
+                        width: double.infinity,
+                        margin: EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 12.0),
+                        padding: EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(
+                          color: Color(0x1A484848),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!_model.isFavorite) {
+                                    _model.isFavorite = true;
+                                    safeSetState(() {});
+                                  }
+                                },
+                                child: AnimatedContainer(
+                                  duration: Duration(milliseconds: 200),
+                                  padding: EdgeInsets.symmetric(vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: _model.isFavorite
+                                        ? FlutterFlowTheme.of(context)
+                                            .primaryBackground
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    boxShadow: _model.isFavorite
+                                        ? [
+                                            BoxShadow(
+                                              blurRadius: 4.0,
+                                              color: Color(0x1A000000),
+                                              offset: Offset(0, 1),
+                                            )
+                                          ]
+                                        : [],
                                   ),
-                                  Builder(
-                                    builder: (context) {
-                                      if (!_model.isFavorite) {
-                                        return InkWell(
-                                          splashColor: Colors.transparent,
-                                          focusColor: Colors.transparent,
-                                          hoverColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          onTap: () async {
-                                            _model.isFavorite =
-                                                !_model.isFavorite;
-                                            safeSetState(() {});
-                                          },
-                                          child: Icon(
-                                            Icons.favorite_border,
-                                            color: FlutterFlowTheme.of(context)
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.favorite_rounded,
+                                        size: 18.0,
+                                        color: _model.isFavorite
+                                            ? FlutterFlowTheme.of(context)
+                                                .primaryText
+                                            : FlutterFlowTheme.of(context)
                                                 .secondaryText,
-                                            size: 36.0,
-                                          ),
-                                        );
-                                      } else {
-                                        return InkWell(
-                                          splashColor: Colors.transparent,
-                                          focusColor: Colors.transparent,
-                                          hoverColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          onTap: () async {
-                                            _model.isFavorite =
-                                                !_model.isFavorite;
-                                            safeSetState(() {});
-                                          },
-                                          child: Icon(
-                                            Icons.favorite_sharp,
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            size: 36.0,
-                                          ),
-                                        );
-                                      }
-                                    },
+                                      ),
+                                      SizedBox(width: 6.0),
+                                      Text(
+                                        'Properties',
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmallFamily,
+                                              color: _model.isFavorite
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .primaryText
+                                                  : FlutterFlowTheme.of(context)
+                                                      .secondaryText,
+                                              fontSize: 14.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w600,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .titleSmallIsCustom,
+                                            ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 4.0),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_model.isFavorite) {
+                                    _model.isFavorite = false;
+                                    safeSetState(() {});
+                                  }
+                                },
+                                child: AnimatedContainer(
+                                  duration: Duration(milliseconds: 200),
+                                  padding: EdgeInsets.symmetric(vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: !_model.isFavorite
+                                        ? FlutterFlowTheme.of(context)
+                                            .primaryBackground
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    boxShadow: !_model.isFavorite
+                                        ? [
+                                            BoxShadow(
+                                              blurRadius: 4.0,
+                                              color: Color(0x1A000000),
+                                              offset: Offset(0, 1),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.description_outlined,
+                                        size: 18.0,
+                                        color: !_model.isFavorite
+                                            ? FlutterFlowTheme.of(context)
+                                                .primaryText
+                                            : FlutterFlowTheme.of(context)
+                                                .secondaryText,
+                                      ),
+                                      SizedBox(width: 6.0),
+                                      Text(
+                                        'Offers',
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmallFamily,
+                                              color: !_model.isFavorite
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .primaryText
+                                                  : FlutterFlowTheme.of(context)
+                                                      .secondaryText,
+                                              fontSize: 14.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w600,
+                                              useGoogleFonts:
+                                                  !FlutterFlowTheme.of(context)
+                                                      .titleSmallIsCustom,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       Expanded(
                         child: Builder(
@@ -298,9 +390,9 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                         return Center(
                                                           child:
                                                               EmptyListingWidget(
-                                                            title: 'Empty List',
+                                                            title: 'No Favorites Yet',
                                                             description:
-                                                                'No favorited homes',
+                                                                'Tap the heart icon on any property to save it here',
                                                             onTap: () async {},
                                                           ),
                                                         );
@@ -430,9 +522,9 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                         return Center(
                                                           child:
                                                               EmptyListingWidget(
-                                                            title: 'Empty List',
+                                                            title: 'No Suggestions Yet',
                                                             description:
-                                                                'No suggested homes',
+                                                                'Your agent\'s recommended properties will appear here',
                                                             onTap: () async {},
                                                           ),
                                                         );
@@ -667,9 +759,9 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                               child:
                                                                   EmptyListingWidget(
                                                                 title:
-                                                                    'Empty List',
+                                                                    'No Pending Offers',
                                                                 description:
-                                                                    'No pending offers',
+                                                                    'Your submitted offers awaiting review will appear here',
                                                                 onTap:
                                                                     () async {},
                                                               ),
@@ -924,9 +1016,9 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                               child:
                                                                   EmptyListingWidget(
                                                                 title:
-                                                                    'Empty List',
+                                                                    'No Accepted Offers',
                                                                 description:
-                                                                    'No pending offers',
+                                                                    'Offers accepted by your agent will appear here',
                                                                 onTap:
                                                                     () async {},
                                                               ),
@@ -1147,9 +1239,9 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                               child:
                                                                   EmptyListingWidget(
                                                                 title:
-                                                                    'Empty List',
+                                                                    'No Declined Offers',
                                                                 description:
-                                                                    'No pending offers',
+                                                                    'Declined or withdrawn offers will appear here',
                                                                 onTap:
                                                                     () async {},
                                                               ),

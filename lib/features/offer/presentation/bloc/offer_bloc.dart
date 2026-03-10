@@ -103,6 +103,19 @@ class DeclineOffer extends OfferEvent {
   List<Object?> get props => [offerId, requesterId, requesterName];
 }
 
+class WithdrawOffer extends OfferEvent {
+  final String offerId;
+  final String requesterId;
+  final String requesterName;
+  const WithdrawOffer({
+    required this.offerId,
+    required this.requesterId,
+    required this.requesterName,
+  });
+  @override
+  List<Object?> get props => [offerId, requesterId, requesterName];
+}
+
 class RequestRevision extends OfferEvent {
   final String offerId;
   final String requesterId;
@@ -242,6 +255,7 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     on<UpdateOffer>(_onUpdate);
     on<AcceptOffer>(_onAccept);
     on<DeclineOffer>(_onDecline);
+    on<WithdrawOffer>(_onWithdraw);
     on<RequestRevision>(_onRequestRevision);
     on<CompareOffers>(_onCompare);
     on<LoadOfferRevisions>(_onLoadRevisions);
@@ -423,6 +437,61 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
           isSubmitting: false,
           offers: updatedOffers,
           successMessage: 'Offer declined',
+        ));
+      },
+    );
+  }
+
+  Future<void> _onWithdraw(WithdrawOffer e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    final offer = state.offers.cast<OfferModel?>().firstWhere(
+          (o) => o?.id == e.offerId,
+          orElse: () => null,
+        );
+    if (offer == null) {
+      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      return;
+    }
+
+    final offerData = offer.toJson();
+    offerData['status'] = 'declined';
+
+    final r = await _repository.updateOffer(
+      offerData: offerData,
+      requesterId: e.requesterId,
+      requestorName: e.requesterName,
+      requestorRole: 'buyer',
+      changeNotes: 'Offer withdrawn by buyer',
+    );
+
+    r.fold(
+      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (_) {
+        final updatedOffers = state.offers.map((o) {
+          if (o.id == e.offerId) {
+            return o.copyWith(status: OfferStatus.declined);
+          }
+          return o;
+        }).toList();
+
+        // Notify the agent about withdrawal
+        final agentId = offer.agent.id;
+        if (agentId.isNotEmpty) {
+          _notificationService.createNotification(
+            userId: agentId,
+            title: 'Offer Withdrawn',
+            body:
+                '${e.requesterName} has withdrawn their offer on ${offer.property.title}.',
+            type: 'offer',
+            data: {'offerId': e.offerId},
+          );
+        }
+
+        emit(state.copyWith(
+          isSubmitting: false,
+          offers: updatedOffers,
+          successMessage: 'Offer withdrawn',
         ));
       },
     );
