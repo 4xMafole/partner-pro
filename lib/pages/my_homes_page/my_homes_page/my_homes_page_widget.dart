@@ -101,30 +101,28 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            0.0, 16.0, 0.0, 8.0),
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 8.0),
                         child: Text(
                           'My Homes',
                           style: FlutterFlowTheme.of(context)
                               .headlineLarge
                               .override(
-                                fontFamily:
-                                    FlutterFlowTheme.of(context)
-                                        .headlineLargeFamily,
+                                fontFamily: FlutterFlowTheme.of(context)
+                                    .headlineLargeFamily,
                                 fontSize: 26.0,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.bold,
-                                useGoogleFonts:
-                                    !FlutterFlowTheme.of(context)
-                                        .headlineLargeIsCustom,
+                                useGoogleFonts: !FlutterFlowTheme.of(context)
+                                    .headlineLargeIsCustom,
                               ),
                         ),
                       ),
                       // Segmented toggle: Properties vs Offers
                       Container(
                         width: double.infinity,
-                        margin: EdgeInsetsDirectional.fromSTEB(
-                            0.0, 0.0, 0.0, 12.0),
+                        margin:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 12.0),
                         padding: EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
                           color: Color(0x1A484848),
@@ -390,7 +388,8 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                         return Center(
                                                           child:
                                                               EmptyListingWidget(
-                                                            title: 'No Favorites Yet',
+                                                            title:
+                                                                'No Favorites Yet',
                                                             description:
                                                                 'Tap the heart icon on any property to save it here',
                                                             onTap: () async {},
@@ -522,7 +521,8 @@ class _MyHomesPageWidgetState extends State<MyHomesPageWidget>
                                                         return Center(
                                                           child:
                                                               EmptyListingWidget(
-                                                            title: 'No Suggestions Yet',
+                                                            title:
+                                                                'No Suggestions Yet',
                                                             description:
                                                                 'Your agent\'s recommended properties will appear here',
                                                             onTap: () async {},
