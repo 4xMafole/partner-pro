@@ -39,6 +39,7 @@ class NotificationService {
                 'type': 'offer',
                 'createdAt': raw['createdAt'],
                 'isRead': raw['isRead'] ?? false,
+                'offerId': raw['metadata']?['offerId'] ?? raw['offerId'],
               };
               return NotificationModel.fromJson(data);
             }).toList());
@@ -121,6 +122,7 @@ class NotificationService {
       'message': body,
       'type': type ?? 'general',
       'metadata': data,
+      'offerId': data?['offerId'],
       'isRead': false,
       'createdAt': FieldValue.serverTimestamp(),
     });

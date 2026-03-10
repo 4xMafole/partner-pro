@@ -7,6 +7,7 @@ import 'package:partner_pro/core/error/failures.dart';
 import 'package:partner_pro/features/offer/data/models/offer_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_notification_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
+import 'package:partner_pro/features/notifications/data/services/notification_service.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_notification_repository.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_repository.dart';
 import 'package:partner_pro/features/offer/presentation/bloc/offer_bloc.dart';
@@ -16,15 +17,19 @@ class MockOfferRepository extends Mock implements OfferRepository {}
 class MockOfferNotificationRepository extends Mock
     implements OfferNotificationRepository {}
 
+class MockNotificationService extends Mock implements NotificationService {}
+
 void main() {
   late MockOfferRepository repository;
   late MockOfferNotificationRepository notificationRepository;
+  late MockNotificationService notificationService;
   late OfferBloc bloc;
 
   setUp(() {
     repository = MockOfferRepository();
     notificationRepository = MockOfferNotificationRepository();
-    bloc = OfferBloc(repository, notificationRepository);
+    notificationService = MockNotificationService();
+    bloc = OfferBloc(repository, notificationRepository, notificationService);
   });
 
   tearDown(() {

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
@@ -56,60 +58,87 @@ class NotificationsPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final notif = state.notifications[index];
               final isUnread = !(notif.isRead ?? false);
-              return ListTile(
-                tileColor:
-                    isUnread ? AppColors.primary.withValues(alpha: 0.04) : null,
-                leading: CircleAvatar(
-                  backgroundColor: isUnread
-                      ? AppColors.primary.withValues(alpha: 0.12)
-                      : AppColors.surfaceVariant,
-                  child: Icon(
-                    _iconForType(notif.type?.name ?? ''),
-                    size: 20.sp,
-                    color:
-                        isUnread ? AppColors.primary : AppColors.textTertiary,
-                  ),
+              return Dismissible(
+                key: ValueKey(notif.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 20.w),
+                  color: AppColors.error,
+                  child: const Icon(LucideIcons.trash2, color: Colors.white),
                 ),
-                title: Text(
-                  notif.title ?? '',
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(notif.description,
-                        style: AppTypography.bodySmall
-                            .copyWith(color: AppColors.textSecondary),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    if (notif.createdAt != null)
-                      Padding(
-                        padding: EdgeInsets.only(top: 4.h),
-                        child: Text(
-                          timeago.format(notif.createdAt!),
-                          style: AppTypography.labelSmall
-                              .copyWith(color: AppColors.textTertiary),
-                        ),
-                      ),
-                  ],
-                ),
-                trailing: isUnread
-                    ? Container(
-                        width: 8.w,
-                        height: 8.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                        ),
-                      )
-                    : null,
-                onTap: () {
-                  if (isUnread) {
-                    context.read<NotificationBloc>().add(MarkAsRead(notif.id));
-                  }
+                onDismissed: (_) {
+                  context
+                      .read<NotificationBloc>()
+                      .add(DeleteNotification(notif.id));
                 },
+                child: ListTile(
+                  tileColor: isUnread
+                      ? AppColors.primary.withValues(alpha: 0.04)
+                      : null,
+                  leading: CircleAvatar(
+                    backgroundColor: isUnread
+                        ? AppColors.primary.withValues(alpha: 0.12)
+                        : AppColors.surfaceVariant,
+                    child: Icon(
+                      _iconForType(notif.type?.name ?? ''),
+                      size: 20.sp,
+                      color:
+                          isUnread ? AppColors.primary : AppColors.textTertiary,
+                    ),
+                  ),
+                  title: Text(
+                    notif.title ?? '',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight:
+                          isUnread ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(notif.description,
+                          style: AppTypography.bodySmall
+                              .copyWith(color: AppColors.textSecondary),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      if (notif.createdAt != null)
+                        Padding(
+                          padding: EdgeInsets.only(top: 4.h),
+                          child: Text(
+                            timeago.format(notif.createdAt!),
+                            style: AppTypography.labelSmall
+                                .copyWith(color: AppColors.textTertiary),
+                          ),
+                        ),
+                    ],
+                  ),
+                  trailing: isUnread
+                      ? Container(
+                          width: 8.w,
+                          height: 8.w,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary,
+                          ),
+                        )
+                      : null,
+                  onTap: () {
+                    // Mark as read
+                    if (isUnread) {
+                      context
+                          .read<NotificationBloc>()
+                          .add(MarkAsRead(notif.id));
+                    }
+                    // Navigate to offer details if this notification has an offerId
+                    final offerId = notif.offerId;
+                    if (offerId != null && offerId.isNotEmpty) {
+                      context.push(
+                        RouteNames.offerDetails.replaceFirst(':id', offerId),
+                      );
+                    }
+                  },
+                ),
               );
             },
           );

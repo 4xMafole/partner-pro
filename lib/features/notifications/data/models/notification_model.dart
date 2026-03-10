@@ -13,8 +13,10 @@ class NotificationModel with _$NotificationModel {
     SellerNotification? type,
     DateTime? createdAt,
     @Default(false) bool isRead,
+    String? offerId,
   }) = _NotificationModel;
-  factory NotificationModel.fromJson(Map<String, dynamic> json) => _$NotificationModelFromJson(json);
+  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
+      _$NotificationModelFromJson(json);
 }
 
 @freezed
@@ -26,5 +28,6 @@ class MessageModel with _$MessageModel {
     DateTime? createdTime,
     @Default(false) bool isSeller,
   }) = _MessageModel;
-  factory MessageModel.fromJson(Map<String, dynamic> json) => _$MessageModelFromJson(json);
+  factory MessageModel.fromJson(Map<String, dynamic> json) =>
+      _$MessageModelFromJson(json);
 }

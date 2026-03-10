@@ -8,6 +8,7 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../bloc/offer_bloc.dart';
 import '../../data/models/offer_model.dart';
 import '../../data/models/offer_revision_model.dart';
@@ -275,42 +276,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
               ],
             ),
           ),
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  if (statusStr == 'pending' || statusStr == 'accepted')
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          context.push(RouteNames.signContract
-                              .replaceFirst(':id', offer.id));
-                        },
-                        icon: const Icon(LucideIcons.penTool),
-                        label: const Text('Sign Contract'),
-                        style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 14.h)),
-                      ),
-                    ),
-                  if (statusStr == 'pending' || statusStr == 'accepted')
-                    SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Generate PDF
-                        context.read<OfferBloc>().state;
-                      },
-                      icon: const Icon(LucideIcons.download),
-                      label: const Text('Download PDF'),
-                      style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 14.h)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          bottomNavigationBar: _buildBottomActions(context, offer, statusStr),
         );
       },
     );
@@ -325,6 +291,236 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       buffer.write(str[i]);
     }
     return buffer.toString();
+  }
+
+  String? _currentUserRole(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.role?.toLowerCase();
+    }
+    return null;
+  }
+
+  String _currentUserId(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.uid;
+    }
+    return '';
+  }
+
+  String _currentUserName(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.displayName ??
+          '${authState.user.firstName ?? ''} ${authState.user.lastName ?? ''}'
+              .trim();
+    }
+    return '';
+  }
+
+  Widget _buildBottomActions(
+      BuildContext context, OfferModel offer, String statusStr) {
+    final role = _currentUserRole(context);
+    final isAgent = role == 'agent';
+    final isBuyer = role == 'buyer';
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Agent actions: Accept / Decline / Request Revision (only for pending offers)
+            if (isAgent && statusStr == 'pending') ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _confirmAction(
+                        context,
+                        title: 'Accept Offer',
+                        message: 'Are you sure you want to accept this offer?',
+                        onConfirm: () {
+                          context.read<OfferBloc>().add(AcceptOffer(
+                                offerId: offer.id,
+                                requesterId: _currentUserId(context),
+                                requesterName: _currentUserName(context),
+                              ));
+                        },
+                      ),
+                      icon: const Icon(LucideIcons.checkCircle),
+                      label: const Text('Accept'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.success,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmAction(
+                        context,
+                        title: 'Decline Offer',
+                        message: 'Are you sure you want to decline this offer?',
+                        onConfirm: () {
+                          context.read<OfferBloc>().add(DeclineOffer(
+                                offerId: offer.id,
+                                requesterId: _currentUserId(context),
+                                requesterName: _currentUserName(context),
+                              ));
+                        },
+                      ),
+                      icon: const Icon(LucideIcons.xCircle),
+                      label: const Text('Decline'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: const BorderSide(color: AppColors.error),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showRevisionRequestDialog(context, offer),
+                  icon: const Icon(LucideIcons.messageSquare),
+                  label: const Text('Request Revision'),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
+                ),
+              ),
+            ],
+
+            // Buyer actions: Edit offer (only for pending offers)
+            if (isBuyer && statusStr == 'pending')
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    // Navigate to edit offer
+                  },
+                  icon: const Icon(LucideIcons.edit),
+                  label: const Text('Edit & Resubmit Offer'),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
+                ),
+              ),
+
+            // Common actions row
+            if (statusStr != 'pending' || !isAgent) SizedBox(height: 8.h),
+            Row(
+              children: [
+                if (statusStr == 'accepted')
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        context.push(RouteNames.signContract
+                            .replaceFirst(':id', offer.id));
+                      },
+                      icon: const Icon(LucideIcons.penTool),
+                      label: const Text('Sign Contract'),
+                      style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 14.h)),
+                    ),
+                  ),
+                if (statusStr == 'accepted') SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Generate PDF
+                    },
+                    icon: const Icon(LucideIcons.download),
+                    label: const Text('Download PDF'),
+                    style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 14.h)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmAction(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onConfirm();
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRevisionRequestDialog(BuildContext context, OfferModel offer) {
+    final notesController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Request Revision'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Describe what changes the buyer should make:'),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: notesController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'e.g. Increase earnest money by \$1,000',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (notesController.text.trim().isEmpty) return;
+              Navigator.pop(ctx);
+              context.read<OfferBloc>().add(RequestRevision(
+                    offerId: offer.id,
+                    requesterId: _currentUserId(context),
+                    requesterName: _currentUserName(context),
+                    revisionNotes: notesController.text.trim(),
+                  ));
+            },
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showRevisionComparison(
