@@ -3,13 +3,21 @@ import 'package:injectable/injectable.dart';
 
 import '../models/offer_notification_model.dart';
 
+typedef ExternalSmsSender = Future<bool> Function(SMSNotificationContent content);
+
 /// Service for sending SMS notifications
 /// Integrates with Twilio API or similar SMS provider
 @lazySingleton
 class SMSNotificationService {
   final FirebaseFirestore _firestore;
+  ExternalSmsSender? _externalSmsSender;
 
   SMSNotificationService(this._firestore);
+
+  /// Configure external SMS provider without changing the service contract.
+  void configureExternalSmsSender(ExternalSmsSender sender) {
+    _externalSmsSender = sender;
+  }
 
   /// Send an offer status change SMS
   Future<bool> sendOfferStatusSMS({
@@ -29,26 +37,40 @@ class SMSNotificationService {
       // Check rate limit before sending
       final canSend = await checkRateLimit(recipientPhone);
       if (!canSend) {
-        print('[SMSNotificationService] Rate limit exceeded for $recipientPhone');
+        print(
+            '[SMSNotificationService] Rate limit exceeded for $recipientPhone');
         return false;
       }
 
       // Generate SMS content based on notification type
       final smsBody = _generateSMSContent(notificationType, variables);
 
-      // TODO: Integrate with Twilio API or similar SMS service
-      // For now, we'll log the SMS to Firestore for tracking
+      final sms = SMSNotificationContent(
+        to: recipientPhone,
+        body: smsBody,
+        from: null,
+      );
+
+      var sentSuccessfully = true;
+      if (_externalSmsSender != null) {
+        sentSuccessfully = await _externalSmsSender!(sms);
+      }
+
       await _logSMSSent(
         offerId: offerId,
         recipientPhone: recipientPhone,
         notificationType: notificationType,
         body: smsBody,
-        success: true,
+        success: sentSuccessfully,
         retryCount: retryCount,
       );
 
+      if (!sentSuccessfully) {
+        throw Exception('External SMS sender returned false');
+      }
+
       print('[SMSNotificationService] SMS sent to $recipientPhone: $smsBody');
-      
+
       return true;
     } catch (e, stackTrace) {
       print('[SMSNotificationService] Error sending SMS: $e');
@@ -67,7 +89,7 @@ class SMSNotificationService {
 
       // Retry logic (up to 3 times with exponential backoff)
       if (retryCount < 3) {
-        await Future.delayed(Duration(seconds: 2 ^ retryCount));
+        await Future.delayed(Duration(seconds: 1 << retryCount));
         return await sendOfferStatusSMS(
           offerId: offerId,
           recipientPhone: recipientPhone,
@@ -121,7 +143,7 @@ class SMSNotificationService {
   bool _isValidPhoneNumber(String phone) {
     // Remove common formatting characters
     final cleaned = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    
+
     // Check for valid length (10-15 digits with optional + prefix)
     return RegExp(r'^\+?\d{10,15}$').hasMatch(cleaned);
   }
@@ -154,10 +176,12 @@ class SMSNotificationService {
 
   /// Rate limiting: Check if user has received too many SMS recently
   /// Default: Max 5 SMS per hour per phone number
-  Future<bool> checkRateLimit(String recipientPhone, {int maxSMSPerHour = 5}) async {
+  Future<bool> checkRateLimit(String recipientPhone,
+      {int maxSMSPerHour = 5}) async {
     try {
-      final oneHourAgo = Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 1)));
-      
+      final oneHourAgo =
+          Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 1)));
+
       final recentSMS = await _firestore
           .collection('sms_logs')
           .where('recipientPhone', isEqualTo: recipientPhone)

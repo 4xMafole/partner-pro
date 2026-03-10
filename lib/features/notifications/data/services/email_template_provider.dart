@@ -11,25 +11,25 @@ class EmailTemplateProvider {
     switch (type) {
       case OfferNotificationType.offerCreated:
         return _offerCreatedTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.offerSubmitted:
         return _offerSubmittedTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.statusChangedAccepted:
         return _offerAcceptedTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.statusChangedDeclined:
         return _offerDeclinedTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.revisionRequested:
         return _revisionRequestedTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.revisionMade:
         return _revisionMadeTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.offerExpired:
         return _offerExpiredTemplate(recipientRole, variables);
-      
+
       case OfferNotificationType.offerClosed:
         return _offerClosedTemplate(recipientRole, variables);
     }
@@ -376,7 +376,7 @@ PartnerPro © 2026
   ) {
     final subject = 'Revision Requested: ${variables.propertyAddress}';
     final changedFieldsList = variables.changedFields?.join(', ') ?? 'N/A';
-    
+
     final htmlBody = '''
 <!DOCTYPE html>
 <html>
@@ -450,7 +450,7 @@ PartnerPro © 2026
   ) {
     final subject = 'Offer Revised: ${variables.propertyAddress}';
     final changedFieldsList = variables.changedFields?.join(', ') ?? 'N/A';
-    
+
     final htmlBody = '''
 <!DOCTYPE html>
 <html>

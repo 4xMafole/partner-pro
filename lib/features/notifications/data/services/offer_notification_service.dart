@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:injectable/injectable.dart';
 
 import '../models/offer_notification_model.dart';
@@ -36,7 +35,8 @@ class OfferNotificationService {
     bool sendSMS = false, // SMS opt-in by default off
     bool sendPush = true,
   }) async {
-    final notificationId = _firestore.collection('offer_notifications').doc().id;
+    final notificationId =
+        _firestore.collection('offer_notifications').doc().id;
     final timestamp = DateTime.now();
 
     bool emailSent = false;
@@ -135,7 +135,8 @@ class OfferNotificationService {
   Future<List<OfferNotificationModel>> sendBatchNotifications({
     required String offerId,
     required OfferNotificationType notificationType,
-    required List<Map<String, dynamic>> recipients, // List of {userId, email, phone, role}
+    required List<Map<String, dynamic>>
+        recipients, // List of {userId, email, phone, role}
     required OfferNotificationVariables variables,
     bool sendEmail = true,
     bool sendSMS = false,
@@ -162,7 +163,8 @@ class OfferNotificationService {
         );
         notifications.add(notification);
       } catch (e) {
-        print('[OfferNotificationService] Batch notification failed for ${recipient['email']}: $e');
+        print(
+            '[OfferNotificationService] Batch notification failed for ${recipient['email']}: $e');
       }
     }
 
@@ -170,7 +172,8 @@ class OfferNotificationService {
   }
 
   /// Save notification record to Firestore
-  Future<void> _saveNotificationRecord(OfferNotificationModel notification) async {
+  Future<void> _saveNotificationRecord(
+      OfferNotificationModel notification) async {
     try {
       await _firestore
           .collection('offer_notifications')
@@ -188,26 +191,32 @@ class OfferNotificationService {
         .where('offerId', isEqualTo: offerId)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => OfferNotificationModel.fromJson(doc.data())).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => OfferNotificationModel.fromJson(doc.data()))
+            .toList());
   }
 
   /// Retry failed notification
   Future<bool> retryFailedNotification(String notificationId) async {
     try {
-      final doc = await _firestore.collection('offer_notifications').doc(notificationId).get();
+      final doc = await _firestore
+          .collection('offer_notifications')
+          .doc(notificationId)
+          .get();
       if (!doc.exists) return false;
 
       final notification = OfferNotificationModel.fromJson(doc.data()!);
-      
+
       // Only retry if under 3 attempts
       if (notification.retryCount >= 3) {
-        print('[OfferNotificationService] Max retry attempts reached for $notificationId');
+        print(
+            '[OfferNotificationService] Max retry attempts reached for $notificationId');
         return false;
       }
 
       // Recreate variables
-      final variables = OfferNotificationVariables.fromJson(notification.metadata ?? {});
+      final variables =
+          OfferNotificationVariables.fromJson(notification.metadata ?? {});
 
       // Retry sending
       await sendOfferNotification(
@@ -253,7 +262,8 @@ class OfferNotificationService {
   }
 
   /// Helper: Generate push notification body
-  String _getPushBody(OfferNotificationType type, OfferNotificationVariables variables) {
+  String _getPushBody(
+      OfferNotificationType type, OfferNotificationVariables variables) {
     final propertyShort = variables.propertyAddress.length > 50
         ? '${variables.propertyAddress.substring(0, 47)}...'
         : variables.propertyAddress;

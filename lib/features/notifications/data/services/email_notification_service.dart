@@ -4,16 +4,29 @@ import 'package:injectable/injectable.dart';
 import '../models/offer_notification_model.dart';
 import 'email_template_provider.dart';
 
+typedef ExternalEmailSender = Future<bool> Function(
+  EmailNotificationContent content,
+);
+
 /// Service for sending email notifications
 /// Integrates with external email service API (SendGrid, AWS SES, etc.)
 @lazySingleton
 class EmailNotificationService {
   final FirebaseFirestore _firestore;
+  ExternalEmailSender? _externalEmailSender;
 
   EmailNotificationService(this._firestore);
 
+  /// Configure external email provider without changing the call contract.
+  ///
+  /// This keeps local development open while allowing seamless provider
+  /// integration later (SendGrid, SES, Mailgun, etc.).
+  void configureExternalEmailSender(ExternalEmailSender sender) {
+    _externalEmailSender = sender;
+  }
+
   /// Send an offer-related email notification
-  /// 
+  ///
   /// Returns true if email was sent successfully
   Future<bool> sendOfferEmail({
     required String offerId,
@@ -42,19 +55,29 @@ class EmailNotificationService {
         headers: emailContent.headers,
       );
 
-      // TODO: Integrate with actual email service (SendGrid, AWS SES, Mailgun, etc.)
-      // For now, we'll log the email to Firestore for tracking
+      // If an external provider is configured, use it. Otherwise, keep a safe
+      // local fallback that logs intent so the flow remains testable.
+      var sentSuccessfully = true;
+      if (_externalEmailSender != null) {
+        sentSuccessfully = await _externalEmailSender!(email);
+      }
+
       await _logEmailSent(
         offerId: offerId,
         recipientEmail: recipientEmail,
         notificationType: notificationType,
         subject: email.subject,
-        success: true,
+        success: sentSuccessfully,
         retryCount: retryCount,
       );
 
-      print('[EmailNotificationService] Email sent to $recipientEmail: ${email.subject}');
-      
+      if (!sentSuccessfully) {
+        throw Exception('External email sender returned false');
+      }
+
+      print(
+          '[EmailNotificationService] Email sent to $recipientEmail: ${email.subject}');
+
       return true;
     } catch (e, stackTrace) {
       print('[EmailNotificationService] Error sending email: $e');
@@ -73,7 +96,7 @@ class EmailNotificationService {
 
       // Retry logic (up to 3 times with exponential backoff)
       if (retryCount < 3) {
-        await Future.delayed(Duration(seconds: 2 ^ retryCount)); // Exponential backoff
+        await Future.delayed(Duration(seconds: 1 << retryCount));
         return await sendOfferEmail(
           offerId: offerId,
           recipientEmail: recipientEmail,
@@ -139,10 +162,12 @@ class EmailNotificationService {
   }
 
   /// Rate limiting: Check if user has received too many emails recently
-  Future<bool> checkRateLimit(String recipientEmail, {int maxEmailsPerHour = 10}) async {
+  Future<bool> checkRateLimit(String recipientEmail,
+      {int maxEmailsPerHour = 10}) async {
     try {
-      final oneHourAgo = Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 1)));
-      
+      final oneHourAgo =
+          Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 1)));
+
       final recentEmails = await _firestore
           .collection('email_logs')
           .where('recipientEmail', isEqualTo: recipientEmail)
