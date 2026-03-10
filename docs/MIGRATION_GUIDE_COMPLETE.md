@@ -272,19 +272,19 @@ firestore/
   - SMS: Implement SMS provider integration
   - Push: Consolidate to Firebase FCM only
   - Test all 8 email template types
-- [ ] Implement offer status transitions with guards
+- [x] Implement offer status transitions with guards
   - Draft → Pending (buyer action)
   - Pending → Accepted/Declined (agent action)
   - Enforce validation at repository layer
-- [ ] Implement offer revision tracking
+- [x] Implement offer revision tracking
   - Capture changes automatically
   - Create revision documents on save
   - Display revision history in UI
-- [ ] Offer comparison & change detection
+- [x] Offer comparison & change detection
   - Track all 24 fields
   - Highlight changes in UI
   - Prevent no-op submissions
-- [ ] Write comprehensive offer tests
+- [x] Write comprehensive offer tests
   - 50+ unit tests (repositories, BLoCs)
   - 15+ widget tests (screens, forms)
   - Integration tests (E2E offer flow)
