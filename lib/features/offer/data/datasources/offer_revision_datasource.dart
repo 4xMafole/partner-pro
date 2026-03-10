@@ -24,11 +24,10 @@ class OfferRevisionDataSource {
     final nextRevisionNumber = await _getNextRevisionNumber(offerId);
 
     // Prepare revision data
-    final preparedRevision = revision
-        .copyWith(
-          revisionNumber: nextRevisionNumber,
-          timestamp: DateTime.now(),
-        );
+    final preparedRevision = revision.copyWith(
+      revisionNumber: nextRevisionNumber,
+      timestamp: DateTime.now(),
+    );
     final revisionData = preparedRevision.toJson()
       ..['fieldChanges'] = preparedRevision.fieldChanges
           .map((change) => change.toJson())

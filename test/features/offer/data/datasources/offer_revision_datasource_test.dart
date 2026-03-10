@@ -80,7 +80,8 @@ void main() {
       );
 
       final all = await datasource.getOfferRevisions(offerId: offerId);
-      final limited = await datasource.getOfferRevisions(offerId: offerId, limit: 2);
+      final limited =
+          await datasource.getOfferRevisions(offerId: offerId, limit: 2);
 
       expect(all.length, 3);
       expect(all.first.revisionNumber, 3);
@@ -138,7 +139,8 @@ void main() {
       );
       await datasource.createRevision(
         offerId: offerId,
-        revision: buildRevision(userId: 'u1', type: OfferRevisionType.statusChanged),
+        revision:
+            buildRevision(userId: 'u1', type: OfferRevisionType.statusChanged),
       );
 
       final result = await datasource.getRevisionsByType(
@@ -183,7 +185,8 @@ void main() {
         revision: buildRevision(userId: 'u1'),
       );
 
-      final firstEmission = await datasource.streamOfferRevisions(offerId: offerId).first;
+      final firstEmission =
+          await datasource.streamOfferRevisions(offerId: offerId).first;
       expect(firstEmission.length, 1);
       expect(firstEmission.first.userId, 'u1');
     });
