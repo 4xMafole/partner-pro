@@ -8,9 +8,11 @@
 
 ## Objective
 
-Deliver property search, alerts, and property-offer linkage for buyer-agent workflows only.
+Deliver external-property discovery, alerts, and property-offer linkage for buyer-agent workflows only.
 
-Hard scope rule:
+Hard scope rules:
+- Properties are sourced externally (for example Zillow) and consumed in-app.
+- No in-app listing management, listing CRUD, or photo management.
 - No seller-facing product surfaces.
 - Seller details in offers are derived from property/listing metadata (listing agent treated as seller source).
 
@@ -18,18 +20,17 @@ Hard scope rule:
 
 ## In Scope
 
-- Property search and filtering in the new architecture
+- External property ingestion and normalization pipeline
+- Property search and filtering over sourced property data
 - Advanced filters: city, price range, bedrooms
 - Saved searches
 - Search-result caching for repeated queries
 - Firestore query/index optimization for search paths
-- Agent-managed property CRUD for listing inventory
-- Property photo upload and management
-- Property status transitions (active, pending, sold)
+- Source-to-app property synchronization (new, updated, removed)
 - Property alerts:
-  - new property alerts
+  - new property alerts from source sync
   - price-change alerts
-  - status-change alerts
+  - status-change alerts from source updates
   - real-time alert delivery for buyer and agent subscribers
 - Property-offer relationship handling:
   - multiple offers per property
@@ -40,6 +41,9 @@ Hard scope rule:
 
 ## Out Of Scope
 
+- Property listing CRUD in app
+- Property photo upload in app
+- Seller/listing admin panels
 - Seller dashboards
 - Seller CRUD portals
 - Seller admin tooling
@@ -49,7 +53,7 @@ Hard scope rule:
 
 ## Deliverables
 
-- Buyer-agent property search and management system
+- Buyer-agent property discovery and search system (external source backed)
 - Real-time property alert delivery for buyer-agent participants
 - Property-offer linkage module with listing-derived seller fields
 - Sprint 2.3 test suite (80+ tests)
@@ -57,7 +61,7 @@ Hard scope rule:
 ## Success Criteria
 
 - Search p95 response under 500ms for indexed queries
-- Property and offer-linked property data remain synchronized
+- Source property data and offer-linked property data remain synchronized
 - Alerts delivered within 2 seconds to subscribed participants
 - No regression of buyer-agent offer workflows
 
@@ -77,9 +81,9 @@ Optional slice branches if needed:
 
 ## Implementation Order
 
-1. Query and index baseline for advanced search
-2. Saved searches and search caching
-3. Property CRUD and photo management in new architecture
-4. Status transitions and alerts pipeline
+1. External source ingestion and normalization baseline
+2. Query and index baseline for advanced search
+3. Saved searches and search caching
+4. Source-driven change detection and alerts pipeline
 5. Property-offer linkage and seller-metadata hydration
 6. Buyer-agent workflow tests and performance checks

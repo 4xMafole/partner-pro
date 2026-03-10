@@ -311,10 +311,10 @@ firestore/
 
 ---
 
-#### Sprint 2.3: Property Management System (Pending, Buyer-Agent Scope)
+#### Sprint 2.3: Property Discovery And Offer Linkage (Pending, Buyer-Agent Scope)
 
-**Current State:** 30% migrated (models done, query and alert pipelines pending)  
-**Target State:** 95% migrated for buyer-agent property workflows (seller surfaces out of scope)
+**Current State:** 30% migrated (models done, ingestion/query/alert pipelines pending)  
+**Target State:** 95% migrated for buyer-agent external-property workflows (seller surfaces out of scope)
 
 **Tasks:**
 - [ ] Complete property search & filtering
@@ -322,15 +322,15 @@ firestore/
   - Add saved searches feature
   - Create search result caching
   - Optimize queries with Firestore indexes
-- [ ] Complete agent-managed property lifecycle in new architecture
-  - Create property CRUD for listing-agent managed inventory
-  - Implement photo upload & management
-  - Add property status transitions
+- [ ] Complete external property ingestion and synchronization
+  - Normalize source payloads (for example Zillow) into app property schema
+  - Sync new/updated/removed properties to Firestore cache
+  - Track source-driven status changes (active -> pending -> sold)
   - Test with real buyer-agent workflows
 - [ ] Implement property alerts system
-  - New property alert when added
+  - New property alert when added from source sync
   - Price change alerts
-  - Status change alerts (active -> pending -> sold)
+  - Status change alerts from source updates (active -> pending -> sold)
   - Real-time notification delivery to buyer and agent subscribers
 - [ ] Migrate property-offer relationship handling
   - Multiple offers per property
@@ -339,14 +339,14 @@ firestore/
   - Hydrate seller details from property listing metadata when attaching property to offer
 
 **Deliverables:**
-- Buyer-agent property search and management system
+- Buyer-agent external-property discovery and search system
 - Real-time buyer-agent property alerts
 - Property-offer linkage with listing-derived seller metadata
 - Test suite (80+ tests)
 
 **Success Criteria:**
 - ✅ Search returns results in <500ms
-- ✅ Property data fully synchronized
+- ✅ Source property data fully synchronized
 - ✅ Alerts delivered within 2 seconds
 - ✅ Offer seller fields resolve from property/listing source without seller-owned workflows
 
