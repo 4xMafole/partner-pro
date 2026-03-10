@@ -106,7 +106,8 @@ class OfferRevisionRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to fetch typed revisions: $e'));
+      return Left(
+          ServerFailure(message: 'Failed to fetch typed revisions: $e'));
     }
   }
 
@@ -132,7 +133,8 @@ class OfferRevisionRepository {
     try {
       return _datasource
           .streamOfferRevisions(offerId: offerId, limit: limit)
-          .map((revisions) => Right<Failure, List<OfferRevisionModel>>(revisions))
+          .map((revisions) =>
+              Right<Failure, List<OfferRevisionModel>>(revisions))
           .handleError((error) {
         if (error is ServerException) {
           return Left<Failure, List<OfferRevisionModel>>(
@@ -160,7 +162,8 @@ class OfferRevisionRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to fetch latest revision: $e'));
+      return Left(
+          ServerFailure(message: 'Failed to fetch latest revision: $e'));
     }
   }
 
@@ -179,7 +182,7 @@ class OfferRevisionRepository {
   }
 
   /// Helper: Creates a revision from offer comparison
-  /// 
+  ///
   /// Compares old and new offer states and creates a revision record
   Future<Either<Failure, OfferRevisionModel>> createRevisionFromComparison({
     required String offerId,
@@ -201,14 +204,16 @@ class OfferRevisionRepository {
       );
 
       // Determine revision type if not specified
-      final actualRevisionType = revisionType ?? _determineRevisionType(
-        fieldChanges: fieldChanges,
-        oldStatus: oldOffer['status'] as String?,
-        newStatus: newOffer['status'] as String?,
-      );
+      final actualRevisionType = revisionType ??
+          _determineRevisionType(
+            fieldChanges: fieldChanges,
+            oldStatus: oldOffer['status'] as String?,
+            newStatus: newOffer['status'] as String?,
+          );
 
       // Generate change summary
-      final changeSummary = OfferRevisionHelper.generateChangeSummary(fieldChanges);
+      final changeSummary =
+          OfferRevisionHelper.generateChangeSummary(fieldChanges);
 
       // Check for status change
       String? previousStatus;
@@ -239,7 +244,8 @@ class OfferRevisionRepository {
       // Save revision
       return await createRevision(offerId: offerId, revision: revision);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to create comparison revision: $e'));
+      return Left(
+          ServerFailure(message: 'Failed to create comparison revision: $e'));
     }
   }
 
@@ -255,33 +261,32 @@ class OfferRevisionRepository {
     }
 
     // Check for counter (purchase price change with counter count increase)
-    final priceChanged = fieldChanges.any((c) => 
-      c.fieldName == 'purchasePrice' || c.fieldName == 'finalPrice'
-    );
-    final counterChanged = fieldChanges.any((c) => c.fieldName == 'counteredCount');
+    final priceChanged = fieldChanges.any(
+        (c) => c.fieldName == 'purchasePrice' || c.fieldName == 'finalPrice');
+    final counterChanged =
+        fieldChanges.any((c) => c.fieldName == 'counteredCount');
 
     if (priceChanged && counterChanged) {
       return OfferRevisionType.countered;
     }
 
     // Check for addendum changes
-    final addendumChanged = fieldChanges.any((c) => 
-      c.fieldName == 'addendums' || c.fieldName.startsWith('addendums.')
-    );
+    final addendumChanged = fieldChanges.any((c) =>
+        c.fieldName == 'addendums' || c.fieldName.startsWith('addendums.'));
     if (addendumChanged) {
       return OfferRevisionType.addendumChanged;
     }
 
     // Check for document changes
-    final documentChanged = fieldChanges.any((c) => 
-      c.fieldName == 'documents' || c.fieldName.startsWith('documents.')
-    );
+    final documentChanged = fieldChanges.any((c) =>
+        c.fieldName == 'documents' || c.fieldName.startsWith('documents.'));
     if (documentChanged) {
       return OfferRevisionType.documentChanged;
     }
 
     // Check for agent action
-    final agentActionChanged = fieldChanges.any((c) => c.fieldName == 'agentApproved');
+    final agentActionChanged =
+        fieldChanges.any((c) => c.fieldName == 'agentApproved');
     if (agentActionChanged) {
       return OfferRevisionType.agentAction;
     }

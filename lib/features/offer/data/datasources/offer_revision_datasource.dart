@@ -5,7 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../models/offer_revision_model.dart';
 
 /// Remote data source for offer revision tracking in Firestore.
-/// 
+///
 /// Revisions are stored in a subcollection: offers/{offerId}/revisions/{revisionId}
 @lazySingleton
 class OfferRevisionDataSource {
@@ -14,7 +14,7 @@ class OfferRevisionDataSource {
   OfferRevisionDataSource(this._firestore);
 
   /// Creates a new revision record for an offer
-  /// 
+  ///
   /// Returns the created revision with generated ID
   Future<OfferRevisionModel> createRevision({
     required String offerId,
@@ -24,10 +24,15 @@ class OfferRevisionDataSource {
     final nextRevisionNumber = await _getNextRevisionNumber(offerId);
 
     // Prepare revision data
-    final revisionData = revision.copyWith(
-      revisionNumber: nextRevisionNumber,
-      timestamp: DateTime.now(),
-    ).toJson();
+    final preparedRevision = revision
+        .copyWith(
+          revisionNumber: nextRevisionNumber,
+          timestamp: DateTime.now(),
+        );
+    final revisionData = preparedRevision.toJson()
+      ..['fieldChanges'] = preparedRevision.fieldChanges
+          .map((change) => change.toJson())
+          .toList();
 
     // Create revision document
     final docRef = await _firestore
@@ -173,7 +178,8 @@ class OfferRevisionDataSource {
   }
 
   /// Gets the latest revision for an offer
-  Future<OfferRevisionModel?> getLatestRevision({required String offerId}) async {
+  Future<OfferRevisionModel?> getLatestRevision(
+      {required String offerId}) async {
     final snapshot = await _firestore
         .collection(AppConstants.offersCollection)
         .doc(offerId)

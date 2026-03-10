@@ -327,13 +327,16 @@ void main() {
         newOffer: newOffer,
       );
 
-      final priceChange = changes.firstWhere((c) => c.fieldName == 'purchasePrice');
+      final priceChange =
+          changes.firstWhere((c) => c.fieldName == 'purchasePrice');
       expect(priceChange.fieldType, 'number');
 
-      final boolChange = changes.firstWhere((c) => c.fieldName == 'preApproval');
+      final boolChange =
+          changes.firstWhere((c) => c.fieldName == 'preApproval');
       expect(boolChange.fieldType, 'boolean');
 
-      final dateChange = changes.firstWhere((c) => c.fieldName == 'closingDate');
+      final dateChange =
+          changes.firstWhere((c) => c.fieldName == 'closingDate');
       expect(dateChange.fieldType, 'date');
 
       final stringChange = changes.firstWhere((c) => c.fieldName == 'loanType');
@@ -421,17 +424,19 @@ void main() {
 
   group('OfferRevisionType enum', () {
     test('should have all expected types', () {
-      expect(OfferRevisionType.values, containsAll([
-        OfferRevisionType.created,
-        OfferRevisionType.modified,
-        OfferRevisionType.statusChanged,
-        OfferRevisionType.countered,
-        OfferRevisionType.addendumChanged,
-        OfferRevisionType.documentChanged,
-        OfferRevisionType.agentAction,
-        OfferRevisionType.expired,
-        OfferRevisionType.closed,
-      ]));
+      expect(
+          OfferRevisionType.values,
+          containsAll([
+            OfferRevisionType.created,
+            OfferRevisionType.modified,
+            OfferRevisionType.statusChanged,
+            OfferRevisionType.countered,
+            OfferRevisionType.addendumChanged,
+            OfferRevisionType.documentChanged,
+            OfferRevisionType.agentAction,
+            OfferRevisionType.expired,
+            OfferRevisionType.closed,
+          ]));
     });
   });
 }

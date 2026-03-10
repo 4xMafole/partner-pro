@@ -6,7 +6,8 @@ import 'package:partner_pro/features/offer/data/datasources/offer_revision_datas
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_revision_repository.dart';
 
-class MockOfferRevisionDataSource extends Mock implements OfferRevisionDataSource {}
+class MockOfferRevisionDataSource extends Mock
+    implements OfferRevisionDataSource {}
 
 void main() {
   late MockOfferRevisionDataSource mockDatasource;
@@ -244,7 +245,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123', revisionNumber: 1);
       });
 
@@ -264,7 +266,8 @@ void main() {
           isTrue);
     });
 
-    test('should detect status change and set revisionType correctly', () async {
+    test('should detect status change and set revisionType correctly',
+        () async {
       final oldOffer = {'status': 'pending'};
       final newOffer = {'status': 'accepted'};
 
@@ -272,7 +275,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123');
       });
 
@@ -299,7 +303,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123');
       });
 
@@ -328,7 +333,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123');
       });
 
@@ -360,7 +366,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123');
       });
 
@@ -385,7 +392,8 @@ void main() {
             offerId: any(named: 'offerId'),
             revision: any(named: 'revision'),
           )).thenAnswer((invocation) async {
-        final revision = invocation.namedArguments[#revision] as OfferRevisionModel;
+        final revision =
+            invocation.namedArguments[#revision] as OfferRevisionModel;
         return revision.copyWith(id: 'rev123');
       });
 
