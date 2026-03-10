@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/models/offer_model.dart';
+import '../../data/models/offer_notification_model.dart';
 import '../../data/models/offer_revision_model.dart';
+import '../../data/repositories/offer_notification_repository.dart';
 import '../../data/repositories/offer_repository.dart';
 
 abstract class OfferEvent extends Equatable {
@@ -73,11 +75,55 @@ class UpdateOfferDraft extends OfferEvent {
 
 class ClearOfferDraft extends OfferEvent {}
 
+class LoadUserNotifications extends OfferEvent {
+  final String userId;
+  final bool? unreadOnly;
+  final int? limit;
+  const LoadUserNotifications({
+    required this.userId,
+    this.unreadOnly,
+    this.limit,
+  });
+  @override
+  List<Object?> get props => [userId, unreadOnly, limit];
+}
+
+class MarkNotificationAsRead extends OfferEvent {
+  final String userId;
+  final String notificationId;
+  const MarkNotificationAsRead({
+    required this.userId,
+    required this.notificationId,
+  });
+  @override
+  List<Object?> get props => [userId, notificationId];
+}
+
+class MarkAllNotificationsAsRead extends OfferEvent {
+  final String userId;
+  const MarkAllNotificationsAsRead({required this.userId});
+  @override
+  List<Object?> get props => [userId];
+}
+
+class DeleteNotification extends OfferEvent {
+  final String userId;
+  final String notificationId;
+  const DeleteNotification({
+    required this.userId,
+    required this.notificationId,
+  });
+  @override
+  List<Object?> get props => [userId, notificationId];
+}
+
 class OfferState extends Equatable {
   final bool isLoading, isSubmitting, hasChanges;
   final String? error, successMessage;
   final List<OfferModel> offers;
   final List<OfferRevisionModel> revisions;
+  final List<OfferNotificationModel> notifications;
+  final int unreadNotificationCount;
   final Map<String, dynamic> currentDraft;
   final List<String> changedFields;
 
@@ -88,6 +134,8 @@ class OfferState extends Equatable {
       this.successMessage,
       this.offers = const [],
       this.revisions = const [],
+      this.notifications = const [],
+      this.unreadNotificationCount = 0,
       this.currentDraft = const {},
       this.hasChanges = false,
       this.changedFields = const []});
@@ -99,6 +147,8 @@ class OfferState extends Equatable {
       String? successMessage,
       List<OfferModel>? offers,
       List<OfferRevisionModel>? revisions,
+      List<OfferNotificationModel>? notifications,
+      int? unreadNotificationCount,
       Map<String, dynamic>? currentDraft,
       bool? hasChanges,
       List<String>? changedFields}) {
@@ -109,6 +159,9 @@ class OfferState extends Equatable {
         successMessage: successMessage,
         offers: offers ?? this.offers,
         revisions: revisions ?? this.revisions,
+        notifications: notifications ?? this.notifications,
+        unreadNotificationCount:
+            unreadNotificationCount ?? this.unreadNotificationCount,
         currentDraft: currentDraft ?? this.currentDraft,
         hasChanges: hasChanges ?? this.hasChanges,
         changedFields: changedFields ?? this.changedFields);
@@ -122,6 +175,8 @@ class OfferState extends Equatable {
         successMessage,
         offers,
         revisions,
+        notifications,
+        unreadNotificationCount,
         currentDraft,
         hasChanges,
         changedFields
@@ -131,8 +186,10 @@ class OfferState extends Equatable {
 @injectable
 class OfferBloc extends Bloc<OfferEvent, OfferState> {
   final OfferRepository _repository;
+  final OfferNotificationRepository _notificationRepository;
 
-  OfferBloc(this._repository) : super(const OfferState()) {
+  OfferBloc(this._repository, this._notificationRepository)
+      : super(const OfferState()) {
     on<LoadUserOffers>(_onLoadUser);
     on<LoadAgentOffers>(_onLoadAgent);
     on<CreateOffer>(_onCreate);
@@ -141,6 +198,10 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     on<LoadOfferRevisions>(_onLoadRevisions);
     on<UpdateOfferDraft>(_onDraft);
     on<ClearOfferDraft>(_onClear);
+    on<LoadUserNotifications>(_onLoadNotifications);
+    on<MarkNotificationAsRead>(_onMarkAsRead);
+    on<MarkAllNotificationsAsRead>(_onMarkAllAsRead);
+    on<DeleteNotification>(_onDeleteNotification);
   }
 
   Future<void> _onLoadUser(LoadUserOffers e, Emitter<OfferState> emit) async {
@@ -207,5 +268,88 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
 
   void _onClear(ClearOfferDraft e, Emitter<OfferState> emit) {
     emit(state.copyWith(currentDraft: const {}, hasChanges: false));
+  }
+
+  Future<void> _onLoadNotifications(
+      LoadUserNotifications e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final result = await _notificationRepository.getUserNotifications(
+      userId: e.userId,
+      unreadOnly: e.unreadOnly,
+      limit: e.limit,
+    );
+    result.fold(
+      (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+      (notifications) {
+        final unreadCount = notifications.where((n) => !n.isRead).length;
+        emit(state.copyWith(
+          isLoading: false,
+          notifications: notifications,
+          unreadNotificationCount: unreadCount,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onMarkAsRead(
+      MarkNotificationAsRead e, Emitter<OfferState> emit) async {
+    final result = await _notificationRepository.markAsRead(
+      userId: e.userId,
+      notificationId: e.notificationId,
+    );
+    result.fold(
+      (f) => emit(state.copyWith(error: f.message)),
+      (_) {
+        final updatedNotifications = state.notifications.map((n) {
+          if (n.id == e.notificationId) {
+            return n.copyWith(isRead: true, readAt: DateTime.now());
+          }
+          return n;
+        }).toList();
+        final unreadCount = updatedNotifications.where((n) => !n.isRead).length;
+        emit(state.copyWith(
+          notifications: updatedNotifications,
+          unreadNotificationCount: unreadCount,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onMarkAllAsRead(
+      MarkAllNotificationsAsRead e, Emitter<OfferState> emit) async {
+    final result =
+        await _notificationRepository.markAllAsRead(userId: e.userId);
+    result.fold(
+      (f) => emit(state.copyWith(error: f.message)),
+      (_) {
+        final updatedNotifications = state.notifications.map((n) {
+          return n.copyWith(isRead: true, readAt: DateTime.now());
+        }).toList();
+        emit(state.copyWith(
+          notifications: updatedNotifications,
+          unreadNotificationCount: 0,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onDeleteNotification(
+      DeleteNotification e, Emitter<OfferState> emit) async {
+    final result = await _notificationRepository.deleteNotification(
+      userId: e.userId,
+      notificationId: e.notificationId,
+    );
+    result.fold(
+      (f) => emit(state.copyWith(error: f.message)),
+      (_) {
+        final updatedNotifications =
+            state.notifications.where((n) => n.id != e.notificationId).toList();
+        final unreadCount = updatedNotifications.where((n) => !n.isRead).length;
+        emit(state.copyWith(
+          notifications: updatedNotifications,
+          unreadNotificationCount: unreadCount,
+        ));
+      },
+    );
   }
 }

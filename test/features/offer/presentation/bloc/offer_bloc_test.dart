@@ -5,19 +5,26 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:partner_pro/core/error/failures.dart';
 import 'package:partner_pro/features/offer/data/models/offer_model.dart';
+import 'package:partner_pro/features/offer/data/models/offer_notification_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
+import 'package:partner_pro/features/offer/data/repositories/offer_notification_repository.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_repository.dart';
 import 'package:partner_pro/features/offer/presentation/bloc/offer_bloc.dart';
 
 class MockOfferRepository extends Mock implements OfferRepository {}
 
+class MockOfferNotificationRepository extends Mock
+    implements OfferNotificationRepository {}
+
 void main() {
   late MockOfferRepository repository;
+  late MockOfferNotificationRepository notificationRepository;
   late OfferBloc bloc;
 
   setUp(() {
     repository = MockOfferRepository();
-    bloc = OfferBloc(repository);
+    notificationRepository = MockOfferNotificationRepository();
+    bloc = OfferBloc(repository, notificationRepository);
   });
 
   tearDown(() {
@@ -131,6 +138,60 @@ void main() {
         isA<OfferState>()
             .having((s) => s.currentDraft, 'currentDraft', const {}).having(
                 (s) => s.hasChanges, 'hasChanges', false),
+      ],
+    );
+  });
+
+  group('OfferBloc Notifications', () {
+    final notification = OfferNotificationModel(
+      id: 'n1',
+      recipientUserId: 'u1',
+      actorUserId: 'u2',
+      offerId: 'offer_1',
+      title: 'Offer Updated',
+      message: 'The offer status changed to pending.',
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    blocTest<OfferBloc, OfferState>(
+      'loads notifications and unread count',
+      build: () {
+        when(() => notificationRepository.getUserNotifications(
+              userId: 'u1',
+              unreadOnly: null,
+              limit: null,
+            )).thenAnswer((_) async => Right([notification]));
+        return bloc;
+      },
+      act: (b) => b.add(const LoadUserNotifications(userId: 'u1')),
+      expect: () => [
+        isA<OfferState>()
+            .having((s) => s.isLoading, 'isLoading', true)
+            .having((s) => s.error, 'error', null),
+        isA<OfferState>()
+            .having((s) => s.isLoading, 'isLoading', false)
+            .having((s) => s.notifications.length, 'notifications length', 1)
+            .having((s) => s.unreadNotificationCount, 'unread count', 1),
+      ],
+    );
+
+    blocTest<OfferBloc, OfferState>(
+      'marks notification as read and updates unread count',
+      build: () {
+        when(() => notificationRepository.markAsRead(
+              userId: 'u1',
+              notificationId: 'n1',
+            )).thenAnswer((_) async => const Right(null));
+        return bloc;
+      },
+      seed: () =>
+          OfferState(notifications: [notification], unreadNotificationCount: 1),
+      act: (b) => b.add(
+          const MarkNotificationAsRead(userId: 'u1', notificationId: 'n1')),
+      expect: () => [
+        isA<OfferState>()
+            .having((s) => s.notifications.first.isRead, 'isRead', true)
+            .having((s) => s.unreadNotificationCount, 'unread count', 0),
       ],
     );
   });
