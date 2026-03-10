@@ -3,7 +3,8 @@ import 'package:injectable/injectable.dart';
 
 import '../models/offer_notification_model.dart';
 
-typedef ExternalSmsSender = Future<bool> Function(SMSNotificationContent content);
+typedef ExternalSmsSender = Future<bool> Function(
+    SMSNotificationContent content);
 
 /// Service for sending SMS notifications
 /// Integrates with Twilio API or similar SMS provider

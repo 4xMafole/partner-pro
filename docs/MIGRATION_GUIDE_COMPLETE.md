@@ -260,9 +260,10 @@ firestore/
 ### Phase 2: Core Feature Migration (Weeks 5-12)
 
 **Platform Readiness Note (March 10, 2026):**
-- Spark plan upgrade confirmed, so Firebase Cloud Functions implementation can proceed in this phase.
+- Spark plan is planned but not active yet; Cloud Functions production deployment is queued for plan activation.
 - Notification integrations are intentionally provider-open (email/SMS adapters) until final vendor selection.
-- Service contracts are kept stable so once provider credentials are added, behavior remains seamless without refactoring call sites.
+- Plan activation and provider selection will be executed together so Cloud Functions and external messaging go live hand in hand.
+- Service contracts are kept stable so once plan and provider credentials are added, behavior remains seamless without refactoring call sites.
 **Effort:** 3-4 developers, 6-8 weeks, $120-160K  
 **Goal:** Migrate critical user-facing features to new architecture
 

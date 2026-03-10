@@ -26,7 +26,9 @@ void main() {
       );
     });
 
-    test('EmailNotificationService uses local fallback when external sender is not configured', () async {
+    test(
+        'EmailNotificationService uses local fallback when external sender is not configured',
+        () async {
       final firestore = createTestFirestore();
       final service = EmailNotificationService(firestore);
 
