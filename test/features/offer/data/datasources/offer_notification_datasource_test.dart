@@ -69,7 +69,8 @@ void main() {
         ),
       );
 
-      final notifications = await datasource.getUserNotifications(userId: userId);
+      final notifications =
+          await datasource.getUserNotifications(userId: userId);
 
       expect(notifications.length, 2);
     });
@@ -173,7 +174,8 @@ void main() {
       expect(count, 2);
     });
 
-    test('getOfferNotifications returns notifications for specific offer', () async {
+    test('getOfferNotifications returns notifications for specific offer',
+        () async {
       final offerId1 = 'offer_1';
       final offerId2 = 'offer_2';
 
@@ -233,7 +235,8 @@ void main() {
       expect(found?.offerId, offerId);
     });
 
-    test('getNotificationById returns null for nonexistent notification', () async {
+    test('getNotificationById returns null for nonexistent notification',
+        () async {
       final found = await datasource.getNotificationById(
         userId: userId,
         notificationId: 'nonexistent_123',

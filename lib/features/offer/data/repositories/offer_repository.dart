@@ -7,15 +7,18 @@ import '../../../../core/error/failures.dart';
 import '../../domain/validators/offer_status_transition.dart';
 import '../datasources/offer_remote_datasource.dart';
 import '../models/offer_model.dart';
+import '../models/offer_notification_model.dart';
 import '../models/offer_revision_model.dart';
+import 'offer_notification_repository.dart';
 import 'offer_revision_repository.dart';
 
 @lazySingleton
 class OfferRepository {
   final OfferRemoteDataSource _remote;
   final OfferRevisionRepository _revisionRepo;
+  final OfferNotificationRepository _notificationRepo;
 
-  OfferRepository(this._remote, this._revisionRepo);
+  OfferRepository(this._remote, this._revisionRepo, this._notificationRepo);
 
   Future<Either<Failure, List<OfferModel>>> getUserOffers({
     required String requesterId,
@@ -62,6 +65,15 @@ class OfferRepository {
     try {
       final result = await _remote.createOffer(
           offerData: offerData, requesterId: requesterId);
+
+      await _createNotificationsForChange(
+        offerBefore: null,
+        offerAfter: result,
+        actorUserId: requesterId,
+        actorName: 'User $requesterId',
+        revisionCreated: false,
+      );
+
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
@@ -158,6 +170,14 @@ class OfferRepository {
           changeNotes: changeNotes,
         );
       }
+
+      await _createNotificationsForChange(
+        offerBefore: oldOfferState,
+        offerAfter: result,
+        actorUserId: requesterId,
+        actorName: requestorName.isEmpty ? 'User $requesterId' : requestorName,
+        revisionCreated: trackRevision,
+      );
 
       return Right(result);
     } on ServerException catch (e) {
@@ -394,5 +414,98 @@ class OfferRepository {
       default:
         return null;
     }
+  }
+
+  Future<void> _createNotificationsForChange({
+    required Map<String, dynamic>? offerBefore,
+    required Map<String, dynamic> offerAfter,
+    required String actorUserId,
+    required String actorName,
+    required bool revisionCreated,
+  }) async {
+    try {
+      final recipients = _extractRecipientUserIds(offerAfter, actorUserId);
+      if (recipients.isEmpty) return;
+
+      final offerId =
+          offerAfter['offerID'] as String? ?? offerAfter['id'] as String? ?? '';
+      if (offerId.isEmpty) return;
+
+      final addressMap = (offerAfter['property'] as Map<String, dynamic>? ??
+              {})['address'] as Map<String, dynamic>? ??
+          {};
+      final propertyAddress = [
+        addressMap['street_number'],
+        addressMap['street_name'],
+        addressMap['city'],
+      ].whereType<String>().where((s) => s.trim().isNotEmpty).join(' ');
+
+      final oldStatus = _parseStatus(offerBefore?['status']);
+      final newStatus = _parseStatus(offerAfter['status']);
+      final statusChanged =
+          oldStatus != null && newStatus != null && oldStatus != newStatus;
+
+      for (final userId in recipients) {
+        if (statusChanged) {
+          final statusName = newStatus.name;
+          await _notificationRepo.createNotification(
+            recipientUserId: userId,
+            notification: OfferNotificationModel(
+              recipientUserId: userId,
+              actorUserId: actorUserId,
+              actorName: actorName,
+              type: OfferNotificationType.statusChanged,
+              offerId: offerId,
+              propertyAddress: propertyAddress,
+              title: 'Offer Status Updated',
+              message: 'Offer is now $statusName.',
+              createdAt: DateTime.now(),
+              actionTarget: 'offer/$offerId',
+              metadata: {
+                'oldStatus': oldStatus.name,
+                'newStatus': statusName,
+              },
+            ),
+          );
+        }
+
+        if (revisionCreated) {
+          await _notificationRepo.createNotification(
+            recipientUserId: userId,
+            notification: OfferNotificationModel(
+              recipientUserId: userId,
+              actorUserId: actorUserId,
+              actorName: actorName,
+              type: OfferNotificationType.revisionCreated,
+              offerId: offerId,
+              propertyAddress: propertyAddress,
+              title: 'Offer Updated',
+              message: 'A new revision was added to this offer.',
+              createdAt: DateTime.now(),
+              actionTarget: 'offer/$offerId',
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      // Notification delivery should not block core offer operations.
+    }
+  }
+
+  Set<String> _extractRecipientUserIds(
+    Map<String, dynamic> offerData,
+    String actorUserId,
+  ) {
+    final parties = offerData['parties'] as Map<String, dynamic>? ?? {};
+    final ids = <String>{};
+
+    for (final role in ['buyer', 'seller', 'agent', 'second_buyer']) {
+      final party = parties[role] as Map<String, dynamic>?;
+      final id = party?['id'] as String?;
+      if (id != null && id.isNotEmpty && id != actorUserId) {
+        ids.add(id);
+      }
+    }
+    return ids;
   }
 }
