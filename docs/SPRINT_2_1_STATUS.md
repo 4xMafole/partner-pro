@@ -22,6 +22,14 @@ Sprint 2.1 target from `docs/MIGRATION_GUIDE_COMPLETE.md`:
 - Added revision loading and comparison support in presentation layer:
   - `lib/features/offer/presentation/bloc/offer_bloc.dart`
   - `lib/features/offer/presentation/pages/offer_details_page.dart`
+- **✅ Implemented in-app notification system (Firestore v1)**:
+  - `lib/features/offer/data/models/offer_notification_model.dart` (Freezed model)
+  - `lib/features/offer/data/datasources/offer_notification_datasource.dart` (Firestore subcollection ops)
+  - `lib/features/offer/data/repositories/offer_notification_repository.dart` (Error handling wrapper)
+  - Extended `lib/features/offer/presentation/bloc/offer_bloc.dart` with notification state/events
+  - Notifications stored in `users/{userId}/notifications/{id}` subcollection
+  - Real-time stream support + mark-as-read functionality
+  - Unread notification count tracking in bloc state
 
 ### Test Coverage
 - Added/updated comprehensive offer test coverage:
@@ -32,53 +40,75 @@ Sprint 2.1 target from `docs/MIGRATION_GUIDE_COMPLETE.md`:
   - `test/features/offer/presentation/pages/offer_details_page_test.dart`
 - Status transition validation test suite (347 lines, all scenarios covered)
 - 39+ comprehensive revision system unit tests
+- **✅ 9 notification datasource unit tests** (all passing):
+  - `test/features/offer/data/datasources/offer_notification_datasource_test.dart`
+  - Coverage: CRUD, filtering, unread counts, offer-specific queries
 
 ## Remaining To Finish Sprint 2.1
 
-### 1. Implement In-App Notification System (Firestore v1)
-This is the core completable path for Sprint 2.1 without external dependencies.
+### 1. Integrate Notification Triggers into Offer Lifecycle ⏳
+The data layer is complete; now integrate notifications into existing offer operations:
 
-**Data Model:**
-- Create `users/{userId}/notifications/{notificationId}` subcollection
-- Fields per notification:
-  - `type` (enum: offer_submitted, offer_accepted, offer_declined, revision_created, counter_proposed)
-  - `title`, `message`, `offerId`, `actorUserId`, `recipientUserId`
-  - `createdAt`, `isRead`, `readAt` (for mark-as-read state)
+**Integration Points:**
+- `updateOffer()` in repository: On status change → create notification for affected users
+- `createRevision()` in repository: On revision creation → notify stakeholders
+- Define notification type mapping:
+  - Draft created → internal log (no notification)
+  - Status → Pending → notify buyer/agent
+  - Pending → Accepted/Declined → notify all parties
+  - Revision created → notify interested parties
 
-**Implementation:**
-1. Create `OfferNotificationModel` (Freezed) with above fields
-2. Add notification write helper in `OfferRevisionRepository`:
-   - Trigger on offer status change (via `updateOffer` hook)
-   - Trigger on revision creation
-3. Add repository method: `createNotification(userId, type, offerId, ...)`
-4. Build UI:
-   - Notifications page with unread badge
-   - Real-time stream from `users/{currentUserId}/notifications`
-   - Mark-as-read action + bulk mark-all-read
-   - Tapping notification navigates to offer details
-5. Add tests:
-   - Repository tests for notification document creation
-   - Widget tests for unread badge, list rendering, mark-as-read
-   - E2E: submit offer → recipient sees in-app notification → opens offer
+**Files to Update:**
+- `lib/features/offer/data/repositories/offer_repository.dart` (add notification creation calls)
+- Ensure notification model metadata fields captured (actorName, propertyAddress for quick UI display)
 
-### 2. Run Sprint Acceptance Validation
-- End-to-end offer flow with in-app notifications
-- Coverage and regression checks on mainline CI after merge
+### 2. Build Notification UI Layer ⏳ 
+Create user-facing notification features:
 
-### 3. Defer to Future Sprint (Phase 2)
-Cloud Functions, Email/SMS Providers, Push Dispatch:
+**Notifications Page:**
+- `lib/features/offer/presentation/pages/notifications_page.dart`
+- Real-time list from `streamUserNotifications` with latest first
+- Unread badge count from `unreadNotificationCount` in bloc state
+- Tap notification → navigate to offer details page
+- Mark-as-read action (single + bulk via "Mark All Read" CTA)
+- Delete action for old notifications
+
+**Unread Badge (Navigation/App Bar):**
+- Display unread count in app navigation/bottom nav
+- Reset count when navigating to notifications page
+
+**Tests:**
+- Widget tests for notification list rendering, unread badge
+- Widget tests for mark-as-read and delete interactions
+- E2E test: submit offer → receive notification → open offer (full user flow)
+
+### 3. Run Sprint Acceptance Validation ⏳
+- Full offer lifecycle with notifications:
+  - Submit offer → verify notification appears in recipient list
+  - Accept/decline offer → verify notifications reach all parties
+  - Multiple users → check isolation (each sees only their own notifications)
+- Regression checks: existing offer tests still pass
+- CI coverage gates: maintain ≥70% coverage on offer module
+
+### 4. Update Sprint 2.1 Documentation ⏳
+- Add implementation checklist to this status document
+- Mark all feature implementations as "COMPLETE" once integration done
+- Update [docs/MIGRATION_GUIDE_COMPLETE.md](migration-guide) with success criteria met
+
+## Defer to Future Sprint (Phase 2)
+Cloud Functions, Email/SMS Providers, Push Dispatch remain deferred:
 - Email: Firestore-triggered Cloud Functions + template system
 - SMS: SMS provider integration (Twilio, AWS SNS, etc.)
 - Push: FCM server dispatch (Firebase Admin SDK)
-- These remain available for Phase 2 implementation without UI rework
-
-### 4. Update Sprint 2.1 Documentation
-- Mark completion criteria as in-app notifications delivered
-- Add non-goals section clarifying phase boundaries
-- Update migration checklist
+- **Decision Rationale**: Closes Sprint 2.1 with in-app notifications without infrastructure blockers. Phase 2 team can add external channels without UI rework using same notification model.
 
 ## Notes
-- Latest related branch commits include:
+- Latest related commits include:
+  - `02842e0` Sprint 2.1 completion strategy (in-app v1 + deferred Cloud Functions/Email/SMS)
+  - `1228d36` Implement in-app notification system v1 (model, datasource, repository, bloc)
+  - `fcadfa7` Add notification datasource unit tests (9 tests, all passing)
   - `bb6042f` fix for CI analyzer blocker in offer details page
   - `904ab35` widget test coverage for revision comparison flow
-- Local workspace was cleaned of generated artifacts (`coverage/lcov.info` and `devtools_options.yaml`) before this status update.
+- Local workspace is clean; all generated artifacts removed before last push
+- Notification system ready for UI integration and lifecycle hooks
+- Phase 2 deferral decision enables Sprint 2.1 closure without external infra blockers
