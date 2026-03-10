@@ -30,7 +30,7 @@ order: 10
 |--------|-------|--------|------|---------|
 | **2.1** | Offer Complete Migration | ✅ Scoped Complete | Mar 10, 2026 | Core offer lifecycle, in-app notifications, revisions |
 | **2.2** | Offer Hardening | ⏳ Next | — | External notifications, device-level integration tests |
-| **2.3** | Property Management | ⏳ Pending | — | Migrating property system and relations |
+| **2.3** | Property Management | ⏳ Pending | — | Buyer-agent property search, alerts, and offer linkage |
 | **2.4** | User & Relationship | ⏳ Pending | — | CRM, favorites, active client tracking |
 
 **Phase 2 Progress:** 1 of 4 sprints complete (2.1 closed, 2.2 starting)
@@ -311,10 +311,10 @@ firestore/
 
 ---
 
-#### Sprint 2.3: Property Management System (Pending)
+#### Sprint 2.3: Property Management System (Pending, Buyer-Agent Scope)
 
-**Current State:** 30% migrated (model done, queries pending)  
-**Target State:** 95% migrated (admin tools phase 3)
+**Current State:** 30% migrated (models done, query and alert pipelines pending)  
+**Target State:** 95% migrated for buyer-agent property workflows (seller surfaces out of scope)
 
 **Tasks:**
 - [ ] Complete property search & filtering
@@ -322,30 +322,33 @@ firestore/
   - Add saved searches feature
   - Create search result caching
   - Optimize queries with Firestore indexes
-- [ ] Migrate seller property management
-  - Create property CRUD in new architecture
+- [ ] Complete agent-managed property lifecycle in new architecture
+  - Create property CRUD for listing-agent managed inventory
   - Implement photo upload & management
   - Add property status transitions
-  - Test with real seller workflows
+  - Test with real buyer-agent workflows
 - [ ] Implement property alerts system
   - New property alert when added
   - Price change alerts
-  - Status change alerts (pending → sold)
-  - Real-time notification delivery
+  - Status change alerts (active -> pending -> sold)
+  - Real-time notification delivery to buyer and agent subscribers
 - [ ] Migrate property-offer relationship handling
   - Multiple offers per property
   - Show pending/accepted offers
   - Display offer history
+  - Hydrate seller details from property listing metadata when attaching property to offer
 
 **Deliverables:**
-- Property search & management system
-- Real-time alerts
+- Buyer-agent property search and management system
+- Real-time buyer-agent property alerts
+- Property-offer linkage with listing-derived seller metadata
 - Test suite (80+ tests)
 
 **Success Criteria:**
 - ✅ Search returns results in <500ms
 - ✅ Property data fully synchronized
 - ✅ Alerts delivered within 2 seconds
+- ✅ Offer seller fields resolve from property/listing source without seller-owned workflows
 
 ---
 
