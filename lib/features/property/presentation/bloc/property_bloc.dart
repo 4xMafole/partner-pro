@@ -14,16 +14,32 @@ abstract class PropertyEvent extends Equatable {
 class LoadProperties extends PropertyEvent {
   final String requesterId;
   final String? zipCode, city, state, homeType, statusType;
+  final int? minPrice, maxPrice, minBeds, maxBeds;
   const LoadProperties(
       {required this.requesterId,
       this.zipCode,
       this.city,
       this.state,
       this.homeType,
-      this.statusType});
+      this.statusType,
+      this.minPrice,
+      this.maxPrice,
+      this.minBeds,
+      this.maxBeds});
   @override
   List<Object?> get props =>
-      [requesterId, zipCode, city, state, homeType, statusType];
+      [
+        requesterId,
+        zipCode,
+        city,
+        state,
+        homeType,
+        statusType,
+        minPrice,
+        maxPrice,
+        minBeds,
+        maxBeds,
+      ];
 }
 
 class LoadPropertiesByZip extends PropertyEvent {
@@ -235,7 +251,11 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         city: event.city,
         state: event.state,
         homeType: event.homeType,
-        statusType: event.statusType);
+      statusType: event.statusType,
+      minPrice: event.minPrice,
+      maxPrice: event.maxPrice,
+      minBeds: event.minBeds,
+      maxBeds: event.maxBeds);
     r.fold(
         (f) => emit(state.copyWith(isLoading: false, error: f.message)),
         (props) => emit(state.copyWith(

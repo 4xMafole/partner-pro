@@ -9,6 +9,9 @@ import '../models/property_model.dart';
 @lazySingleton
 class PropertyRepository {
   final PropertyRemoteDataSource _remote;
+  final Map<String, _PropertySearchCacheEntry> _searchCache = {};
+
+  static const Duration _cacheTtl = Duration(seconds: 30);
 
   PropertyRepository(this._remote);
 
@@ -19,8 +22,30 @@ class PropertyRepository {
     String? state,
     String? homeType,
     String? statusType,
+    int? minPrice,
+    int? maxPrice,
+    int? minBeds,
+    int? maxBeds,
   }) async {
     try {
+      final cacheKey = _buildSearchCacheKey(
+        zipCode: zipCode,
+        city: city,
+        state: state,
+        homeType: homeType,
+        statusType: statusType,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        minBeds: minBeds,
+        maxBeds: maxBeds,
+      );
+
+      final now = DateTime.now();
+      final cacheEntry = _searchCache[cacheKey];
+      if (cacheEntry != null && now.difference(cacheEntry.cachedAt) < _cacheTtl) {
+        return Right(cacheEntry.properties);
+      }
+
       final data = await _remote.getAllProperties(
         requesterId: requesterId,
         zip: zipCode,
@@ -28,7 +53,17 @@ class PropertyRepository {
         state: state,
         homeType: homeType,
         statusType: statusType,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        minBeds: minBeds,
+        maxBeds: maxBeds,
       );
+
+      _searchCache[cacheKey] = _PropertySearchCacheEntry(
+        properties: data,
+        cachedAt: now,
+      );
+
       return Right(data);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
@@ -232,4 +267,38 @@ class PropertyRepository {
       return Left(ServerFailure(message: e.toString()));
     }
   }
+
+  String _buildSearchCacheKey({
+    String? zipCode,
+    String? city,
+    String? state,
+    String? homeType,
+    String? statusType,
+    int? minPrice,
+    int? maxPrice,
+    int? minBeds,
+    int? maxBeds,
+  }) {
+    return [
+      zipCode ?? '',
+      city ?? '',
+      state ?? '',
+      homeType ?? '',
+      statusType ?? '',
+      minPrice?.toString() ?? '',
+      maxPrice?.toString() ?? '',
+      minBeds?.toString() ?? '',
+      maxBeds?.toString() ?? '',
+    ].join('|');
+  }
+}
+
+class _PropertySearchCacheEntry {
+  final List<PropertyDataClass> properties;
+  final DateTime cachedAt;
+
+  _PropertySearchCacheEntry({
+    required this.properties,
+    required this.cachedAt,
+  });
 }

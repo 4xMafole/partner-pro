@@ -22,6 +22,10 @@ class PropertyRemoteDataSource {
     String? state,
     String? homeType,
     String? statusType,
+    int? minPrice,
+    int? maxPrice,
+    int? minBeds,
+    int? maxBeds,
     bool? isPendingUnderContract,
     bool? zillowProperties,
   }) async {
@@ -50,6 +54,19 @@ class PropertyRemoteDataSource {
     if (isPendingUnderContract != null) {
       query = query.where('isPendingUnderContract',
           isEqualTo: isPendingUnderContract);
+    }
+
+    if (minPrice != null) {
+      query = query.where('listPrice', isGreaterThanOrEqualTo: minPrice);
+    }
+    if (maxPrice != null) {
+      query = query.where('listPrice', isLessThanOrEqualTo: maxPrice);
+    }
+    if (minBeds != null) {
+      query = query.where('bedrooms', isGreaterThanOrEqualTo: minBeds);
+    }
+    if (maxBeds != null) {
+      query = query.where('bedrooms', isLessThanOrEqualTo: maxBeds);
     }
 
     final snap = await query.limit(AppConstants.defaultPageSize).get();
