@@ -54,15 +54,6 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   OverlayEntry? _overlayEntry;
   final GoogleMapsService _mapsService = GoogleMapsService();
 
-  static const _homeTypeOptions = [
-    'Houses',
-    'Condos',
-    'Townhomes',
-    'Multi-family',
-    'Apartments',
-    'Manufactured',
-  ];
-
   /// Popular cities with seed data for quick-search chips.
   static const _suggestedCities = [
     'Dallas',
@@ -253,6 +244,16 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             city: _locationCity,
             state: _locationState,
             statusType: _statusType == 'Sold' ? 'Sold' : null,
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
           ));
     } else {
       final isZip = RegExp(r'^\d{5}$').hasMatch(query.trim());
@@ -261,6 +262,16 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             zipCode: isZip ? query.trim() : null,
             city: isZip ? null : query.trim(),
             statusType: _statusType == 'Sold' ? 'Sold' : null,
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
           ));
     }
   }
@@ -289,6 +300,16 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
               : (_isFallbackLoad ? null : _locationCity),
           state: query.isEmpty && !_isFallbackLoad ? _locationState : null,
           statusType: status == 'Sold' ? 'Sold' : null,
+        minPrice: _activeMinPrice,
+        maxPrice: _activeMaxPrice,
+        minBeds: _activeMinBeds,
+        minBaths: _activeMinBaths,
+        minSquareFeet: _activeMinSqft,
+        maxSquareFeet: _activeMaxSqft,
+        minYearBuilt: _activeMinYear,
+        maxYearBuilt: _activeMaxYear,
+        homeTypes:
+          _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
         ));
   }
 
@@ -297,12 +318,34 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
     if (a is! AuthAuthenticated) return;
     final uid = a.user.uid;
     if (_isFallbackLoad) {
-      context.read<PropertyBloc>().add(LoadProperties(requesterId: uid));
+      context.read<PropertyBloc>().add(LoadProperties(
+            requesterId: uid,
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+          ));
     } else {
       context.read<PropertyBloc>().add(LoadProperties(
             requesterId: uid,
             city: _locationCity,
             state: _locationState,
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
           ));
     }
   }
@@ -372,17 +415,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
               ..addAll(homeTypes ?? []);
           });
 
-          context.read<PropertyBloc>().add(ApplyFilter(
-                minPrice: minPrice,
-                maxPrice: maxPrice,
-                minBeds: minBeds,
-                minBaths: minBaths,
-                minSquareFeet: minSquareFeet,
-                maxSquareFeet: maxSquareFeet,
-                minYearBuilt: minYearBuilt,
-                maxYearBuilt: maxYearBuilt,
-                homeTypes: homeTypes,
-              ));
+              _search(_searchController.text.trim());
         },
         onClear: () {
           setState(() {
@@ -393,8 +426,54 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             _yearRange = const RangeValues(1900, 2025);
             _selectedHomeTypes.clear();
           });
-          context.read<PropertyBloc>().add(ClearFilter());
+          _search(_searchController.text.trim());
         },
+      ),
+    );
+  }
+
+  Widget _buildActiveFiltersBar() {
+    final labels = _activeFilterLabels();
+    if (labels.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 34.h,
+      child: ListView.separated(
+        padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 6.h),
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (_, i) {
+          if (i == labels.length) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _priceRange = const RangeValues(0, 5000000);
+                  _minBeds = 0;
+                  _minBaths = 0;
+                  _sqftRange = const RangeValues(0, 10000);
+                  _yearRange = const RangeValues(1900, 2025);
+                  _selectedHomeTypes.clear();
+                });
+                _search(_searchController.text.trim());
+              },
+              child: Chip(
+                label: Text('Clear',
+                    style: AppTypography.labelSmall
+                        .copyWith(color: AppColors.error)),
+                side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
+                backgroundColor: AppColors.error.withValues(alpha: 0.06),
+              ),
+            );
+          }
+
+          return Chip(
+            label: Text(labels[i], style: AppTypography.labelSmall),
+            side: BorderSide(color: AppColors.border),
+            backgroundColor: AppColors.surface,
+            visualDensity: VisualDensity.compact,
+          );
+        },
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemCount: labels.length + 1,
       ),
     );
   }
@@ -421,6 +500,52 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
     return 'Listed ${days ~/ 365}yr ago';
   }
 
+  int? get _activeMinPrice => _priceRange.start > 0 ? _priceRange.start.toInt() : null;
+  int? get _activeMaxPrice => _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
+  int? get _activeMinBeds => _minBeds > 0 ? _minBeds : null;
+  int? get _activeMinBaths => _minBaths > 0 ? _minBaths : null;
+  int? get _activeMinSqft => _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
+  int? get _activeMaxSqft => _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
+  int? get _activeMinYear => _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
+  int? get _activeMaxYear => _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
+
+  bool get _hasActiveAdvancedFilters {
+    return _activeMinPrice != null ||
+        _activeMaxPrice != null ||
+        _activeMinBeds != null ||
+        _activeMinBaths != null ||
+        _activeMinSqft != null ||
+        _activeMaxSqft != null ||
+        _activeMinYear != null ||
+        _activeMaxYear != null ||
+        _selectedHomeTypes.isNotEmpty;
+  }
+
+  List<String> _activeFilterLabels() {
+    final labels = <String>[];
+    if (_activeMinPrice != null || _activeMaxPrice != null) {
+      final low = _activeMinPrice ?? 0;
+      final high = _activeMaxPrice ?? 5000000;
+      labels.add('Price ${_fmtCompact(low)}-${_fmtCompact(high)}');
+    }
+    if (_activeMinBeds != null) labels.add('Beds ${_activeMinBeds}+');
+    if (_activeMinBaths != null) labels.add('Baths ${_activeMinBaths}+');
+    if (_activeMinSqft != null || _activeMaxSqft != null) {
+      final low = _activeMinSqft ?? 0;
+      final high = _activeMaxSqft ?? 10000;
+      labels.add('Sqft ${_fmtCompact(low)}-${_fmtCompact(high)}');
+    }
+    if (_activeMinYear != null || _activeMaxYear != null) {
+      final low = _activeMinYear ?? 1900;
+      final high = _activeMaxYear ?? 2025;
+      labels.add('Year $low-$high');
+    }
+    if (_selectedHomeTypes.isNotEmpty) {
+      labels.add('Types ${_selectedHomeTypes.length}');
+    }
+    return labels;
+  }
+
   // ─── build ───────────────────────────────────────────────────────────
 
   @override
@@ -444,6 +569,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             _buildHeader(),
             _buildSearchBar(),
             _buildToolBar(),
+            if (_hasActiveAdvancedFilters) _buildActiveFiltersBar(),
             Expanded(child: _buildContent()),
           ]),
         ),

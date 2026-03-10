@@ -14,7 +14,17 @@ abstract class PropertyEvent extends Equatable {
 class LoadProperties extends PropertyEvent {
   final String requesterId;
   final String? zipCode, city, state, homeType, statusType;
-  final int? minPrice, maxPrice, minBeds, maxBeds;
+  final int? minPrice,
+      maxPrice,
+      minBeds,
+      maxBeds,
+      minBaths,
+      maxBaths,
+      minSquareFeet,
+      maxSquareFeet,
+      minYearBuilt,
+      maxYearBuilt;
+  final List<String>? homeTypes;
   const LoadProperties(
       {required this.requesterId,
       this.zipCode,
@@ -25,7 +35,14 @@ class LoadProperties extends PropertyEvent {
       this.minPrice,
       this.maxPrice,
       this.minBeds,
-      this.maxBeds});
+      this.maxBeds,
+      this.minBaths,
+      this.maxBaths,
+      this.minSquareFeet,
+      this.maxSquareFeet,
+      this.minYearBuilt,
+      this.maxYearBuilt,
+      this.homeTypes});
   @override
   List<Object?> get props =>
       [
@@ -39,6 +56,13 @@ class LoadProperties extends PropertyEvent {
         maxPrice,
         minBeds,
         maxBeds,
+        minBaths,
+        maxBaths,
+        minSquareFeet,
+        maxSquareFeet,
+        minYearBuilt,
+        maxYearBuilt,
+        homeTypes,
       ];
 }
 
@@ -251,18 +275,53 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         city: event.city,
         state: event.state,
         homeType: event.homeType,
-      statusType: event.statusType,
-      minPrice: event.minPrice,
-      maxPrice: event.maxPrice,
-      minBeds: event.minBeds,
-      maxBeds: event.maxBeds);
+        statusType: event.statusType,
+        minPrice: event.minPrice,
+        maxPrice: event.maxPrice,
+        minBeds: event.minBeds,
+        maxBeds: event.maxBeds);
     r.fold(
         (f) => emit(state.copyWith(isLoading: false, error: f.message)),
-        (props) => emit(state.copyWith(
+        (props) {
+          final hasFilters = _hasAnyFilters(event);
+          final filtered = hasFilters
+              ? _repository.filterProperties(
+                  properties: props,
+                  minPrice: event.minPrice,
+                  maxPrice: event.maxPrice,
+                  minBeds: event.minBeds,
+                  maxBeds: event.maxBeds,
+                  minBaths: event.minBaths,
+                  maxBaths: event.maxBaths,
+                  minSquareFeet: event.minSquareFeet,
+                  maxSquareFeet: event.maxSquareFeet,
+                  minYearBuilt: event.minYearBuilt,
+                  maxYearBuilt: event.maxYearBuilt,
+                  homeTypes: event.homeTypes,
+                )
+              : props;
+
+          emit(state.copyWith(
             isLoading: false,
             allProperties: props,
-            filteredProperties: props,
-            isFilterActive: false)));
+            filteredProperties: filtered,
+            isFilterActive: hasFilters,
+          ));
+        });
+  }
+
+  bool _hasAnyFilters(LoadProperties event) {
+    return event.minPrice != null ||
+        event.maxPrice != null ||
+        event.minBeds != null ||
+        event.maxBeds != null ||
+        event.minBaths != null ||
+        event.maxBaths != null ||
+        event.minSquareFeet != null ||
+        event.maxSquareFeet != null ||
+        event.minYearBuilt != null ||
+        event.maxYearBuilt != null ||
+        (event.homeTypes != null && event.homeTypes!.isNotEmpty);
   }
 
   Future<void> _onLoadByZip(

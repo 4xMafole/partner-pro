@@ -10,6 +10,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
+import '../../../buyer/presentation/widgets/property_filter_sheet.dart';
 
 class AgentSearchPage extends StatefulWidget {
   const AgentSearchPage({super.key});
@@ -19,6 +20,21 @@ class AgentSearchPage extends StatefulWidget {
 
 class _AgentSearchPageState extends State<AgentSearchPage> {
   final _searchController = TextEditingController();
+  RangeValues _priceRange = const RangeValues(0, 5000000);
+  int _minBeds = 0;
+  int _minBaths = 0;
+  RangeValues _sqftRange = const RangeValues(0, 10000);
+  RangeValues _yearRange = const RangeValues(1900, 2025);
+  final Set<String> _selectedHomeTypes = {};
+
+  int? get _activeMinPrice => _priceRange.start > 0 ? _priceRange.start.toInt() : null;
+  int? get _activeMaxPrice => _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
+  int? get _activeMinBeds => _minBeds > 0 ? _minBeds : null;
+  int? get _activeMinBaths => _minBaths > 0 ? _minBaths : null;
+  int? get _activeMinSqft => _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
+  int? get _activeMaxSqft => _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
+  int? get _activeMinYear => _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
+  int? get _activeMaxYear => _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
 
   @override
   void initState() {
@@ -28,7 +44,7 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
       if (a is AuthAuthenticated) {
         context
             .read<PropertyBloc>()
-            .add(LoadProperties(requesterId: a.user.uid ?? ''));
+        .add(LoadProperties(requesterId: a.user.uid));
       }
     });
   }
@@ -42,15 +58,103 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
   void _search(String query) {
     final a = context.read<AuthBloc>().state;
     if (a is! AuthAuthenticated) return;
-    final uid = a.user.uid ?? '';
+    final uid = a.user.uid;
     if (query.isEmpty) {
       context.read<PropertyBloc>().add(ClearFilter());
-      context.read<PropertyBloc>().add(LoadProperties(requesterId: uid));
+      context.read<PropertyBloc>().add(LoadProperties(
+            requesterId: uid,
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+          ));
     } else {
-      context
-          .read<PropertyBloc>()
-          .add(LoadProperties(requesterId: uid, zipCode: query, city: query));
+      final isZip = RegExp(r'^\d{5}$').hasMatch(query.trim());
+      context.read<PropertyBloc>().add(LoadProperties(
+            requesterId: uid,
+            zipCode: isZip ? query.trim() : null,
+            city: isZip ? null : query.trim(),
+            minPrice: _activeMinPrice,
+            maxPrice: _activeMaxPrice,
+            minBeds: _activeMinBeds,
+            minBaths: _activeMinBaths,
+            minSquareFeet: _activeMinSqft,
+            maxSquareFeet: _activeMaxSqft,
+            minYearBuilt: _activeMinYear,
+            maxYearBuilt: _activeMaxYear,
+            homeTypes:
+                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+          ));
     }
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => PropertyFilterSheet(
+        initialPriceRange: _priceRange,
+        initialSqftRange: _sqftRange,
+        initialYearRange: _yearRange,
+        initialMinBeds: _minBeds,
+        initialMinBaths: _minBaths,
+        initialHomeTypes: _selectedHomeTypes,
+        onApply: ({
+          int? minPrice,
+          int? maxPrice,
+          int? minBeds,
+          int? minBaths,
+          int? minSquareFeet,
+          int? maxSquareFeet,
+          int? minYearBuilt,
+          int? maxYearBuilt,
+          List<String>? homeTypes,
+        }) {
+          setState(() {
+            _priceRange = RangeValues(
+              minPrice?.toDouble() ?? 0,
+              maxPrice?.toDouble() ?? 5000000,
+            );
+            _sqftRange = RangeValues(
+              minSquareFeet?.toDouble() ?? 0,
+              maxSquareFeet?.toDouble() ?? 10000,
+            );
+            _yearRange = RangeValues(
+              minYearBuilt?.toDouble() ?? 1900,
+              maxYearBuilt?.toDouble() ?? 2025,
+            );
+            _minBeds = minBeds ?? 0;
+            _minBaths = minBaths ?? 0;
+            _selectedHomeTypes
+              ..clear()
+              ..addAll(homeTypes ?? []);
+          });
+
+          _search(_searchController.text.trim());
+        },
+        onClear: () {
+          setState(() {
+            _priceRange = const RangeValues(0, 5000000);
+            _minBeds = 0;
+            _minBaths = 0;
+            _sqftRange = const RangeValues(0, 10000);
+            _yearRange = const RangeValues(1900, 2025);
+            _selectedHomeTypes.clear();
+          });
+          _search(_searchController.text.trim());
+        },
+      ),
+    );
   }
 
   String _formatNumber(int n) {
@@ -70,23 +174,39 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
       body: Column(children: [
         Padding(
             padding: EdgeInsets.all(16.w),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                  hintText: 'Search by zip code or city...',
-                  prefixIcon: const Icon(LucideIcons.search),
-                  suffixIcon: IconButton(
-                      icon: const Icon(LucideIcons.x),
-                      onPressed: () {
-                        _searchController.clear();
-                        _search('');
-                      }),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r)),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h)),
-              onSubmitted: _search,
-            )),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                      hintText: 'Search by zip code or city...',
+                      prefixIcon: const Icon(LucideIcons.search),
+                      suffixIcon: IconButton(
+                          icon: const Icon(LucideIcons.x),
+                          onPressed: () {
+                            _searchController.clear();
+                            _search('');
+                          }),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 12.h)),
+                  onSubmitted: _search,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: IconButton(
+                  tooltip: 'Filters',
+                  onPressed: _showFilterSheet,
+                  icon: const Icon(LucideIcons.slidersHorizontal),
+                ),
+              ),
+            ])),
         Expanded(child:
             BlocBuilder<PropertyBloc, PropertyState>(builder: (context, state) {
           if (state.isLoading && state.allProperties.isEmpty) {
