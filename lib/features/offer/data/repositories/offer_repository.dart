@@ -1,8 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../backend/schema/enums/enums.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/validators/offer_status_transition.dart';
 import '../datasources/offer_remote_datasource.dart';
 import '../models/offer_model.dart';
 import '../models/offer_revision_model.dart';
@@ -98,6 +100,43 @@ class OfferRepository {
         } catch (e) {
           // If we can't fetch old state, proceed without revision tracking
           trackRevision = false;
+        }
+      }
+
+      // Validate status transitions if status is being changed
+      if (oldOfferState != null && oldOfferState.isNotEmpty) {
+        final oldStatus = _parseStatus(oldOfferState['status']);
+        final newStatus = _parseStatus(offerData['status']);
+
+        if (oldStatus != null && newStatus != null && oldStatus != newStatus) {
+          // Extract party IDs from the offer data
+          final parties = offerData['parties'] as Map<String, dynamic>? ?? {};
+          final buyer = parties['buyer'] as Map<String, dynamic>? ?? {};
+          final seller = parties['seller'] as Map<String, dynamic>? ?? {};
+          final agent = parties['agent'] as Map<String, dynamic>? ?? {};
+
+          final buyerId = buyer['id'] as String?;
+          final sellerId = seller['id'] as String?;
+          final agentId = agent['id'] as String?;
+
+          // Validate the transition
+          final validation = OfferStatusTransition.validateTransition(
+            currentStatus: oldStatus,
+            newStatus: newStatus,
+            userId: requesterId,
+            sellerId: sellerId,
+            buyerId: buyerId,
+            agentId: agentId,
+            offerData: offerData,
+          );
+
+          if (validation.isLeft()) {
+            // Return the failure from validation
+            return validation.fold(
+              (failure) => Left(failure),
+              (status) => Right(<String, dynamic>{}), // Unreachable
+            );
+          }
         }
       }
 
@@ -332,5 +371,28 @@ class OfferRepository {
     required String offerId,
   }) {
     return _revisionRepo.getLatestRevision(offerId: offerId);
+  }
+
+  // -- Helper Methods --
+
+  /// Parses status string to Status enum
+  /// Handles various formats: 'Pending', 'pending', 'PENDING', etc.
+  Status? _parseStatus(dynamic status) {
+    if (status == null) return null;
+    if (status is Status) return status;
+
+    final statusStr = status.toString().toLowerCase();
+    switch (statusStr) {
+      case 'draft':
+        return Status.Draft;
+      case 'pending':
+        return Status.Pending;
+      case 'accepted':
+        return Status.Accepted;
+      case 'declined':
+        return Status.Declined;
+      default:
+        return null;
+    }
   }
 }
