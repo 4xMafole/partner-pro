@@ -28,7 +28,7 @@ dependencies:
   injectable: ^2.5.0
 
   # ── Code Generation (annotations) ──
-  freezed_annotation: ^2.4.4
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
 
   # ── UI & Design ──
@@ -63,7 +63,7 @@ dependencies:
   flutter_facebook_auth: any
 
   # ── Payments (RevenueCat) ──
-  purchases_flutter: ^8.3.0
+  purchases_flutter: ^9.13.1
 
   # ── Maps & Location ──
   google_maps_flutter: ^2.12.0
@@ -119,7 +119,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   build_runner: ^2.4.13
-  freezed: ^2.5.7
+  freezed: ^3.2.2
   json_serializable: ^6.9.4
   injectable_generator: ^2.7.0
   bloc_test: ^9.1.7
