@@ -3,17 +3,19 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../notifications/data/services/notification_service.dart';
 import '../datasources/property_remote_datasource.dart';
 import '../models/property_model.dart';
 
 @lazySingleton
 class PropertyRepository {
   final PropertyRemoteDataSource _remote;
+  final NotificationService _notificationService;
   final Map<String, _PropertySearchCacheEntry> _searchCache = {};
 
   static const Duration _cacheTtl = Duration(seconds: 30);
 
-  PropertyRepository(this._remote);
+  PropertyRepository(this._remote, this._notificationService);
 
   Future<Either<Failure, List<PropertyDataClass>>> getAllProperties({
     required String requesterId,
@@ -42,7 +44,8 @@ class PropertyRepository {
 
       final now = DateTime.now();
       final cacheEntry = _searchCache[cacheKey];
-      if (cacheEntry != null && now.difference(cacheEntry.cachedAt) < _cacheTtl) {
+      if (cacheEntry != null &&
+          now.difference(cacheEntry.cachedAt) < _cacheTtl) {
         return Right(cacheEntry.properties);
       }
 
@@ -223,6 +226,48 @@ class PropertyRepository {
     }
   }
 
+  Future<Either<Failure, int>> processPropertySourceUpdateAlerts({
+    required String requesterId,
+    required PropertyDataClass property,
+    required String changeType,
+  }) async {
+    try {
+      final searches =
+          await _remote.getAllActiveSavedSearches(requesterId: requesterId);
+      var sentCount = 0;
+
+      for (final savedSearch in searches) {
+        final userId = (savedSearch['user_id'] ?? '').toString().trim();
+        if (userId.isEmpty) continue;
+
+        if (!_matchesSavedSearch(savedSearch: savedSearch, property: property)) {
+          continue;
+        }
+
+        await _notificationService.createNotification(
+          userId: userId,
+          title: _propertyAlertTitle(changeType),
+          body: _propertyAlertBody(property: property, changeType: changeType),
+          type: 'property_alert',
+          data: {
+            'propertyId': property.id,
+            'changeType': changeType,
+            'listPrice': property.listPrice,
+            'bedrooms': property.bedrooms,
+            'city': property.address.city,
+          },
+        );
+        sentCount += 1;
+      }
+
+      return Right(sentCount);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
   Future<Either<Failure, List<Map<String, dynamic>>>> getShowings({
     required String userId,
     required String requesterId,
@@ -266,6 +311,93 @@ class PropertyRepository {
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
+  }
+
+  bool _matchesSavedSearch({
+    required Map<String, dynamic> savedSearch,
+    required PropertyDataClass property,
+  }) {
+    final status = savedSearch['status'];
+    if (status is bool && !status) return false;
+
+    final search = _asMap(savedSearch['search']);
+    final inputField = _s(search['input_field']).toLowerCase();
+    final propertyFilter = _asMap(search['property']);
+
+    // Match location keyword from saved input text against city/state/zip/property name.
+    if (inputField.isNotEmpty) {
+      final haystack = [
+        property.address.city,
+        property.address.state,
+        property.address.zip,
+        property.propertyName,
+      ].join(' ').toLowerCase();
+      if (!haystack.contains(inputField)) {
+        return false;
+      }
+    }
+
+    final minPrice = _toInt(propertyFilter['minPrice']);
+    final maxPrice = _toInt(propertyFilter['maxPrice']);
+    final minBeds = _toInt(propertyFilter['minBeds']);
+    final maxBeds = _toInt(propertyFilter['maxBeds']);
+
+    if (minPrice != null && property.listPrice < minPrice) return false;
+    if (maxPrice != null && property.listPrice > maxPrice) return false;
+    if (minBeds != null && property.bedrooms < minBeds) return false;
+    if (maxBeds != null && property.bedrooms > maxBeds) return false;
+
+    return true;
+  }
+
+  String _propertyAlertTitle(String changeType) {
+    switch (changeType) {
+      case 'price_change':
+        return 'Price Change Alert';
+      case 'status_change':
+        return 'Status Change Alert';
+      default:
+        return 'New Property Alert';
+    }
+  }
+
+  String _propertyAlertBody({
+    required PropertyDataClass property,
+    required String changeType,
+  }) {
+    final label = property.propertyName.isNotEmpty
+        ? property.propertyName
+        : '${property.address.streetNumber} ${property.address.streetName}'.trim();
+
+    switch (changeType) {
+      case 'price_change':
+        return '$label changed price to \$${property.listPrice}.';
+      case 'status_change':
+        return '$label status has changed in your saved search area.';
+      default:
+        return '$label matches one of your saved searches.';
+    }
+  }
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) {
+      return value.map(
+        (key, val) => MapEntry(key.toString(), val),
+      );
+    }
+    return const <String, dynamic>{};
+  }
+
+  String _s(dynamic value) => value?.toString().trim() ?? '';
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    final text = value.toString().trim();
+    if (text.isEmpty) return null;
+    return int.tryParse(text);
   }
 
   String _buildSearchCacheKey({

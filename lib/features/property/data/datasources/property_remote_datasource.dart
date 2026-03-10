@@ -174,6 +174,17 @@ class PropertyRemoteDataSource {
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
+  /// Gets all active saved searches across users.
+  Future<List<Map<String, dynamic>>> getAllActiveSavedSearches({
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .where('status', isEqualTo: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
+
   /// Saves a search query.
   Future<void> saveSearch({
     required String userId,
