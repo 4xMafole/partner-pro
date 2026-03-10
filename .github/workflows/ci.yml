@@ -46,9 +46,16 @@ jobs:
           echo "Overall Coverage: ${TOTAL_COVERAGE}%"
 
           # Auth coverage gate (required)
-          AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "lib/features/auth/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          # Extract auth coverage - pattern must match files in subdirectories
+          AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "*/lib/features/auth/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          if [ -z "$AUTH_COVERAGE" ]; then
+            # Try alternative pattern if first one fails (for different path formats)
+            AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "lib/features/auth*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          fi
           if [ -z "$AUTH_COVERAGE" ]; then
             echo "❌ Could not calculate auth coverage from lcov report"
+            echo "Available files in coverage:"
+            lcov --list coverage/lcov.info | grep "lib/features/auth" | head -10
             exit 1
           fi
           echo "Auth Coverage: ${AUTH_COVERAGE}%"
@@ -79,7 +86,12 @@ jobs:
               continue
             fi
 
-            FEATURE_COVERAGE=$(lcov --extract coverage/lcov.info "$FEATURE/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+            # Try pattern with wildcard prefix for full path matching
+            FEATURE_COVERAGE=$(lcov --extract coverage/lcov.info "*/$FEATURE/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+            if [ -z "$FEATURE_COVERAGE" ]; then
+              # Try alternative pattern
+              FEATURE_COVERAGE=$(lcov --extract coverage/lcov.info "$FEATURE*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+            fi
             if [ -z "$FEATURE_COVERAGE" ]; then
               echo "- $FEATURE: N/A (no matching coverage data)"
             else
