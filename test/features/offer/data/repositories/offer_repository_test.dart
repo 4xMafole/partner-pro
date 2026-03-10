@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:partner_pro/core/error/failures.dart';
 import 'package:partner_pro/features/offer/data/datasources/offer_remote_datasource.dart';
 import 'package:partner_pro/features/offer/data/models/offer_notification_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
@@ -263,13 +264,15 @@ void main() {
       );
 
       expect(result.isLeft(), true);
+      final failure = result.swap().getOrElse(
+            () => throw Exception('Expected failure'),
+          );
       expect(
-        result.swap().getOrElse(
-              () => throw Exception('Expected failure'),
-            ),
-        const ValidationFailure(
-          message:
-              'No assigned agent was found for this buyer. Please connect with an agent before submitting an offer.',
+        failure,
+        isA<ValidationFailure>().having(
+          (value) => value.message,
+          'message',
+          'No assigned agent was found for this buyer. Please connect with an agent before submitting an offer.',
         ),
       );
       verifyNever(() => remote.createOffer(
