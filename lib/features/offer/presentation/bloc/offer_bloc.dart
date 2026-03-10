@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/models/offer_model.dart';
+import '../../data/models/offer_revision_model.dart';
 import '../../data/repositories/offer_repository.dart';
 
 abstract class OfferEvent extends Equatable {
@@ -44,6 +45,13 @@ class CompareOffers extends OfferEvent {
   @override List<Object?> get props => [newOffer, oldOffer];
 }
 
+class LoadOfferRevisions extends OfferEvent {
+  final String offerId;
+  final int? limit;
+  const LoadOfferRevisions({required this.offerId, this.limit});
+  @override List<Object?> get props => [offerId, limit];
+}
+
 class UpdateOfferDraft extends OfferEvent {
   final Map<String, dynamic> draftData;
   const UpdateOfferDraft({required this.draftData});
@@ -56,16 +64,17 @@ class OfferState extends Equatable {
   final bool isLoading, isSubmitting, hasChanges;
   final String? error, successMessage;
   final List<OfferModel> offers;
+  final List<OfferRevisionModel> revisions;
   final Map<String, dynamic> currentDraft;
   final List<String> changedFields;
 
-  const OfferState({this.isLoading = false, this.isSubmitting = false, this.error, this.successMessage, this.offers = const [], this.currentDraft = const {}, this.hasChanges = false, this.changedFields = const []});
+  const OfferState({this.isLoading = false, this.isSubmitting = false, this.error, this.successMessage, this.offers = const [], this.revisions = const [], this.currentDraft = const {}, this.hasChanges = false, this.changedFields = const []});
 
-  OfferState copyWith({bool? isLoading, bool? isSubmitting, String? error, String? successMessage, List<OfferModel>? offers, Map<String, dynamic>? currentDraft, bool? hasChanges, List<String>? changedFields}) {
-    return OfferState(isLoading: isLoading ?? this.isLoading, isSubmitting: isSubmitting ?? this.isSubmitting, error: error, successMessage: successMessage, offers: offers ?? this.offers, currentDraft: currentDraft ?? this.currentDraft, hasChanges: hasChanges ?? this.hasChanges, changedFields: changedFields ?? this.changedFields);
+  OfferState copyWith({bool? isLoading, bool? isSubmitting, String? error, String? successMessage, List<OfferModel>? offers, List<OfferRevisionModel>? revisions, Map<String, dynamic>? currentDraft, bool? hasChanges, List<String>? changedFields}) {
+    return OfferState(isLoading: isLoading ?? this.isLoading, isSubmitting: isSubmitting ?? this.isSubmitting, error: error, successMessage: successMessage, offers: offers ?? this.offers, revisions: revisions ?? this.revisions, currentDraft: currentDraft ?? this.currentDraft, hasChanges: hasChanges ?? this.hasChanges, changedFields: changedFields ?? this.changedFields);
   }
 
-  @override List<Object?> get props => [isLoading, isSubmitting, error, successMessage, offers, currentDraft, hasChanges, changedFields];
+  @override List<Object?> get props => [isLoading, isSubmitting, error, successMessage, offers, revisions, currentDraft, hasChanges, changedFields];
 }
 
 @injectable
@@ -78,6 +87,7 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     on<CreateOffer>(_onCreate);
     on<UpdateOffer>(_onUpdate);
     on<CompareOffers>(_onCompare);
+    on<LoadOfferRevisions>(_onLoadRevisions);
     on<UpdateOfferDraft>(_onDraft);
     on<ClearOfferDraft>(_onClear);
   }
@@ -112,6 +122,14 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     final has = _repository.compareOffers(e.newOffer, e.oldOffer);
     final fields = _repository.getChangedFields(e.newOffer, e.oldOffer);
     emit(state.copyWith(hasChanges: has, changedFields: fields));
+  }
+
+  Future<void> _onLoadRevisions(LoadOfferRevisions e, Emitter<OfferState> emit) async {
+    final r = await _repository.getOfferRevisions(offerId: e.offerId, limit: e.limit);
+    r.fold(
+      (f) => emit(state.copyWith(error: f.message)),
+      (revisions) => emit(state.copyWith(revisions: revisions)),
+    );
   }
 
   void _onDraft(UpdateOfferDraft e, Emitter<OfferState> emit) {

@@ -273,7 +273,8 @@ void main() {
         final transitions = OfferStatusTransition.getAvailableTransitions(
           Status.Pending,
         );
-        expect(transitions, unorderedEquals([Status.Accepted, Status.Declined]));
+        expect(
+            transitions, unorderedEquals([Status.Accepted, Status.Declined]));
       });
 
       test('returns empty list for Accepted (terminal)', () {

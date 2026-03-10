@@ -40,9 +40,10 @@ class OfferStatusTransition {
     // Validate state machine transitions
     final transitionAllowed = _isTransitionAllowed(currentStatus, newStatus);
     if (!transitionAllowed) {
-      return Left(ValidationFailure(message:
-        'Invalid status transition: ${currentStatus.name} → ${newStatus.name}. '
-        '${_getTransitionConstraintMessage(currentStatus)}',
+      return Left(ValidationFailure(
+        message:
+            'Invalid status transition: ${currentStatus.name} → ${newStatus.name}. '
+            '${_getTransitionConstraintMessage(currentStatus)}',
       ));
     }
 
@@ -97,8 +98,8 @@ class OfferStatusTransition {
     // Draft → Pending: Buyer or agent can submit
     if (currentStatus == Status.Draft && newStatus == Status.Pending) {
       if (userId != buyerId && userId != agentId) {
-        return Left(AuthFailure(message:
-          'Only buyer or their agent can submit a draft offer.',
+        return Left(AuthFailure(
+          message: 'Only buyer or their agent can submit a draft offer.',
         ));
       }
     }
@@ -106,20 +107,20 @@ class OfferStatusTransition {
     // Pending → Accepted: Seller or their agent can accept
     if (currentStatus == Status.Pending && newStatus == Status.Accepted) {
       if (userId != sellerId && userId != agentId) {
-        return Left(AuthFailure(message:
-          'Only seller or their agent can accept an offer.',
+        return Left(AuthFailure(
+          message: 'Only seller or their agent can accept an offer.',
         ));
       }
     }
 
     // Pending → Declined: Seller/agent can decline, buyer can withdraw
     if (currentStatus == Status.Pending && newStatus == Status.Declined) {
-      final isAuthorized = userId == sellerId ||
-          userId == agentId ||
-          userId == buyerId;
+      final isAuthorized =
+          userId == sellerId || userId == agentId || userId == buyerId;
       if (!isAuthorized) {
-        return Left(AuthFailure(message:
-          'Only the buyer, seller, or their agents can decline/withdraw an offer.',
+        return Left(AuthFailure(
+          message:
+              'Only the buyer, seller, or their agents can decline/withdraw an offer.',
         ));
       }
     }
@@ -136,7 +137,8 @@ class OfferStatusTransition {
     // Draft → Pending: Requires minimum offer data
     if (currentStatus == Status.Draft && newStatus == Status.Pending) {
       if (offerData == null) {
-        return Left(ValidationFailure(message: 'Offer data is required to submit.'));
+        return Left(
+            ValidationFailure(message: 'Offer data is required to submit.'));
       }
 
       final missingFields = <String>[];
@@ -155,8 +157,9 @@ class OfferStatusTransition {
       }
 
       if (missingFields.isNotEmpty) {
-        return Left(ValidationFailure(message:
-          'Cannot submit offer. Missing required fields: ${missingFields.join(', ')}',
+        return Left(ValidationFailure(
+          message:
+              'Cannot submit offer. Missing required fields: ${missingFields.join(', ')}',
         ));
       }
     }

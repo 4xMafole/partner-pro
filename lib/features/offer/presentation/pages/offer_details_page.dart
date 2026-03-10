@@ -10,6 +10,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../bloc/offer_bloc.dart';
 import '../../data/models/offer_model.dart';
+import '../../data/models/offer_revision_model.dart';
 
 class OfferDetailsPage extends StatefulWidget {
   final String offerId;
@@ -20,6 +21,14 @@ class OfferDetailsPage extends StatefulWidget {
 }
 
 class _OfferDetailsPageState extends State<OfferDetailsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OfferBloc>().add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
+    });
+  }
+
   OfferModel? get _offer {
     final state = context.read<OfferBloc>().state;
     try {
@@ -227,6 +236,39 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                         ),
                       )),
                 ],
+
+                SizedBox(height: 20.h),
+                _SectionHeader('Revision History'),
+                if (state.revisions.isEmpty)
+                  Text(
+                    'No revisions found yet.',
+                    style: AppTypography.bodyMedium
+                        .copyWith(color: AppColors.textSecondary),
+                  )
+                else
+                  ...state.revisions.map((revision) => Card(
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        child: ListTile(
+                          leading: Icon(
+                            LucideIcons.history,
+                            size: 18.sp,
+                            color: AppColors.primary,
+                          ),
+                          title: Text(
+                            'Revision #${revision.revisionNumber}: ${revision.changeSummary.isEmpty ? revision.revisionType.name : revision.changeSummary}',
+                            style: AppTypography.titleMedium,
+                          ),
+                          subtitle: Text(
+                            '${revision.userName.isEmpty ? revision.userId : revision.userName} • ${revision.timestamp.toLocal()}',
+                            style: AppTypography.bodySmall,
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(LucideIcons.gitCompare),
+                            tooltip: 'Compare',
+                            onPressed: () => _showRevisionComparison(context, offer, revision),
+                          ),
+                        ),
+                      )),
               ],
             ),
           ),
@@ -280,6 +322,104 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       buffer.write(str[i]);
     }
     return buffer.toString();
+  }
+
+  void _showRevisionComparison(
+    BuildContext context,
+    OfferModel currentOffer,
+    OfferRevisionModel revision,
+  ) {
+    if (revision.offerSnapshot != null && revision.offerSnapshot!.isNotEmpty) {
+      context.read<OfferBloc>().add(
+            CompareOffers(
+              newOffer: currentOffer.toJson(),
+              oldOffer: revision.offerSnapshot!,
+            ),
+          );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _RevisionComparisonSheet(
+        revision: revision,
+      ),
+    );
+  }
+}
+
+class _RevisionComparisonSheet extends StatelessWidget {
+  final OfferRevisionModel revision;
+
+  const _RevisionComparisonSheet({required this.revision});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Compare with Revision #${revision.revisionNumber}',
+              style: AppTypography.headlineSmall,
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              revision.changeSummary.isEmpty ? revision.revisionType.name : revision.changeSummary,
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+            SizedBox(height: 12.h),
+            if (revision.fieldChanges.isEmpty)
+              Text(
+                'No detailed field changes stored for this revision.',
+                style: AppTypography.bodyMedium,
+              )
+            else
+              SizedBox(
+                height: 320.h,
+                child: ListView.separated(
+                  itemCount: revision.fieldChanges.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                  itemBuilder: (context, index) {
+                    final c = revision.fieldChanges[index];
+                    return Container(
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: AppColors.outline),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            c.fieldLabel,
+                            style: AppTypography.titleMedium,
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            'Previous: ${c.oldValue ?? '-'}',
+                            style: AppTypography.bodySmall
+                                .copyWith(color: AppColors.textSecondary),
+                          ),
+                          Text(
+                            'Current: ${c.newValue ?? '-'}',
+                            style: AppTypography.bodySmall
+                                .copyWith(color: AppColors.tertiary),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
