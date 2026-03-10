@@ -124,6 +124,7 @@ dev_dependencies:
   injectable_generator: ^2.7.0
   bloc_test: ^9.1.7
   mocktail: ^1.0.4
+  fake_cloud_firestore: ^3.1.0
 
 flutter_native_splash:
   color: "#F1F4F8"
