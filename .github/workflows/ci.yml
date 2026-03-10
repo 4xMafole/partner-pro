@@ -40,14 +40,49 @@ jobs:
         run: |
           dart pub global activate coverage
           dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib/
-          
-          # Extract auth coverage
-          AUTH_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep -A 3 "lib/auth" | grep "lines" | awk '{print $2}' | sed 's/%//')
+
+          # Overall coverage (informational)
+          TOTAL_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          echo "Overall Coverage: ${TOTAL_COVERAGE}%"
+
+          # Auth coverage gate (required)
+          AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "lib/auth/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          if [ -z "$AUTH_COVERAGE" ]; then
+            echo "❌ Could not calculate auth coverage from lcov report"
+            exit 1
+          fi
           echo "Auth Coverage: ${AUTH_COVERAGE}%"
-          
-          # Check if coverage meets threshold (70%)
-          if [ $(echo "$AUTH_COVERAGE < 70" | bc) -eq 1 ]; then
+
+          if awk "BEGIN {exit !($AUTH_COVERAGE < 70)}"; then
             echo "❌ Auth coverage $AUTH_COVERAGE% is below 70% threshold"
             exit 1
           fi
           echo "✅ Auth coverage $AUTH_COVERAGE% meets 70% threshold"
+
+          # Optional per-feature coverage (informational only, no fail)
+          echo "Per-feature coverage summary:"
+          FEATURE_PATHS=(
+            "lib/features/agent"
+            "lib/features/auth"
+            "lib/features/buyer"
+            "lib/features/documents"
+            "lib/features/notifications"
+            "lib/features/offer"
+            "lib/features/payments"
+            "lib/features/property"
+            "lib/features/schedule"
+          )
+
+          for FEATURE in "${FEATURE_PATHS[@]}"; do
+            if [ ! -d "$FEATURE" ]; then
+              echo "- $FEATURE: N/A (path missing)"
+              continue
+            fi
+
+            FEATURE_COVERAGE=$(lcov --extract coverage/lcov.info "$FEATURE/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+            if [ -z "$FEATURE_COVERAGE" ]; then
+              echo "- $FEATURE: N/A (no matching coverage data)"
+            else
+              echo "- $FEATURE: ${FEATURE_COVERAGE}%"
+            fi
+          done
