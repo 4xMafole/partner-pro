@@ -155,7 +155,13 @@ class OfferRevisionHelper {
       if (_areValuesEqual(oldValue, newValue)) continue;
 
       // Skip internal fields
-      if (key.startsWith('_') || key == 'id' || key == 'createdTime') {
+      if (key.startsWith('_') ||
+          key == 'id' ||
+          key == 'createdTime' ||
+          key == 'updatedAt' ||
+          key == 'updated_at' ||
+          key == 'created_at' ||
+          key == 'createdAt') {
         continue;
       }
 
@@ -180,9 +186,6 @@ class OfferRevisionHelper {
     if (changes.length == 1) {
       final change = changes.first;
       return '${change.fieldLabel} changed';
-    }
-    if (changes.length <= 3) {
-      return '${changes.map((c) => c.fieldLabel).join(', ')} changed';
     }
     return '${changes.length} fields changed';
   }

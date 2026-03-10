@@ -242,8 +242,8 @@ void main() {
             .having((s) => s.error, 'error', null),
         isA<OfferState>()
             .having((s) => s.isSubmitting, 'isSubmitting', false)
-            .having((s) => s.offers.first.status, 'status',
-                OfferStatus.declined)
+            .having(
+                (s) => s.offers.first.status, 'status', OfferStatus.declined)
             .having(
                 (s) => s.successMessage, 'successMessage', 'Offer withdrawn'),
       ],
@@ -259,8 +259,7 @@ void main() {
         requesterName: 'Jane Doe',
       )),
       expect: () => [
-        isA<OfferState>()
-            .having((s) => s.isSubmitting, 'isSubmitting', true),
+        isA<OfferState>().having((s) => s.isSubmitting, 'isSubmitting', true),
         isA<OfferState>()
             .having((s) => s.isSubmitting, 'isSubmitting', false)
             .having((s) => s.error, 'error', 'Offer not found'),

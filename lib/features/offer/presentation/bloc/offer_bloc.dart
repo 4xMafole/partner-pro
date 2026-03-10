@@ -294,11 +294,18 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     r.fold((f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
         (result) async {
       // Send notification to agent/seller about new offer
-      final parties = e.offerData['parties'] as Map<String, dynamic>? ?? {};
+      final parties = result['parties'] as Map<String, dynamic>? ??
+          e.offerData['parties'] as Map<String, dynamic>? ??
+          {};
       final agent = parties['agent'] as Map<String, dynamic>? ?? {};
-      final agentId = agent['id'] as String? ?? '';
-      final propertyTitle =
-          (e.offerData['property'] as Map<String, dynamic>?)?['title'] ?? '';
+      final agentId =
+          agent['id'] as String? ?? result['agentId'] as String? ?? '';
+      final propertyMap = result['property'] as Map<String, dynamic>? ??
+          e.offerData['property'] as Map<String, dynamic>? ??
+          {};
+      final propertyTitle = propertyMap['title'] as String? ??
+          propertyMap['propertyName'] as String? ??
+          '';
       final offerId =
           result['id'] as String? ?? result['offerID'] as String? ?? '';
 

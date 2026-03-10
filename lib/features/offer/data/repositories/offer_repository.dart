@@ -20,6 +20,86 @@ class OfferRepository {
 
   OfferRepository(this._remote, this._revisionRepo, this._notificationRepo);
 
+  dynamic _jsonify(dynamic value) {
+    if (value == null ||
+        value is String ||
+        value is num ||
+        value is bool ||
+        value is DateTime) {
+      return value;
+    }
+    if (value is List) {
+      return value.map(_jsonify).toList();
+    }
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), _jsonify(v)));
+    }
+    try {
+      // Freezed/json_serializable models expose `toJson()`.
+      return _jsonify((value as dynamic).toJson());
+    } catch (_) {
+      return value;
+    }
+  }
+
+  Map<String, dynamic> _toJsonMap(Map<String, dynamic> map) {
+    final json = _jsonify(map);
+    if (json is Map<String, dynamic>) return json;
+    if (json is Map) {
+      return json.map((k, v) => MapEntry(k.toString(), v));
+    }
+    return Map<String, dynamic>.from(map);
+  }
+
+  String _userDisplayName(Map<String, dynamic> user) {
+    final displayName = _s(user['display_name']) ?? _s(user['displayName']);
+    if (displayName != null) return displayName;
+    final firstName = _s(user['first_name']) ?? _s(user['firstName']) ?? '';
+    final lastName = _s(user['last_name']) ?? _s(user['lastName']) ?? '';
+    return '$firstName $lastName'.trim();
+  }
+
+  Future<Map<String, dynamic>> _enrichCreateOfferData(
+    Map<String, dynamic> offerData,
+    String requesterId,
+  ) async {
+    final enriched = _toJsonMap(offerData);
+    final parties = _asMap(enriched['parties']);
+    final buyer = _asMap(parties['buyer']);
+    final agent = _asMap(parties['agent']);
+
+    final buyerId = _s(enriched['buyerId']) ?? _s(buyer['id']) ?? requesterId;
+    final currentAgentId =
+        _s(enriched['agentId']) ?? _s(enriched['agent_id']) ?? _s(agent['id']);
+
+    if (currentAgentId == null || currentAgentId.isEmpty) {
+      final relationship =
+          await _remote.getRelationshipForSubjectUid(subjectUid: buyerId);
+      final relationshipData = _asMap(relationship?['relationship']);
+      final resolvedAgentId = _s(relationshipData['agentUid']);
+
+      if (resolvedAgentId != null && resolvedAgentId.isNotEmpty) {
+        final agentUser = await _remote.getUserByUid(uid: resolvedAgentId);
+        final updatedParties = Map<String, dynamic>.from(parties)
+          ..['agent'] = {
+            'id': resolvedAgentId,
+            'name': agentUser == null ? '' : _userDisplayName(agentUser),
+            'phoneNumber': agentUser == null
+                ? ''
+                : (_s(agentUser['phone_number']) ??
+                    _s(agentUser['phoneNumber']) ??
+                    ''),
+            'email': agentUser == null ? '' : (_s(agentUser['email']) ?? ''),
+          };
+
+        enriched['parties'] = updatedParties;
+        enriched['agentId'] = resolvedAgentId;
+      }
+    }
+
+    return enriched;
+  }
+
   Future<Either<Failure, List<OfferModel>>> getUserOffers({
     required String requesterId,
     String? propertyId,
@@ -35,7 +115,7 @@ class OfferRepository {
         sellerId: sellerId,
         status: status,
       );
-      return Right(data.map((j) => OfferModel.fromJson(j)).toList());
+      return Right(data.map(_toOfferModel).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -50,7 +130,7 @@ class OfferRepository {
     try {
       final data = await _remote.getAgentOffers(
           requesterId: requesterId, status: status);
-      return Right(data.map((j) => OfferModel.fromJson(j)).toList());
+      return Right(data.map(_toOfferModel).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -63,8 +143,22 @@ class OfferRepository {
     required String requesterId,
   }) async {
     try {
+      final serializedOfferData =
+          await _enrichCreateOfferData(offerData, requesterId);
+      final buyerId = _s(serializedOfferData['buyerId']);
+      final agentId = _s(serializedOfferData['agentId']) ??
+          _s(_asMap(_asMap(serializedOfferData['parties'])['agent'])['id']);
+
+      // Buyer-direct offers must remain attached to an assigned agent.
+      if (buyerId == requesterId && (agentId == null || agentId.isEmpty)) {
+        return const Left(ValidationFailure(
+          message:
+              'No assigned agent was found for this buyer. Please connect with an agent before submitting an offer.',
+        ));
+      }
+
       final result = await _remote.createOffer(
-          offerData: offerData, requesterId: requesterId);
+          offerData: serializedOfferData, requesterId: requesterId);
 
       await _createNotificationsForChange(
         offerBefore: null,
@@ -91,24 +185,17 @@ class OfferRepository {
     bool trackRevision = true,
   }) async {
     try {
-      final offerId =
-          offerData['offerID'] as String? ?? offerData['id'] as String? ?? '';
+      final serializedOfferData = _toJsonMap(offerData);
+      final offerId = serializedOfferData['offerID'] as String? ??
+          serializedOfferData['id'] as String? ??
+          '';
 
       // Fetch current offer state for comparison if revision tracking is enabled
       Map<String, dynamic>? oldOfferState;
       if (trackRevision && offerId.isNotEmpty) {
         try {
-          final currentOffers = await _remote.getUserOffers(
-            requesterId: requesterId,
-            propertyId: null,
-            buyerId: null,
-            sellerId: null,
-            status: null,
-          );
-          oldOfferState = currentOffers.firstWhere(
-            (o) => o['id'] == offerId,
-            orElse: () => <String, dynamic>{},
-          );
+          oldOfferState = await _remote.getOfferById(offerId: offerId) ??
+              <String, dynamic>{};
         } catch (e) {
           // If we can't fetch old state, proceed without revision tracking
           trackRevision = false;
@@ -118,18 +205,42 @@ class OfferRepository {
       // Validate status transitions if status is being changed
       if (oldOfferState != null && oldOfferState.isNotEmpty) {
         final oldStatus = _parseStatus(oldOfferState['status']);
-        final newStatus = _parseStatus(offerData['status']);
+        final newStatus = _parseStatus(serializedOfferData['status']);
 
         if (oldStatus != null && newStatus != null && oldStatus != newStatus) {
-          // Extract party IDs from the offer data
-          final parties = offerData['parties'] as Map<String, dynamic>? ?? {};
-          final buyer = parties['buyer'] as Map<String, dynamic>? ?? {};
-          final seller = parties['seller'] as Map<String, dynamic>? ?? {};
-          final agent = parties['agent'] as Map<String, dynamic>? ?? {};
+          // Extract the 'id' from a party value that may be a Map, a model
+          // object with an `id` property, or null.
+          String? _partyId(dynamic val) {
+            if (val == null) return null;
+            if (val is Map) return val['id'] as String?;
+            // BuyerModel / freezed objects expose an `id` getter
+            try {
+              return (val as dynamic).id as String?;
+            } catch (_) {
+              return null;
+            }
+          }
 
-          final buyerId = buyer['id'] as String?;
-          final sellerId = seller['id'] as String?;
-          final agentId = agent['id'] as String?;
+          // `parties` may be nested or flat depending on the source
+          // (OfferProcessSheet nests under 'parties', OfferModel.toJson() is flat).
+          final parties = serializedOfferData['parties'];
+          final partiesMap =
+              parties is Map<String, dynamic> ? parties : <String, dynamic>{};
+
+          // Normalise IDs: strip Firestore path prefix (e.g. "/users/uid" → "uid")
+          String? _normaliseId(String? raw) {
+            if (raw == null || raw.isEmpty) return null;
+            return raw.contains('/') ? raw.split('/').last : raw;
+          }
+
+          final buyerId = _normaliseId(_partyId(partiesMap['buyer']) ??
+                  _partyId(serializedOfferData['buyer'])) ??
+              _normaliseId(serializedOfferData['buyerId'] as String?);
+          final sellerId = _normaliseId(_partyId(partiesMap['seller']) ??
+                  _partyId(serializedOfferData['seller'])) ??
+              _normaliseId(serializedOfferData['sellerId'] as String?);
+          final agentId = _normaliseId(_partyId(partiesMap['agent']) ??
+              _partyId(serializedOfferData['agent']));
 
           // Validate the transition
           final validation = OfferStatusTransition.validateTransition(
@@ -139,7 +250,7 @@ class OfferRepository {
             sellerId: sellerId,
             buyerId: buyerId,
             agentId: agentId,
-            offerData: offerData,
+            offerData: serializedOfferData,
           );
 
           if (validation.isLeft()) {
@@ -154,7 +265,7 @@ class OfferRepository {
 
       // Update the offer
       final result = await _remote.updateOffer(
-        offerData: offerData,
+        offerData: serializedOfferData,
         requesterId: requesterId,
       );
 
@@ -216,53 +327,69 @@ class OfferRepository {
     'zip'
   ];
 
+  dynamic _firstValue(Map<String, dynamic> map, List<String> keys) {
+    for (final key in keys) {
+      if (map.containsKey(key)) return map[key];
+    }
+    return null;
+  }
+
+  dynamic _at(Map<String, dynamic> map, String snakeKey) {
+    final camel = snakeKey.replaceAllMapped(
+      RegExp(r'_([a-z])'),
+      (m) => m.group(1)!.toUpperCase(),
+    );
+    return _firstValue(map, [snakeKey, camel]);
+  }
+
   bool compareOffers(Map<String, dynamic> newO, Map<String, dynamic> oldO) {
-    final np = newO['pricing'] as Map<String, dynamic>? ?? {};
-    final op = oldO['pricing'] as Map<String, dynamic>? ?? {};
+    final np = _asMap(newO['pricing']);
+    final op = _asMap(oldO['pricing']);
     for (final f in _pricingFields) {
-      if (_d(np[f], op[f])) return true;
+      if (_d(_at(np, f), _at(op, f))) return true;
     }
 
-    final nf = newO['financials'] as Map<String, dynamic>? ?? {};
-    final of2 = oldO['financials'] as Map<String, dynamic>? ?? {};
+    final nf = _asMap(newO['financials']);
+    final of2 = _asMap(oldO['financials']);
     for (final f in _financialFields) {
-      if (_d(nf[f], of2[f])) return true;
+      if (_d(_at(nf, f), _at(of2, f))) return true;
     }
 
-    if (_d(newO['closing_date'], oldO['closing_date'])) return true;
+    if (_d(_firstValue(newO, ['closing_date', 'closingDate']),
+        _firstValue(oldO, ['closing_date', 'closingDate']))) {
+      return true;
+    }
+    if (_d(_firstValue(newO, ['closing_days', 'closingDays']),
+        _firstValue(oldO, ['closing_days', 'closingDays']))) {
+      return true;
+    }
 
-    final nc = newO['conditions'] as Map<String, dynamic>? ?? {};
-    final oc = oldO['conditions'] as Map<String, dynamic>? ?? {};
+    final nc = _asMap(newO['conditions']);
+    final oc = _asMap(oldO['conditions']);
     for (final f in _conditionFields) {
-      if (_d(nc[f], oc[f])) return true;
+      if (_d(_at(nc, f), _at(oc, f))) return true;
     }
 
-    final nt = newO['title_company'] as Map<String, dynamic>? ?? {};
-    final ot = oldO['title_company'] as Map<String, dynamic>? ?? {};
+    final nt = _asMap(newO['title_company'] ?? newO['titleCompany']);
+    final ot = _asMap(oldO['title_company'] ?? oldO['titleCompany']);
     for (final f in _titleFields) {
-      if (_d(nt[f], ot[f])) return true;
+      if (_d(_at(nt, f), _at(ot, f))) return true;
     }
 
-    for (final role in ['buyer', 'second_buyer', 'agent']) {
-      final nParty = (newO['parties'] as Map<String, dynamic>? ?? {})[role]
-              as Map<String, dynamic>? ??
-          {};
-      final oParty = (oldO['parties'] as Map<String, dynamic>? ?? {})[role]
-              as Map<String, dynamic>? ??
-          {};
+    final nParties = _asMap(newO['parties']);
+    final oParties = _asMap(oldO['parties']);
+    for (final role in ['buyer', 'second_buyer', 'secondBuyer', 'agent']) {
+      final nParty = _asMap(nParties[role]);
+      final oParty = _asMap(oParties[role]);
       for (final f in _contactFields) {
-        if (_d(nParty[f], oParty[f])) return true;
+        if (_d(_at(nParty, f), _at(oParty, f))) return true;
       }
     }
 
-    final na = (newO['property'] as Map<String, dynamic>? ?? {})['address']
-            as Map<String, dynamic>? ??
-        {};
-    final oa = (oldO['property'] as Map<String, dynamic>? ?? {})['address']
-            as Map<String, dynamic>? ??
-        {};
+    final na = _asMap(_asMap(newO['property'])['address']);
+    final oa = _asMap(_asMap(oldO['property'])['address']);
     for (final f in _addressFields) {
-      if (_d(na[f], oa[f])) return true;
+      if (_d(_at(na, f), _at(oa, f))) return true;
     }
 
     return false;
@@ -271,53 +398,55 @@ class OfferRepository {
   List<String> getChangedFields(
       Map<String, dynamic> newO, Map<String, dynamic> oldO) {
     final changed = <String>[];
-    final np = newO['pricing'] as Map<String, dynamic>? ?? {};
-    final op = oldO['pricing'] as Map<String, dynamic>? ?? {};
+    final np = _asMap(newO['pricing']);
+    final op = _asMap(oldO['pricing']);
     for (final f in _pricingFields) {
-      if (_d(np[f], op[f])) changed.add('pricing.$f');
+      if (_d(_at(np, f), _at(op, f))) changed.add('pricing.$f');
     }
 
-    final nf = newO['financials'] as Map<String, dynamic>? ?? {};
-    final of2 = oldO['financials'] as Map<String, dynamic>? ?? {};
+    final nf = _asMap(newO['financials']);
+    final of2 = _asMap(oldO['financials']);
     for (final f in _financialFields) {
-      if (_d(nf[f], of2[f])) changed.add('financials.$f');
+      if (_d(_at(nf, f), _at(of2, f))) changed.add('financials.$f');
     }
 
-    if (_d(newO['closing_date'], oldO['closing_date']))
+    if (_d(_firstValue(newO, ['closing_date', 'closingDate']),
+        _firstValue(oldO, ['closing_date', 'closingDate']))) {
       changed.add('closing_date');
+    }
+    if (_d(_firstValue(newO, ['closing_days', 'closingDays']),
+        _firstValue(oldO, ['closing_days', 'closingDays']))) {
+      changed.add('closing_days');
+    }
 
-    final nc = newO['conditions'] as Map<String, dynamic>? ?? {};
-    final oc = oldO['conditions'] as Map<String, dynamic>? ?? {};
+    final nc = _asMap(newO['conditions']);
+    final oc = _asMap(oldO['conditions']);
     for (final f in _conditionFields) {
-      if (_d(nc[f], oc[f])) changed.add('conditions.$f');
+      if (_d(_at(nc, f), _at(oc, f))) changed.add('conditions.$f');
     }
 
-    final nt = newO['title_company'] as Map<String, dynamic>? ?? {};
-    final ot = oldO['title_company'] as Map<String, dynamic>? ?? {};
+    final nt = _asMap(newO['title_company'] ?? newO['titleCompany']);
+    final ot = _asMap(oldO['title_company'] ?? oldO['titleCompany']);
     for (final f in _titleFields) {
-      if (_d(nt[f], ot[f])) changed.add('title_company.$f');
+      if (_d(_at(nt, f), _at(ot, f))) changed.add('title_company.$f');
     }
 
-    for (final role in ['buyer', 'second_buyer', 'agent']) {
-      final nParty = (newO['parties'] as Map<String, dynamic>? ?? {})[role]
-              as Map<String, dynamic>? ??
-          {};
-      final oParty = (oldO['parties'] as Map<String, dynamic>? ?? {})[role]
-              as Map<String, dynamic>? ??
-          {};
+    final nParties = _asMap(newO['parties']);
+    final oParties = _asMap(oldO['parties']);
+    for (final role in ['buyer', 'second_buyer', 'secondBuyer', 'agent']) {
+      final nParty = _asMap(nParties[role]);
+      final oParty = _asMap(oParties[role]);
       for (final f in _contactFields) {
-        if (_d(nParty[f], oParty[f])) changed.add('parties.$role.$f');
+        if (_d(_at(nParty, f), _at(oParty, f))) {
+          changed.add('parties.$role.$f');
+        }
       }
     }
 
-    final na = (newO['property'] as Map<String, dynamic>? ?? {})['address']
-            as Map<String, dynamic>? ??
-        {};
-    final oa = (oldO['property'] as Map<String, dynamic>? ?? {})['address']
-            as Map<String, dynamic>? ??
-        {};
+    final na = _asMap(_asMap(newO['property'])['address']);
+    final oa = _asMap(_asMap(oldO['property'])['address']);
     for (final f in _addressFields) {
-      if (_d(na[f], oa[f])) changed.add('address.$f');
+      if (_d(_at(na, f), _at(oa, f))) changed.add('address.$f');
     }
 
     return changed;
@@ -326,6 +455,260 @@ class OfferRepository {
   bool _d(dynamic a, dynamic b) {
     if (a == null && b == null) return false;
     return a?.toString() != b?.toString();
+  }
+
+  OfferModel _toOfferModel(Map<String, dynamic> raw) {
+    return OfferModel.fromJson(_normalizeOffer(raw));
+  }
+
+  Map<String, dynamic> _normalizeOffer(Map<String, dynamic> raw) {
+    final pricing = _asMap(raw['pricing']);
+    final financials = _asMap(raw['financials']);
+    final conditions = _asMap(raw['conditions']);
+    final parties = _asMap(raw['parties']);
+    final titleCompany = _asMap(raw['title_company'] ?? raw['titleCompany']);
+    final property = _asMap(raw['property']);
+
+    final buyer = _asMap(parties['buyer']).isNotEmpty
+        ? _asMap(parties['buyer'])
+        : _asMap(raw['buyer']);
+    final seller = _asMap(parties['seller']).isNotEmpty
+        ? _asMap(parties['seller'])
+        : _asMap(raw['seller']);
+    final agent = _asMap(parties['agent']).isNotEmpty
+        ? _asMap(parties['agent'])
+        : _asMap(raw['agent']);
+    final secondBuyer = _asMap(parties['secondBuyer']).isNotEmpty
+        ? _asMap(parties['secondBuyer'])
+        : _asMap(raw['secondBuyer']);
+
+    final normalized = <String, dynamic>{
+      'id': _s(raw['id']) ?? _s(raw['offerID']) ?? '',
+      'status': (_s(raw['status']) ?? 'draft').toLowerCase(),
+      'createdTime':
+          _dt(raw['createdTime'] ?? raw['created_at'])?.toIso8601String(),
+      'closingDate':
+          _dt(raw['closingDate'] ?? raw['closing_date'])?.toIso8601String(),
+      'closingDays': _i(raw['closingDays'] ?? raw['closing_days']),
+      'propertyId': _s(raw['propertyId']) ?? _s(raw['property_id']) ?? '',
+      'sellerId':
+          _s(raw['sellerId']) ?? _s(raw['seller_id']) ?? _s(seller['id']) ?? '',
+      'buyerId':
+          _s(raw['buyerId']) ?? _s(raw['buyer_id']) ?? _s(buyer['id']) ?? '',
+      'chatId': _s(raw['chatId']) ?? _s(raw['chat_id']) ?? '',
+      'counteredCount': _i(raw['counteredCount'] ??
+          raw['countered_count'] ??
+          pricing['countered_count']),
+      'listPrice': _s(raw['listPrice']) ??
+          _s(raw['list_price']) ??
+          _s(pricing['listPrice']) ??
+          _s(pricing['list_price']) ??
+          '',
+      'purchasePrice': _i(raw['purchasePrice'] ??
+          raw['purchase_price'] ??
+          pricing['purchasePrice'] ??
+          pricing['purchase_price']),
+      'finalPrice': _s(raw['finalPrice']) ??
+          _s(raw['final_price']) ??
+          _s(pricing['finalPrice']) ??
+          _s(pricing['final_price']) ??
+          '',
+      'loanType': _s(raw['loanType']) ??
+          _s(raw['loan_type']) ??
+          _s(financials['loan_type']) ??
+          _s(financials['loanType']) ??
+          '',
+      'downPaymentAmount': _i(raw['downPaymentAmount'] ??
+          raw['down_payment_amount'] ??
+          financials['downPaymentAmount'] ??
+          financials['down_payment_amount']),
+      'loanAmount': _i(raw['loanAmount'] ??
+          raw['loan_amount'] ??
+          financials['loanAmount'] ??
+          financials['loan_amount']),
+      'requestForSellerCredit': _i(raw['requestForSellerCredit'] ??
+          raw['request_for_seller_credit'] ??
+          raw['credit_request'] ??
+          financials['creditRequest'] ??
+          financials['credit_request']),
+      'depositType': _s(raw['depositType']) ??
+          _s(raw['deposit_type']) ??
+          _s(financials['depositType']) ??
+          _s(financials['deposit_type']) ??
+          '',
+      'depositAmount': _i(raw['depositAmount'] ??
+          raw['deposit_amount'] ??
+          financials['depositAmount'] ??
+          financials['deposit_amount']),
+      'coverageAmount': _i(raw['coverageAmount'] ??
+          raw['coverage_amount'] ??
+          financials['coverageAmount'] ??
+          financials['coverage_amount']),
+      'additionalEarnest': _i(raw['additionalEarnest'] ??
+          raw['additional_earnest'] ??
+          financials['additionalEarnest'] ??
+          financials['additional_earnest']),
+      'optionFee': _i(raw['optionFee'] ??
+          raw['option_fee'] ??
+          financials['optionFee'] ??
+          financials['option_fee']),
+      'propertyCondition': _s(raw['propertyCondition']) ??
+          _s(raw['property_condition']) ??
+          _s(conditions['propertyCondition']) ??
+          _s(conditions['property_condition']) ??
+          '',
+      'preApproval': _b(raw['preApproval'] ??
+          raw['pre_approval'] ??
+          conditions['preApproval'] ??
+          conditions['pre_approval']),
+      'survey': _b(raw['survey'] ?? conditions['survey']),
+      'addendums': raw['addendums'] ?? const [],
+      'buyer': {
+        'id': _s(buyer['id']) ?? _s(raw['buyer_id']) ?? '',
+        'name': _s(buyer['name']) ?? '',
+        'phoneNumber':
+            _s(buyer['phone_number']) ?? _s(buyer['phoneNumber']) ?? '',
+        'email': _s(buyer['email']) ?? '',
+      },
+      'secondBuyer': {
+        'id': _s(secondBuyer['id']) ?? '',
+        'name': _s(secondBuyer['name']) ?? '',
+        'phoneNumber': _s(secondBuyer['phone_number']) ??
+            _s(secondBuyer['phoneNumber']) ??
+            '',
+        'email': _s(secondBuyer['email']) ?? '',
+      },
+      'seller': {
+        'id': _s(seller['id']) ?? _s(raw['seller_id']) ?? '',
+        'name': _s(seller['name']) ?? '',
+        'phoneNumber':
+            _s(seller['phone_number']) ?? _s(seller['phoneNumber']) ?? '',
+        'email': _s(seller['email']) ?? '',
+      },
+      'agent': {
+        'id': _s(agent['id']) ?? _s(raw['agent_id']) ?? '',
+        'name': _s(agent['name']) ?? '',
+        'phoneNumber':
+            _s(agent['phone_number']) ?? _s(agent['phoneNumber']) ?? '',
+        'email': _s(agent['email']) ?? '',
+      },
+      'titleCompany': {
+        'id': _s(titleCompany['id']) ?? '',
+        'companyName': _s(titleCompany['company_name']) ??
+            _s(titleCompany['companyName']) ??
+            '',
+        'phoneNumber': _s(titleCompany['phone_number']) ??
+            _s(titleCompany['phoneNumber']) ??
+            '',
+        'choice': _s(titleCompany['choice']) ?? '',
+        'agent': {
+          'id': _s(_asMap(titleCompany['agent'])['id']) ?? '',
+          'name': _s(_asMap(titleCompany['agent'])['name']) ?? '',
+        },
+      },
+      'property': _normalizeProperty(property),
+    };
+
+    return normalized;
+  }
+
+  Map<String, dynamic> _normalizeProperty(Map<String, dynamic> property) {
+    final address = _asMap(property['address']);
+    final street = [
+      _s(address['street_number']) ?? _s(address['streetNumber']),
+      _s(address['street_direction']) ?? _s(address['streetDirection']),
+      _s(address['street_name']) ?? _s(address['streetName']),
+      _s(address['street_type']) ?? _s(address['streetType']),
+    ].whereType<String>().where((v) => v.isNotEmpty).join(' ');
+
+    final line =
+        street.isNotEmpty ? street : (_s(property['propertyName']) ?? '');
+
+    return {
+      'id': _s(property['id']) ?? '',
+      'propertyType':
+          _s(property['property_type']) ?? _s(property['propertyType']) ?? '',
+      'title': line,
+      'description': _s(property['description']) ?? _s(property['notes']) ?? '',
+      'beds': (_i(property['bedrooms']) > 0)
+          ? _i(property['bedrooms']).toString()
+          : (_s(property['beds']) ?? ''),
+      'baths': (_i(property['bathrooms']) > 0)
+          ? _i(property['bathrooms']).toString()
+          : (_s(property['baths']) ?? ''),
+      'sqft': (_i(property['squareFootage']) > 0)
+          ? _i(property['squareFootage']).toString()
+          : (_i(property['square_footage']) > 0)
+              ? _i(property['square_footage']).toString()
+              : (_s(property['sqft']) ?? ''),
+      'price': _i(
+          property['price'] ?? property['list_price'] ?? property['listPrice']),
+      'images': property['images'] ?? property['media'] ?? const [],
+      'listDate': _s(property['listDate']) ?? _s(property['list_date']) ?? '',
+      'listPrice': _i(property['listPrice'] ?? property['list_price']),
+      'location': {
+        'city': _s(address['city']) ??
+            _s(_asMap(property['location'])['city']) ??
+            '',
+        'state': _s(address['state']) ??
+            _s(_asMap(property['location'])['state']) ??
+            '',
+        'zipCode': _s(address['zip']) ??
+            _s(address['zipCode']) ??
+            _s(_asMap(property['location'])['zipCode']) ??
+            _s(_asMap(property['location'])['zip_code']) ??
+            '',
+        'address': line,
+      },
+    };
+  }
+
+  Map<String, dynamic> _asMap(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    try {
+      final maybe = (v as dynamic).toJson();
+      if (maybe is Map<String, dynamic>) return maybe;
+      if (maybe is Map) return Map<String, dynamic>.from(maybe);
+    } catch (_) {}
+    return <String, dynamic>{};
+  }
+
+  String? _s(dynamic v) {
+    if (v == null) return null;
+    final out = v.toString().trim();
+    return out.isEmpty ? null : out;
+  }
+
+  int _i(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString()) ?? 0;
+  }
+
+  bool _b(dynamic v) {
+    if (v is bool) return v;
+    if (v is String) return v.toLowerCase() == 'true';
+    return false;
+  }
+
+  DateTime? _dt(dynamic v) {
+    if (v == null) return null;
+    if (v is DateTime) return v;
+    if (v is String) return DateTime.tryParse(v);
+    if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+    if (v is Map) {
+      final seconds = v['_seconds'];
+      if (seconds is int) {
+        return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+      }
+    }
+    try {
+      final maybe = (v as dynamic).toDate();
+      if (maybe is DateTime) return maybe;
+    } catch (_) {}
+    return null;
   }
 
   // -- Revision History Access Methods --
@@ -496,12 +879,18 @@ class OfferRepository {
     Map<String, dynamic> offerData,
     String actorUserId,
   ) {
-    final parties = offerData['parties'] as Map<String, dynamic>? ?? {};
+    final parties = _asMap(offerData['parties']);
     final ids = <String>{};
 
-    for (final role in ['buyer', 'seller', 'agent', 'second_buyer']) {
-      final party = parties[role] as Map<String, dynamic>?;
-      final id = party?['id'] as String?;
+    for (final role in [
+      'buyer',
+      'seller',
+      'agent',
+      'second_buyer',
+      'secondBuyer'
+    ]) {
+      final party = _asMap(parties[role]);
+      final id = _s(party['id']);
       if (id != null && id.isNotEmpty && id != actorUserId) {
         ids.add(id);
       }

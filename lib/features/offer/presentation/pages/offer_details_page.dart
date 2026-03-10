@@ -9,9 +9,13 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../property/data/models/property_model.dart';
+import '../../../property/data/models/address_model.dart';
 import '../bloc/offer_bloc.dart';
 import '../../data/models/offer_model.dart';
 import '../../data/models/offer_revision_model.dart';
+import '../widgets/offer_details_components.dart';
+import '../widgets/offer_process_sheet.dart';
 
 class OfferDetailsPage extends StatefulWidget {
   final String offerId;
@@ -26,9 +30,23 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<OfferBloc>()
-          .add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
+      final bloc = context.read<OfferBloc>();
+      // Load the offer list if it's not already in state (e.g. direct navigation)
+      final alreadyLoaded =
+          bloc.state.offers.any((o) => o.id == widget.offerId);
+      if (!alreadyLoaded) {
+        final authState = context.read<AuthBloc>().state;
+        if (authState is AuthAuthenticated) {
+          final uid = authState.user.uid;
+          final role = authState.user.role?.toLowerCase();
+          if (role == 'agent') {
+            bloc.add(LoadAgentOffers(requesterId: uid));
+          } else {
+            bloc.add(LoadUserOffers(requesterId: uid));
+          }
+        }
+      }
+      bloc.add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
     });
   }
 
@@ -104,6 +122,118 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     return buffer.toString();
   }
 
+  String _display(String? value) {
+    if (value == null) return '--';
+    final v = value.trim();
+    return v.isEmpty ? '--' : v;
+  }
+
+  String _displayDate(DateTime? dt) {
+    if (dt == null) return '--';
+    return '${dt.month}/${dt.day}/${dt.year}';
+  }
+
+  String _displayCurrencyString(String? value) {
+    final parsed = int.tryParse((value ?? '').trim());
+    if (parsed == null || parsed <= 0) return '--';
+    return '\$${_formatCurrency(parsed)}';
+  }
+
+  String _joinNonEmpty(List<String?> values, {String separator = ', '}) {
+    final items = values
+        .whereType<String>()
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty && value != '--')
+        .toList();
+    return items.isEmpty ? '--' : items.join(separator);
+  }
+
+  bool _canEdit(OfferModel offer, BuildContext context) {
+    final status = offer.status?.name.toLowerCase() ?? 'draft';
+    final role = _currentUserRole(context);
+    return (status == 'draft' || status == 'pending') &&
+        (role == 'buyer' || role == 'agent');
+  }
+
+  bool _hasBottomActions(BuildContext context, String statusStr) {
+    final role = _currentUserRole(context);
+    final isAgentPending = role == 'agent' && statusStr == 'pending';
+    final isBuyerPending = role == 'buyer' && statusStr == 'pending';
+    final isAccepted = statusStr == 'accepted';
+    return isAgentPending || isBuyerPending || isAccepted;
+  }
+
+  void _openEditSheet(BuildContext context, OfferModel offer) {
+    final uid = _currentUserId(context);
+    final prop = offer.property;
+    final loc = prop.location;
+
+    // Parse street address back into components
+    final addressParts = loc.address.split(' ');
+    String streetNumber = '';
+    String streetName = '';
+    if (addressParts.isNotEmpty) {
+      final first = addressParts.first;
+      if (first.isNotEmpty && RegExp(r'^\d').hasMatch(first)) {
+        streetNumber = first;
+        streetName = addressParts.skip(1).join(' ');
+      } else {
+        streetName = loc.address;
+      }
+    }
+
+    final propertyData = PropertyDataClass(
+      id: prop.id,
+      propertyName: prop.title,
+      listPrice: prop.price > 0
+          ? prop.price
+          : int.tryParse(offer.listPrice) ?? offer.purchasePrice,
+      bedrooms: int.tryParse(prop.beds) ?? 0,
+      bathrooms: int.tryParse(prop.baths) ?? 0,
+      squareFootage: int.tryParse(prop.sqft) ?? 0,
+      address: AddressDataClass(
+        streetNumber: streetNumber,
+        streetName: streetName,
+        city: loc.city,
+        state: loc.state,
+        zip: loc.zipCode,
+      ),
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: context.read<OfferBloc>(),
+        child: OfferProcessSheet(
+          property: propertyData,
+          requesterId: uid,
+          existingOffer: offer,
+          onComplete: () {
+            // Reload offers
+            final role = _currentUserRole(context);
+            if (role == 'agent') {
+              context.read<OfferBloc>().add(
+                    LoadAgentOffers(requesterId: uid),
+                  );
+            } else {
+              context.read<OfferBloc>().add(
+                    LoadUserOffers(requesterId: uid),
+                  );
+            }
+            // Reload revisions
+            context.read<OfferBloc>().add(
+                  LoadOfferRevisions(offerId: offer.id, limit: 20),
+                );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<OfferBloc, OfferState>(
@@ -146,214 +276,215 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
         }
 
         final statusStr = offer.status?.name ?? 'draft';
-        final role = _currentUserRole(context);
-        final isBuyer = role == 'buyer';
+        final hasBottomActions = _hasBottomActions(context, statusStr);
 
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('Offer Details'),
-            elevation: 0,
             actions: [
-              // Single edit button — only for buyer with pending/draft offers
-              if (isBuyer &&
-                  (statusStr == 'draft' || statusStr == 'pending'))
+              if (_canEdit(offer, context))
                 IconButton(
-                  icon: const Icon(LucideIcons.edit),
+                  icon: Icon(LucideIcons.edit3, size: 20.sp),
                   tooltip: 'Edit Offer',
-                  onPressed: () {
-                    // Navigate to edit offer
-                  },
+                  onPressed: () => _openEditSheet(context, offer),
                 ),
             ],
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Status Banner ──
                 _buildStatusBanner(offer, statusStr),
-                SizedBox(height: 16.h),
-
-                // ── Property Card ──
-                _buildSectionCard(
-                  icon: LucideIcons.home,
-                  title: 'Property',
-                  children: [
-                    _InfoRow(
-                        'Address',
-                        offer.property.title.isNotEmpty
-                            ? offer.property.title
-                            : 'Property ${offer.propertyId}'),
-                    if (offer.propertyCondition.isNotEmpty)
-                      _InfoRow('Condition', offer.propertyCondition),
-                  ],
-                ),
                 SizedBox(height: 12.h),
-
-                // ── Pricing Card ──
-                _buildSectionCard(
-                  icon: LucideIcons.dollarSign,
-                  title: 'Pricing',
-                  children: [
-                    if (offer.listPrice.isNotEmpty)
-                      _InfoRow('List Price', '\$${offer.listPrice}'),
-                    _InfoRow('Purchase Price',
-                        '\$${_formatCurrency(offer.purchasePrice)}'),
-                    if (offer.finalPrice.isNotEmpty)
-                      _InfoRow('Final Price', '\$${offer.finalPrice}'),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-
-                // ── Financials Card ──
-                _buildSectionCard(
-                  icon: LucideIcons.landmark,
-                  title: 'Financials',
-                  children: [
-                    if (offer.loanType.isNotEmpty)
-                      _InfoRow('Loan Type', offer.loanType),
-                    if (offer.downPaymentAmount > 0)
-                      _InfoRow('Down Payment',
-                          '\$${_formatCurrency(offer.downPaymentAmount)}'),
-                    if (offer.loanAmount > 0)
-                      _InfoRow('Loan Amount',
-                          '\$${_formatCurrency(offer.loanAmount)}'),
-                    if (offer.requestForSellerCredit > 0)
-                      _InfoRow('Seller Credit',
-                          '\$${_formatCurrency(offer.requestForSellerCredit)}'),
-                    if (offer.depositType.isNotEmpty)
-                      _InfoRow('Deposit Type', offer.depositType),
-                    if (offer.depositAmount > 0)
-                      _InfoRow('Deposit Amount',
-                          '\$${_formatCurrency(offer.depositAmount)}'),
-                    if (offer.additionalEarnest > 0)
-                      _InfoRow('Additional Earnest',
-                          '\$${_formatCurrency(offer.additionalEarnest)}'),
-                    if (offer.optionFee > 0)
-                      _InfoRow(
-                          'Option Fee', '\$${_formatCurrency(offer.optionFee)}'),
-                    if (offer.coverageAmount > 0)
-                      _InfoRow('Coverage',
-                          '\$${_formatCurrency(offer.coverageAmount)}'),
-                    if (offer.closingDate != null)
-                      _InfoRow('Closing Date',
-                          '${offer.closingDate!.month}/${offer.closingDate!.day}/${offer.closingDate!.year}'),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-
-                // ── Parties Card ──
-                _buildSectionCard(
-                  icon: LucideIcons.users,
-                  title: 'Parties',
-                  children: [
-                    if (offer.buyer.name.isNotEmpty)
-                      _InfoRow('Buyer', offer.buyer.name),
-                    if (offer.buyer.email.isNotEmpty)
-                      _InfoRow('Email', offer.buyer.email),
-                    if (offer.buyer.phoneNumber.isNotEmpty)
-                      _InfoRow('Phone', offer.buyer.phoneNumber),
-                    _InfoRow('Pre-Approved', offer.preApproval ? 'Yes' : 'No'),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-
-                // ── Title Company Card ──
-                if (offer.titleCompany.companyName.isNotEmpty) ...[
-                  _buildSectionCard(
-                    icon: LucideIcons.building2,
-                    title: 'Title Company',
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _InfoRow('Company', offer.titleCompany.companyName),
-                      if (offer.titleCompany.phoneNumber.isNotEmpty)
-                        _InfoRow('Phone', offer.titleCompany.phoneNumber),
-                      if (offer.titleCompany.choice.isNotEmpty)
-                        _InfoRow('Choice', offer.titleCompany.choice),
-                      if (offer.titleCompany.agent.name.isNotEmpty)
-                        _InfoRow('Agent', offer.titleCompany.agent.name),
+                      OfferMetricChip(
+                        icon: LucideIcons.badgeDollarSign,
+                        label: 'Purchase Price',
+                        value: '\$${_formatCurrency(offer.purchasePrice)}',
+                      ),
+                      SizedBox(width: 8.w),
+                      OfferMetricChip(
+                        icon: LucideIcons.landmark,
+                        label: 'Loan Amount',
+                        value: '\$${_formatCurrency(offer.loanAmount)}',
+                      ),
+                      SizedBox(width: 8.w),
+                      OfferMetricChip(
+                        icon: LucideIcons.calendarDays,
+                        label: 'Closing',
+                        value: offer.closingDate != null
+                            ? _displayDate(offer.closingDate)
+                            : '${offer.closingDays} days',
+                      ),
                     ],
                   ),
-                  SizedBox(height: 12.h),
-                ],
-
-                // ── Addendums Card ──
-                if (offer.addendums.isNotEmpty) ...[
-                  _buildSectionCard(
+                ),
+                SizedBox(height: 12.h),
+                OfferDetailPanel(
+                  title: 'Key Terms',
+                  subtitle: 'Financial and contract highlights',
+                  icon: LucideIcons.fileCheck,
+                  children: [
+                    OfferKeyValueRow(
+                        label: 'List Price',
+                        value: _displayCurrencyString(offer.listPrice)),
+                    OfferKeyValueRow(
+                      label: 'Purchase Price',
+                      value: '\$${_formatCurrency(offer.purchasePrice)}',
+                      emphasize: true,
+                    ),
+                    OfferKeyValueRow(
+                        label: 'Deposit Type',
+                        value: _display(offer.depositType)),
+                    if (offer.requestForSellerCredit > 0)
+                      OfferKeyValueRow(
+                          label: 'Seller Credit',
+                          value:
+                              '-\$${_formatCurrency(offer.requestForSellerCredit)}'),
+                    OfferKeyValueRow(
+                        label: 'Earnest Money',
+                        value: '\$${_formatCurrency(offer.depositAmount)}'),
+                    if (offer.downPaymentAmount > 0)
+                      OfferKeyValueRow(
+                          label: 'Down Payment',
+                          value:
+                              '\$${_formatCurrency(offer.downPaymentAmount)}'),
+                    OfferKeyValueRow(
+                        label: 'Loan Amount',
+                        value: '\$${_formatCurrency(offer.loanAmount)}'),
+                    if (offer.loanType.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Loan Type', value: offer.loanType),
+                    if (offer.additionalEarnest > 0)
+                      OfferKeyValueRow(
+                          label: 'Additional Earnest',
+                          value:
+                              '\$${_formatCurrency(offer.additionalEarnest)}'),
+                    if (offer.optionFee > 0)
+                      OfferKeyValueRow(
+                          label: 'Option Fee',
+                          value: '\$${_formatCurrency(offer.optionFee)}'),
+                    if (offer.coverageAmount > 0)
+                      OfferKeyValueRow(
+                          label: 'Home Warranty',
+                          value: '\$${_formatCurrency(offer.coverageAmount)}'),
+                    if (offer.closingDate != null)
+                      OfferKeyValueRow(
+                          label: 'Closing Date',
+                          value: _displayDate(offer.closingDate)),
+                    OfferKeyValueRow(
+                        label: 'Closing Days', value: '${offer.closingDays}'),
+                  ],
+                ),
+                OfferDetailPanel(
+                  title: 'Property',
+                  subtitle: 'Address and property characteristics',
+                  icon: LucideIcons.home,
+                  children: [
+                    OfferKeyValueRow(
+                        label: 'Address',
+                        value: _display(offer.property.location.address)),
+                    OfferKeyValueRow(
+                        label: 'Location',
+                        value: _joinNonEmpty([
+                          _joinNonEmpty([
+                            offer.property.location.city,
+                            offer.property.location.state,
+                          ]),
+                          offer.property.location.zipCode,
+                        ], separator: ' ')),
+                    if (offer.property.beds.isNotEmpty ||
+                        offer.property.baths.isNotEmpty ||
+                        offer.property.sqft.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Details',
+                          value: [
+                            if (offer.property.beds.isNotEmpty)
+                              '${offer.property.beds} Beds',
+                            if (offer.property.baths.isNotEmpty)
+                              '${offer.property.baths} Baths',
+                            if (offer.property.sqft.isNotEmpty)
+                              '${offer.property.sqft} SqFt',
+                          ].join(' • ')),
+                    if (offer.propertyCondition.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Condition', value: offer.propertyCondition),
+                  ],
+                ),
+                OfferDetailPanel(
+                  title: 'Parties',
+                  subtitle: 'Stakeholders and contact details',
+                  icon: LucideIcons.users,
+                  children: [
+                    OfferKeyValueRow(
+                        label: 'Buyer', value: _display(offer.buyer.name)),
+                    if (offer.buyer.phoneNumber.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Buyer Phone', value: offer.buyer.phoneNumber),
+                    if (offer.buyer.email.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Buyer Email', value: offer.buyer.email),
+                    if (offer.secondBuyer.name.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Second Buyer', value: offer.secondBuyer.name),
+                    if (offer.secondBuyer.phoneNumber.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Second Buyer Phone',
+                          value: offer.secondBuyer.phoneNumber),
+                    if (offer.secondBuyer.email.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Second Buyer Email',
+                          value: offer.secondBuyer.email),
+                    OfferKeyValueRow(
+                        label: 'Seller', value: _display(offer.seller.name)),
+                    OfferKeyValueRow(
+                        label: 'Agent', value: _display(offer.agent.name)),
+                    if (offer.titleCompany.companyName.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Title Company',
+                          value: offer.titleCompany.companyName),
+                    if (offer.titleCompany.choice.isNotEmpty)
+                      OfferKeyValueRow(
+                          label: 'Title Choice',
+                          value: offer.titleCompany.choice),
+                  ],
+                ),
+                OfferDetailPanel(
+                  title: 'Conditions',
+                  subtitle: 'Offer terms and requirements',
+                  icon: LucideIcons.shieldCheck,
+                  children: [
+                    OfferKeyValueRow(
+                        label: 'Pre-Approval',
+                        value: offer.preApproval ? 'Yes' : 'No'),
+                    OfferKeyValueRow(
+                        label: 'Survey', value: offer.survey ? 'Yes' : 'No'),
+                  ],
+                ),
+                if (offer.addendums.isNotEmpty)
+                  OfferDetailPanel(
+                    title: 'Addendums',
+                    subtitle: 'Attached offer documents',
                     icon: LucideIcons.paperclip,
-                    title: 'Addendums (${offer.addendums.length})',
                     children: offer.addendums
-                        .map((a) => Padding(
-                              padding: EdgeInsets.only(bottom: 6.h),
-                              child: Row(
-                                children: [
-                                  Icon(LucideIcons.file,
-                                      size: 16.sp,
-                                      color: AppColors.textSecondary),
-                                  SizedBox(width: 8.w),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(a.name,
-                                            style: AppTypography.titleMedium),
-                                        if (a.description.isNotEmpty)
-                                          Text(a.description,
-                                              style: AppTypography.bodySmall,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
+                        .map((a) => OfferKeyValueRow(
+                            label: 'Document', value: _display(a.name)))
                         .toList(),
                   ),
-                  SizedBox(height: 12.h),
-                ],
-
-                // ── Changes Detected ──
-                if (state.changedFields.isNotEmpty) ...[
-                  _buildSectionCard(
-                    icon: LucideIcons.alertCircle,
-                    title: 'Changes Detected',
-                    headerColor: AppColors.tertiary,
-                    children: state.changedFields
-                        .map((field) => Padding(
-                              padding: EdgeInsets.only(bottom: 4.h),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 6.w,
-                                    height: 6.w,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.tertiary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Text(field,
-                                      style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.tertiary)),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(height: 12.h),
-                ],
-
-                // ── Revision History ──
+                SizedBox(height: 16.h),
                 _buildRevisionSection(state, offer),
-
-                SizedBox(height: 100.h),
+                SizedBox(height: hasBottomActions ? 100.h : 16.h),
               ],
             ),
           ),
-          bottomNavigationBar: _buildBottomActions(context, offer, statusStr),
+          bottomNavigationBar: hasBottomActions
+              ? _buildBottomActions(context, offer, statusStr)
+              : null,
         );
       },
     );
@@ -402,7 +533,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Offer #${offer.id.length > 8 ? offer.id.substring(0, 8) : offer.id}',
+                  'Submitted on ${_displayDate(offer.createdTime)}',
                   style: AppTypography.bodySmall
                       .copyWith(color: AppColors.textSecondary),
                 ),
@@ -428,152 +559,56 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     );
   }
 
-  Widget _buildSectionCard({
-    required IconData icon,
-    required String title,
-    required List<Widget> children,
-    Color? headerColor,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 10.h),
-            child: Row(
-              children: [
-                Icon(icon,
-                    size: 18.sp, color: headerColor ?? AppColors.primary),
-                SizedBox(width: 8.w),
-                Text(
-                  title,
-                  style: AppTypography.titleLarge.copyWith(
-                    color: headerColor ?? AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: AppColors.divider),
-          Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 14.h),
-            child: Column(children: children),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildRevisionSection(OfferState state, OfferModel offer) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return OfferDetailPanel(
+      title: 'Revision History',
+      subtitle: 'Track every important offer change',
+      icon: LucideIcons.history,
+      children: [
+        if (state.revisions.isEmpty)
           Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 10.h),
-            child: Row(
-              children: [
-                Icon(LucideIcons.history,
-                    size: 18.sp, color: AppColors.primary),
-                SizedBox(width: 8.w),
-                Text('Revision History', style: AppTypography.titleLarge),
-              ],
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: Text(
+              'No revisions yet.',
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
-          ),
-          Divider(height: 1, color: AppColors.divider),
-          if (state.revisions.isEmpty)
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Text(
-                'No revisions yet.',
-                style: AppTypography.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
-              ),
-            )
-          else
-            ...state.revisions.asMap().entries.map((entry) {
-              final i = entry.key;
-              final revision = entry.value;
-              return Column(
-                children: [
-                  InkWell(
-                    onTap: () =>
-                        _showRevisionComparison(context, offer, revision),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 12.h),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 32.w,
-                            height: 32.w,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '#${revision.revisionNumber}',
-                                style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  revision.changeSummary.isEmpty
-                                      ? revision.revisionType.name
-                                      : revision.changeSummary,
-                                  style: AppTypography.titleMedium,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 2.h),
-                                Text(
-                                  '${revision.userName.isEmpty ? 'System' : revision.userName} • ${_formatDate(revision.timestamp)}',
-                                  style: AppTypography.caption,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(LucideIcons.chevronRight,
-                              size: 16.sp, color: AppColors.textTertiary),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (i < state.revisions.length - 1)
-                    Divider(
-                        height: 1, color: AppColors.divider, indent: 60.w),
-                ],
-              );
-            }),
-        ],
-      ),
+          )
+        else
+          ...state.revisions.asMap().entries.map((entry) {
+            final i = entry.key;
+            final revision = entry.value;
+            return Column(
+              children: [
+                RevisionTimelineItem(
+                  revision: revision,
+                  formatDate: _formatDate,
+                  onTap: () =>
+                      _showRevisionComparison(context, offer, revision),
+                ),
+                if (i < state.revisions.length - 1)
+                  Divider(height: 1, color: AppColors.divider),
+              ],
+            );
+          }),
+      ],
     );
   }
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
@@ -657,8 +692,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                     icon: LucideIcons.messageSquare,
                     isOutlined: true,
                     color: AppColors.primary,
-                    onPressed: () =>
-                        _showRevisionRequestDialog(context, offer),
+                    onPressed: () => _showRevisionRequestDialog(context, offer),
                   ),
                 ),
               ],
@@ -846,7 +880,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
-      builder: (_) => _RevisionComparisonSheet(revision: revision),
+      builder: (_) => RevisionComparisonBottomSheet(revision: revision),
     );
   }
 }
@@ -877,16 +911,15 @@ class _ActionButton extends StatelessWidget {
             ? SizedBox(
                 width: 16.sp,
                 height: 16.sp,
-                child:
-                    CircularProgressIndicator(strokeWidth: 2, color: color))
+                child: CircularProgressIndicator(strokeWidth: 2, color: color))
             : Icon(icon, size: 18.sp),
         label: Text(label),
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
           side: BorderSide(color: color.withValues(alpha: 0.5)),
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
         ),
       );
     }
@@ -906,145 +939,6 @@ class _ActionButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 14.h),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-      ),
-    );
-  }
-}
-
-class _RevisionComparisonSheet extends StatelessWidget {
-  final OfferRevisionModel revision;
-  const _RevisionComparisonSheet({required this.revision});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Revision #${revision.revisionNumber}',
-              style: AppTypography.headlineSmall,
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              revision.changeSummary.isEmpty
-                  ? revision.revisionType.name
-                  : revision.changeSummary,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
-            ),
-            SizedBox(height: 16.h),
-            if (revision.fieldChanges.isEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.h),
-                child: Center(
-                  child: Text(
-                    'No detailed field changes stored.',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textTertiary),
-                  ),
-                ),
-              )
-            else
-              SizedBox(
-                height: 320.h,
-                child: ListView.separated(
-                  itemCount: revision.fieldChanges.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                  itemBuilder: (context, index) {
-                    final c = revision.fieldChanges[index];
-                    return Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(c.fieldLabel, style: AppTypography.titleMedium),
-                          SizedBox(height: 6.h),
-                          Row(
-                            children: [
-                              Icon(LucideIcons.minus,
-                                  size: 12.sp, color: AppColors.error),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  c.oldValue ?? '-',
-                                  style: AppTypography.bodySmall
-                                      .copyWith(color: AppColors.error),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 2.h),
-                          Row(
-                            children: [
-                              Icon(LucideIcons.plus,
-                                  size: 12.sp, color: AppColors.success),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  c.newValue ?? '-',
-                                  style: AppTypography.bodySmall
-                                      .copyWith(color: AppColors.success),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _InfoRow(this.label, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120.w,
-            child: Text(label,
-                style: AppTypography.bodySmall
-                    .copyWith(color: AppColors.textSecondary)),
-          ),
-          Expanded(
-            child: Text(value,
-                style: AppTypography.bodyMedium
-                    .copyWith(fontWeight: FontWeight.w500)),
-          ),
-        ],
       ),
     );
   }

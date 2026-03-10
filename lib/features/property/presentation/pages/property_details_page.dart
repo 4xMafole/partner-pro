@@ -168,7 +168,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         child: OfferProcessSheet(
           property: p,
           requesterId: uid,
-          onComplete: () => Navigator.pop(context),
+          onComplete: () {},
         ),
       ),
     );

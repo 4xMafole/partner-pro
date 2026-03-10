@@ -1,5 +1,7 @@
 # Sprint 2.1: Offer System Complete Migration
 
+> Status update, March 10, 2026: this document is the original planning baseline. The implementation closeout decision is maintained in [docs/SPRINT_2_1_STATUS.md](SPRINT_2_1_STATUS.md). Where this file describes broader production-ready outcomes, treat those as original plan targets, not the final scoped closeout contract.
+
 **Phase:** Phase 2 - Core Feature Migration  
 **Sprint:** 2.1 - Offer System  
 **Duration:** 3 weeks (15 days)  
@@ -13,8 +15,10 @@
 
 Sprint 2.1 completes the migration of the PartnerPro offer system from ~60% legacy implementation to 100% modern architecture. This critical feature underpins all buyer-agent transactions and requires comprehensive notifications, revision tracking, and validation.
 
-**Current State:** UI rebuilt, notifications pending, revision tracking missing  
-**Target State:** Production-ready offer system with full notification pipeline, change tracking, and comprehensive tests
+**Current State At Planning Time:** UI rebuilt, notifications pending, revision tracking missing  
+**Target State At Planning Time:** Production-ready offer system with full notification pipeline, change tracking, and comprehensive tests
+
+**Implemented Sprint 2.1 Closeout Scope:** Migrated offer lifecycle, repository guards, revisions, comparisons, and in-app Firestore notifications. External delivery channels and production release hardening were deferred.
 
 **Success Metrics:**
 - ✅ 100 unit tests (50+ repository/BLoC, 50+ datasource)
@@ -27,6 +31,8 @@ Sprint 2.1 completes the migration of the PartnerPro offer system from ~60% lega
 ---
 
 ## 🌳 Git Branch Strategy
+
+**Historical note:** The branch plan below reflects the original Sprint 2.1 execution model. The adopted repository rule remains merge to `develop` first, then promote to `main` via release flow. For the next sprint boundary, use [docs/SPRINT_2_2_BOUNDARY_AND_BRANCH_PLAN.md](SPRINT_2_2_BOUNDARY_AND_BRANCH_PLAN.md).
 
 ### Branch Naming Conventions
 

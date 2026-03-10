@@ -13,7 +13,8 @@ class BuyerModel with _$BuyerModel {
     @Default('') String phoneNumber,
     @Default('') String email,
   }) = _BuyerModel;
-  factory BuyerModel.fromJson(Map<String, dynamic> json) => _$BuyerModelFromJson(json);
+  factory BuyerModel.fromJson(Map<String, dynamic> json) =>
+      _$BuyerModelFromJson(json);
 }
 
 @freezed
@@ -23,7 +24,8 @@ class SellerModel with _$SellerModel {
     @Default('') String phoneNumber,
     @Default('') String email,
   }) = _SellerModel;
-  factory SellerModel.fromJson(Map<String, dynamic> json) => _$SellerModelFromJson(json);
+  factory SellerModel.fromJson(Map<String, dynamic> json) =>
+      _$SellerModelFromJson(json);
 }
 
 @freezed
@@ -32,7 +34,8 @@ class AgentModel with _$AgentModel {
     @Default('') String id,
     @Default('') String name,
   }) = _AgentModel;
-  factory AgentModel.fromJson(Map<String, dynamic> json) => _$AgentModelFromJson(json);
+  factory AgentModel.fromJson(Map<String, dynamic> json) =>
+      _$AgentModelFromJson(json);
 }
 
 @freezed
@@ -43,7 +46,8 @@ class PartiesModel with _$PartiesModel {
     @Default(BuyerModel()) BuyerModel agent,
     @Default(BuyerModel()) BuyerModel secondBuyer,
   }) = _PartiesModel;
-  factory PartiesModel.fromJson(Map<String, dynamic> json) => _$PartiesModelFromJson(json);
+  factory PartiesModel.fromJson(Map<String, dynamic> json) =>
+      _$PartiesModelFromJson(json);
 }
 
 @freezed
@@ -54,7 +58,8 @@ class PricingModel with _$PricingModel {
     @Default(0) int finalPrice,
     @Default(0) int counteredCount,
   }) = _PricingModel;
-  factory PricingModel.fromJson(Map<String, dynamic> json) => _$PricingModelFromJson(json);
+  factory PricingModel.fromJson(Map<String, dynamic> json) =>
+      _$PricingModelFromJson(json);
 }
 
 @freezed
@@ -70,7 +75,8 @@ class FinancialsModel with _$FinancialsModel {
     @Default(0) int optionFee,
     @Default(0) int coverageAmount,
   }) = _FinancialsModel;
-  factory FinancialsModel.fromJson(Map<String, dynamic> json) => _$FinancialsModelFromJson(json);
+  factory FinancialsModel.fromJson(Map<String, dynamic> json) =>
+      _$FinancialsModelFromJson(json);
 }
 
 @freezed
@@ -80,7 +86,8 @@ class ConditionsModel with _$ConditionsModel {
     @Default(false) bool preApproval,
     @Default(false) bool survey,
   }) = _ConditionsModel;
-  factory ConditionsModel.fromJson(Map<String, dynamic> json) => _$ConditionsModelFromJson(json);
+  factory ConditionsModel.fromJson(Map<String, dynamic> json) =>
+      _$ConditionsModelFromJson(json);
 }
 
 @freezed
@@ -92,7 +99,8 @@ class TitleCompanyModel with _$TitleCompanyModel {
     @Default(AgentModel()) AgentModel agent,
     @Default('') String choice,
   }) = _TitleCompanyModel;
-  factory TitleCompanyModel.fromJson(Map<String, dynamic> json) => _$TitleCompanyModelFromJson(json);
+  factory TitleCompanyModel.fromJson(Map<String, dynamic> json) =>
+      _$TitleCompanyModelFromJson(json);
 }
 
 @freezed
@@ -105,7 +113,8 @@ class AddendumModel with _$AddendumModel {
     @Default('') String buyerSign,
     @Default('') String documentId,
   }) = _AddendumModel;
-  factory AddendumModel.fromJson(Map<String, dynamic> json) => _$AddendumModelFromJson(json);
+  factory AddendumModel.fromJson(Map<String, dynamic> json) =>
+      _$AddendumModelFromJson(json);
 }
 
 @freezed
@@ -117,7 +126,8 @@ class UserFileModel with _$UserFileModel {
     @Default('') String content,
     @Default('') String createdDate,
   }) = _UserFileModel;
-  factory UserFileModel.fromJson(Map<String, dynamic> json) => _$UserFileModelFromJson(json);
+  factory UserFileModel.fromJson(Map<String, dynamic> json) =>
+      _$UserFileModelFromJson(json);
 }
 
 @freezed
@@ -125,6 +135,7 @@ class OfferModel with _$OfferModel {
   const factory OfferModel({
     @Default('') String id,
     @Default(BuyerModel()) BuyerModel buyer,
+    @Default(BuyerModel()) BuyerModel secondBuyer,
     @Default(BuyerModel()) BuyerModel agent,
     @Default(BuyerModel()) BuyerModel seller,
     @Default(PropertyModel()) PropertyModel property,
@@ -147,6 +158,7 @@ class OfferModel with _$OfferModel {
     @Default('') String depositType,
     @Default(0) int depositAmount,
     DateTime? closingDate,
+    @Default(30) int closingDays,
     @Default(0) int coverageAmount,
     @Default(TitleCompanyModel()) TitleCompanyModel titleCompany,
     @Default(0) int additionalEarnest,
@@ -154,7 +166,8 @@ class OfferModel with _$OfferModel {
     @Default(false) bool preApproval,
     @Default(false) bool survey,
   }) = _OfferModel;
-  factory OfferModel.fromJson(Map<String, dynamic> json) => _$OfferModelFromJson(json);
+  factory OfferModel.fromJson(Map<String, dynamic> json) =>
+      _$OfferModelFromJson(json);
 }
 
 @freezed
@@ -174,5 +187,6 @@ class NewOfferModel with _$NewOfferModel {
     @Default([]) List<UserFileModel> documents,
     @Default(false) bool agentApproved,
   }) = _NewOfferModel;
-  factory NewOfferModel.fromJson(Map<String, dynamic> json) => _$NewOfferModelFromJson(json);
+  factory NewOfferModel.fromJson(Map<String, dynamic> json) =>
+      _$NewOfferModelFromJson(json);
 }

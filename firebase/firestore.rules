@@ -19,6 +19,20 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.user_type == 'agent';
     }
 
+    function isOfferParticipant(data) {
+      return data.buyer_id == request.auth.uid ||
+             data.buyerId == request.auth.uid ||
+             data.created_by == request.auth.uid ||
+             data.buyer_agent_id == request.auth.uid ||
+             data.buyerAgentId == request.auth.uid ||
+             data.agent_id == request.auth.uid ||
+             data.agentId == request.auth.uid ||
+             data.seller_id == request.auth.uid ||
+             data.sellerId == request.auth.uid ||
+             data.seller_agent_id == request.auth.uid ||
+             data.sellerAgentId == request.auth.uid;
+    }
+
     match /users/{userId} {
       allow create: if isSignedIn();
       allow read: if isSignedIn();
@@ -115,25 +129,18 @@ service cloud.firestore {
     }
 
     match /offer/{offerId} {
-      allow create: if isSignedIn() && request.resource.data.buyer_id == request.auth.uid;
-      allow read, update: if isSignedIn() &&
-                             (resource.data.buyer_id == request.auth.uid ||
-                              resource.data.buyer_agent_id == request.auth.uid ||
-                              resource.data.seller_id == request.auth.uid ||
-                              resource.data.seller_agent_id == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       (request.resource.data.buyer_id == request.auth.uid ||
+                        request.resource.data.buyerId == request.auth.uid ||
+                        request.resource.data.created_by == request.auth.uid);
+      allow read, update: if isSignedIn() && isOfferParticipant(resource.data);
       allow delete: if false;
 
       match /revisions/{revisionId} {
         allow read: if isSignedIn() &&
-                       (get(/databases/$(database)/documents/offer/$(offerId)).data.buyer_id == request.auth.uid ||
-                        get(/databases/$(database)/documents/offer/$(offerId)).data.buyer_agent_id == request.auth.uid ||
-                        get(/databases/$(database)/documents/offer/$(offerId)).data.seller_id == request.auth.uid ||
-                        get(/databases/$(database)/documents/offer/$(offerId)).data.seller_agent_id == request.auth.uid);
+                       isOfferParticipant(get(/databases/$(database)/documents/offer/$(offerId)).data);
         allow create: if isSignedIn() &&
-                        (get(/databases/$(database)/documents/offer/$(offerId)).data.buyer_id == request.auth.uid ||
-                         get(/databases/$(database)/documents/offer/$(offerId)).data.buyer_agent_id == request.auth.uid ||
-                         get(/databases/$(database)/documents/offer/$(offerId)).data.seller_id == request.auth.uid ||
-                         get(/databases/$(database)/documents/offer/$(offerId)).data.seller_agent_id == request.auth.uid);
+                        isOfferParticipant(get(/databases/$(database)/documents/offer/$(offerId)).data);
         allow update, delete: if false;
       }
     }
