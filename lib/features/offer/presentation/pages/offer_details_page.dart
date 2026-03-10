@@ -25,7 +25,9 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<OfferBloc>().add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
+      context
+          .read<OfferBloc>()
+          .add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
     });
   }
 
@@ -265,7 +267,8 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                           trailing: IconButton(
                             icon: const Icon(LucideIcons.gitCompare),
                             tooltip: 'Compare',
-                            onPressed: () => _showRevisionComparison(context, offer, revision),
+                            onPressed: () => _showRevisionComparison(
+                                context, offer, revision),
                           ),
                         ),
                       )),
@@ -368,7 +371,9 @@ class _RevisionComparisonSheet extends StatelessWidget {
             ),
             SizedBox(height: 6.h),
             Text(
-              revision.changeSummary.isEmpty ? revision.revisionType.name : revision.changeSummary,
+              revision.changeSummary.isEmpty
+                  ? revision.revisionType.name
+                  : revision.changeSummary,
               style: AppTypography.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
             ),
@@ -390,7 +395,7 @@ class _RevisionComparisonSheet extends StatelessWidget {
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.r),
-                        border: Border.all(color: AppColors.outline),
+                        border: Border.all(color: AppColors.divider),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -68,14 +68,17 @@ void main() {
             .thenAnswer((_) async => Right([revision]));
         return bloc;
       },
-      act: (b) => b.add(const LoadOfferRevisions(offerId: 'offer_1', limit: 20)),
+      act: (b) =>
+          b.add(const LoadOfferRevisions(offerId: 'offer_1', limit: 20)),
       expect: () => [
         isA<OfferState>()
             .having((s) => s.revisions.length, 'revisions length', 1)
-            .having((s) => s.revisions.first.revisionNumber, 'revision number', 2),
+            .having(
+                (s) => s.revisions.first.revisionNumber, 'revision number', 2),
       ],
       verify: (_) {
-        verify(() => repository.getOfferRevisions(offerId: 'offer_1', limit: 20))
+        verify(() =>
+                repository.getOfferRevisions(offerId: 'offer_1', limit: 20))
             .called(1);
       },
     );
@@ -89,7 +92,8 @@ void main() {
         );
         return bloc;
       },
-      act: (b) => b.add(const LoadOfferRevisions(offerId: 'offer_1', limit: 20)),
+      act: (b) =>
+          b.add(const LoadOfferRevisions(offerId: 'offer_1', limit: 20)),
       expect: () => [
         isA<OfferState>().having((s) => s.error, 'error', 'fetch failed'),
       ],
@@ -101,7 +105,8 @@ void main() {
       'merges draft values',
       build: () => bloc,
       seed: () => const OfferState(currentDraft: {'loanType': 'FHA'}),
-      act: (b) => b.add(const UpdateOfferDraft(draftData: {'loanAmount': 120000})),
+      act: (b) =>
+          b.add(const UpdateOfferDraft(draftData: {'loanAmount': 120000})),
       expect: () => [
         isA<OfferState>().having(
           (s) => s.currentDraft,
@@ -124,8 +129,8 @@ void main() {
       act: (b) => b.add(ClearOfferDraft()),
       expect: () => [
         isA<OfferState>()
-            .having((s) => s.currentDraft, 'currentDraft', const {})
-            .having((s) => s.hasChanges, 'hasChanges', false),
+            .having((s) => s.currentDraft, 'currentDraft', const {}).having(
+                (s) => s.hasChanges, 'hasChanges', false),
       ],
     );
   });
