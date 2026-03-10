@@ -41,6 +41,10 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
   int _currentStep = 0;
   bool _hasSecondBuyer = false;
 
+  String? get _newOfferSellerId => widget.property.sellerId.isNotEmpty
+      ? widget.property.sellerId.first
+      : null;
+
   // ── Step 1: Buyer Info ──
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
@@ -69,6 +73,11 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
   final _closingDaysCtrl = TextEditingController(text: '30');
   DateTime? _closingDate;
 
+  DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   // ── Step 3: Conditions ──
   String _propertyCondition = 'As-Is';
   bool _preApproval = false;
@@ -89,6 +98,7 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
   @override
   void initState() {
     super.initState();
+    _closingDate = _computeClosingDate(30);
     _populateFromExisting();
   }
 
@@ -104,6 +114,20 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     _phoneCtrl.text = offer.buyer.phoneNumber;
     _emailCtrl.text = offer.buyer.email;
 
+    final secondBuyerNameParts = offer.secondBuyer.name.split(' ');
+    _hasSecondBuyer = offer.secondBuyer.name.trim().isNotEmpty ||
+        offer.secondBuyer.phoneNumber.trim().isNotEmpty ||
+        offer.secondBuyer.email.trim().isNotEmpty;
+    if (_hasSecondBuyer) {
+      _secondFirstNameCtrl.text =
+          secondBuyerNameParts.isNotEmpty ? secondBuyerNameParts.first : '';
+      _secondLastNameCtrl.text = secondBuyerNameParts.length > 1
+          ? secondBuyerNameParts.sublist(1).join(' ')
+          : '';
+      _secondPhoneCtrl.text = offer.secondBuyer.phoneNumber;
+      _secondEmailCtrl.text = offer.secondBuyer.email;
+    }
+
     // Pricing
     _purchasePrice = offer.purchasePrice.toDouble();
     _downPaymentAmount = offer.downPaymentAmount.toDouble();
@@ -115,6 +139,12 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     _loanType = offer.loanType;
     _depositType = offer.depositType.isNotEmpty ? offer.depositType : 'None';
     _closingDate = offer.closingDate;
+    if (_closingDate != null) {
+      _closingDaysCtrl.text = _computeClosingDays(_closingDate!).toString();
+    } else if (offer.closingDays > 0) {
+      _closingDaysCtrl.text = offer.closingDays.toString();
+      _closingDate = _computeClosingDate(offer.closingDays);
+    }
 
     // Conditions
     _propertyCondition =
@@ -127,6 +157,21 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     _titleChoice = offer.titleCompany.choice.isNotEmpty
         ? offer.titleCompany.choice
         : 'Buyer';
+  }
+
+  int _computeClosingDays(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    return normalized.difference(_today).inDays;
+  }
+
+  DateTime _computeClosingDate(int days) {
+    return _today.add(Duration(days: days));
+  }
+
+  void _syncClosingDateFromDays(String raw) {
+    final days = int.tryParse(raw.trim());
+    if (days == null || days < 0) return;
+    setState(() => _closingDate = _computeClosingDate(days));
   }
 
   @override
@@ -146,10 +191,16 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
 
   Map<String, dynamic> _buildOfferData() {
     final loanAmount = _purchasePrice - _downPaymentAmount;
+    final existingOffer = widget.existingOffer;
+    final sellerId = existingOffer?.sellerId ?? _newOfferSellerId;
     return {
       if (widget.existingOffer != null) 'id': widget.existingOffer!.id,
-      'status': 'pending',
+      'status': existingOffer?.status?.name ?? 'pending',
       'propertyId': widget.property.id,
+      if (sellerId != null && sellerId.isNotEmpty) 'sellerId': sellerId,
+      'buyerId': existingOffer?.buyerId ?? widget.requesterId,
+      if (existingOffer != null && existingOffer.chatId.isNotEmpty)
+        'chatId': existingOffer.chatId,
       'property': {
         'id': widget.property.id,
         'propertyName': widget.property.propertyName,
@@ -164,16 +215,32 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
       },
       'parties': {
         'buyer': {
+          'id': existingOffer?.buyer.id ?? widget.requesterId,
           'name': '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}',
           'phoneNumber': _phoneCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),
         },
         if (_hasSecondBuyer)
           'secondBuyer': {
+            'id': existingOffer?.secondBuyer.id ?? '',
             'name':
                 '${_secondFirstNameCtrl.text.trim()} ${_secondLastNameCtrl.text.trim()}',
             'phoneNumber': _secondPhoneCtrl.text.trim(),
             'email': _secondEmailCtrl.text.trim(),
+          },
+        if (sellerId != null && sellerId.isNotEmpty)
+          'seller': {
+            'id': sellerId,
+            'name': existingOffer?.seller.name ?? '',
+            'phoneNumber': existingOffer?.seller.phoneNumber ?? '',
+            'email': existingOffer?.seller.email ?? '',
+          },
+        if (existingOffer != null)
+          'agent': {
+            'id': existingOffer.agent.id,
+            'name': existingOffer.agent.name,
+            'phoneNumber': existingOffer.agent.phoneNumber,
+            'email': existingOffer.agent.email,
           },
       },
       'pricing': {
@@ -199,9 +266,11 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
       'closingDate': _closingDate?.toIso8601String() ?? '',
       'closingDays': int.tryParse(_closingDaysCtrl.text) ?? 30,
       'titleCompany': {
+        if (existingOffer != null) 'id': existingOffer.titleCompany.id,
         'companyName': _titleCompanyCtrl.text.trim(),
         'choice': _titleChoice,
       },
+      if (existingOffer != null) 'addendums': existingOffer.addendums,
     };
   }
 
@@ -613,6 +682,7 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
           controller: _closingDaysCtrl,
           label: 'Closing Days',
           keyboardType: TextInputType.number,
+          onChanged: _syncClosingDateFromDays,
         ),
         SizedBox(height: 16.h),
         // Closing date picker
@@ -635,14 +705,20 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
   }
 
   Future<void> _pickClosingDate() async {
-    final now = DateTime.now();
+    final now = _today;
     final date = await showDatePicker(
       context: context,
       initialDate: _closingDate ?? now.add(const Duration(days: 30)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
     );
-    if (date != null) setState(() => _closingDate = date);
+    if (date != null) {
+      final days = _computeClosingDays(date).clamp(0, 365);
+      setState(() {
+        _closingDate = date;
+        _closingDaysCtrl.text = days.toString();
+      });
+    }
   }
 
   // ────────────────────────────────────────────

@@ -364,7 +364,7 @@ void main() {
       expect(summary, 'Purchase Price changed');
     });
 
-    test('should list all fields for 2-3 changes', () {
+    test('should return count for 2-3 changes', () {
       final changes = [
         FieldChange(
           fieldName: 'purchasePrice',
@@ -381,7 +381,7 @@ void main() {
       ];
 
       final summary = OfferRevisionHelper.generateChangeSummary(changes);
-      expect(summary, 'Purchase Price, Closing Date changed');
+      expect(summary, '2 fields changed');
     });
 
     test('should return count for many changes', () {

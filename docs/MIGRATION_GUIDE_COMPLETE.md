@@ -24,6 +24,17 @@ order: 10
 
 **Phase 1 Progress:** 3 of 4 sprints complete (Sprint 1.2 deferred as non-blocking)
 
+## 📊 Sprint Status Overview (Phase 2 - Core Feature Migration)
+
+| Sprint | Focus | Status | Date | Details |
+|--------|-------|--------|------|---------|
+| **2.1** | Offer Complete Migration | ✅ Scoped Complete | Mar 10, 2026 | Core offer lifecycle, in-app notifications, revisions |
+| **2.2** | Offer Hardening | ⏳ Next | — | External notifications, device-level integration tests |
+| **2.3** | Property Management | ⏳ Pending | — | Migrating property system and relations |
+| **2.4** | User & Relationship | ⏳ Pending | — | CRM, favorites, active client tracking |
+
+**Phase 2 Progress:** 1 of 4 sprints complete (2.1 closed, 2.2 starting)
+
 ---
 
 ## 📋 Quick Navigation
@@ -267,65 +278,40 @@ firestore/
 **Effort:** 3-4 developers, 6-8 weeks, $120-160K  
 **Goal:** Migrate critical user-facing features to new architecture
 
-#### Sprint 2.1: Offer System Complete Migration (3 weeks)
+#### Sprint 2.1: Offer System Complete Migration (Closed)
 
-**Current State:** ~60% migrated (UI done, notifications pending)  
-**Target State:** 100% migrated with notifications, revisions, comparisons
+**Target State:** Migrated offer lifecycle with in-app notifications and revisions.
 
-**Tasks:**
-- [x] Implement offer status transitions with guards
-  - Draft → Pending (buyer action)
-  - Pending → Accepted/Declined (agent action)
-  - Enforce validation at repository layer
-  - ✅ Completed: Repository layer + comprehensive tests
-- [x] Implement offer revision tracking
-  - Capture changes automatically
-  - Create revision documents on save
-  - Display revision history in UI
-  - ✅ Completed: Full stack (model → datasource → repo → bloc → UI)
-- [x] Offer comparison & change detection
-  - Track all 24 fields
-  - Highlight changes in UI
-  - Prevent no-op submissions
-  - ✅ Completed: Field-level change detection + comparison widget
-- [x] Write comprehensive offer tests
-  - 50+ unit tests (repositories, BLoCs)
-  - 15+ widget tests (screens, forms)
-  - Integration tests (E2E offer flow)
-  - ✅ Completed: 39+ passing tests (models, datasources, repositories, bloc, widget)
-- [x] Implement in-app notification system (Firestore v1)
-  - Create notification model (type, title, message, offerId, timestamps)
-  - Firestore subcollection: `users/{userId}/notifications/{id}`
-  - Trigger on: offer status change, revision created
-  - Build notification list UI with unread badge
-  - Mark-as-read functionality
-  - Real-time stream from Firestore
-  - ✅ Completable in Sprint 2.1 (no external infra required)
+**Tasks Completed:**
+- ✅ Implement offer status transitions with guards (Repository layer)
+- ✅ Implement offer revision tracking (Model → Datasource → Repo → BLoC → UI)
+- ✅ Offer comparison & change detection
+- ✅ Write comprehensive offer tests (focused repository, bloc, widget)
+- ✅ Implement in-app notification system (Firestore v1)
 
 **Deliverables:**
-- ✅ Complete offer feature (status transitions, revisions, comparisons)
-- ✅ In-app notification system (Firestore-based, real-time, no external infra)
-- ✅ Test suite (39+ passing tests, comprehensive coverage)
-- ✅ User documentation
+- Complete offer feature (status transitions, revisions, comparisons)
+- In-app notification system (Firestore-based, real-time)
+- Test suite passing
 
-**Deferred to Phase 2 (Post-Sprint 2.1):**
-- Cloud Functions: Firestore document triggers for email/SMS dispatch
-- Email templates: Offer notification email types (submitted, accepted, declined, etc.)
-- SMS provider: Twilio/AWS SNS integration for SMS notifications
-- Push notifications: FCM server dispatch (Firebase Admin SDK)
-- Note: In-app v1 system provides foundation; Phase 2 adds external channels
-
-**Success Criteria:**
-- ✅ Offer creation/modification works end-to-end
-- ✅ In-app notifications sent to Firestore on offer/revision events
-- ✅ Notification UI shows unread badge, real-time list, mark-as-read
-- ✅ Test coverage >85% (passing on CI)
-- ✅ No legacy offer code used in new UI
-- ✅ All committed and documented for Phase 2 external notification team
+**Deferred to Sprint 2.2:**
+- Cloud Functions, real `integration_test` harness, and external channel dispatch.
 
 ---
 
-#### Sprint 2.2: Property Management System (2.5 weeks)
+#### Sprint 2.2: Offer Hardening & External Notifications (Upcoming)
+
+**Target State:** Complete production-readiness of the offer system.
+
+**Tasks:**
+- [ ] True `integration_test` coverage over the complete user flow using emulator
+- [ ] Finalize external notification adapter (Email/SMS templates)
+- [ ] Deploy Cloud Functions that trigger on offer updates
+- [ ] Close any remaining "new architecture" gaps (e.g. agent-on-behalf creation)
+
+---
+
+#### Sprint 2.3: Property Management System (Pending)
 
 **Current State:** 30% migrated (model done, queries pending)  
 **Target State:** 95% migrated (admin tools phase 3)
@@ -363,7 +349,7 @@ firestore/
 
 ---
 
-#### Sprint 2.3: User & Relationship Management (2.5 weeks)
+#### Sprint 2.4: User & Relationship Management (1 week)
 
 **Current State:** 20% migrated (models basic)  
 **Target State:** 90% migrated (admin tools phase 3)
@@ -881,10 +867,10 @@ WEEK 1-4  (Phase 1: Foundation)
   Week 4    Sprint 1.4 Testing setup → REVIEW & SIGN-OFF
 
 WEEK 5-12 (Phase 2: Core Features)
-  Week 5    Sprint 2.1 Offer notifications start
-  Week 6-7  Sprint 2.1 (Offer complete) + Sprint 2.2 start
-  Week 8-9  Sprint 2.2 (Property system) + Sprint 2.3 start  
-  Week 10-12 Sprint 2.3 (Users & relationships complete) → REVIEW
+  Week 5-7  Sprint 2.1 (Offer core migration complete) -> REVIEW
+  Week 8-9  Sprint 2.2 (Offer hardening & external notifications)
+  Week 10-11 Sprint 2.3 (Property system)
+  Week 12    Sprint 2.4 (Users & relationships complete) → REVIEW
 
 WEEK 13-20 (Phase 3: Remaining + Cleanup)
   Week 13-15 Sprint 3.1 Remaining features (showings, documents)

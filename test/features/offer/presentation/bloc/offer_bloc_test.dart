@@ -3,10 +3,13 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:partner_pro/core/enums/app_enums.dart';
 import 'package:partner_pro/core/error/failures.dart';
 import 'package:partner_pro/features/offer/data/models/offer_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_notification_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
+import 'package:partner_pro/features/property/data/models/property_model.dart';
+import 'package:partner_pro/features/notifications/data/services/notification_service.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_notification_repository.dart';
 import 'package:partner_pro/features/offer/data/repositories/offer_repository.dart';
 import 'package:partner_pro/features/offer/presentation/bloc/offer_bloc.dart';
@@ -16,15 +19,19 @@ class MockOfferRepository extends Mock implements OfferRepository {}
 class MockOfferNotificationRepository extends Mock
     implements OfferNotificationRepository {}
 
+class MockNotificationService extends Mock implements NotificationService {}
+
 void main() {
   late MockOfferRepository repository;
   late MockOfferNotificationRepository notificationRepository;
+  late MockNotificationService notificationService;
   late OfferBloc bloc;
 
   setUp(() {
     repository = MockOfferRepository();
     notificationRepository = MockOfferNotificationRepository();
-    bloc = OfferBloc(repository, notificationRepository);
+    notificationService = MockNotificationService();
+    bloc = OfferBloc(repository, notificationRepository, notificationService);
   });
 
   tearDown(() {
@@ -192,6 +199,70 @@ void main() {
         isA<OfferState>()
             .having((s) => s.notifications.first.isRead, 'isRead', true)
             .having((s) => s.unreadNotificationCount, 'unread count', 0),
+      ],
+    );
+  });
+
+  group('OfferBloc WithdrawOffer', () {
+    final offer = OfferModel(
+      id: 'offer_w1',
+      status: OfferStatus.pending,
+      agent: const BuyerModel(id: 'agent_1', name: 'Agent Smith'),
+      property: const PropertyModel(title: '123 Main St'),
+    );
+
+    blocTest<OfferBloc, OfferState>(
+      'withdraws offer and notifies agent',
+      build: () {
+        when(() => repository.updateOffer(
+              offerData: any(named: 'offerData'),
+              requesterId: 'buyer_1',
+              requestorName: 'Jane Doe',
+              requestorRole: 'buyer',
+              changeNotes: 'Offer withdrawn by buyer',
+            )).thenAnswer((_) async => const Right({}));
+        when(() => notificationService.createNotification(
+              userId: 'agent_1',
+              title: any(named: 'title'),
+              body: any(named: 'body'),
+              type: 'offer',
+              data: any(named: 'data'),
+            )).thenAnswer((_) async {});
+        return bloc;
+      },
+      seed: () => OfferState(offers: [offer]),
+      act: (b) => b.add(const WithdrawOffer(
+        offerId: 'offer_w1',
+        requesterId: 'buyer_1',
+        requesterName: 'Jane Doe',
+      )),
+      expect: () => [
+        isA<OfferState>()
+            .having((s) => s.isSubmitting, 'isSubmitting', true)
+            .having((s) => s.error, 'error', null),
+        isA<OfferState>()
+            .having((s) => s.isSubmitting, 'isSubmitting', false)
+            .having(
+                (s) => s.offers.first.status, 'status', OfferStatus.declined)
+            .having(
+                (s) => s.successMessage, 'successMessage', 'Offer withdrawn'),
+      ],
+    );
+
+    blocTest<OfferBloc, OfferState>(
+      'emits error when offer not found',
+      build: () => bloc,
+      seed: () => const OfferState(offers: []),
+      act: (b) => b.add(const WithdrawOffer(
+        offerId: 'nonexistent',
+        requesterId: 'buyer_1',
+        requesterName: 'Jane Doe',
+      )),
+      expect: () => [
+        isA<OfferState>().having((s) => s.isSubmitting, 'isSubmitting', true),
+        isA<OfferState>()
+            .having((s) => s.isSubmitting, 'isSubmitting', false)
+            .having((s) => s.error, 'error', 'Offer not found'),
       ],
     );
   });

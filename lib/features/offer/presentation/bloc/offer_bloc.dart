@@ -2,11 +2,13 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/enums/app_enums.dart';
 import '../../data/models/offer_model.dart';
 import '../../data/models/offer_notification_model.dart';
 import '../../data/models/offer_revision_model.dart';
 import '../../data/repositories/offer_notification_repository.dart';
 import '../../data/repositories/offer_repository.dart';
+import '../../../notifications/data/services/notification_service.dart';
 
 abstract class OfferEvent extends Equatable {
   const OfferEvent();
@@ -74,6 +76,61 @@ class UpdateOfferDraft extends OfferEvent {
 }
 
 class ClearOfferDraft extends OfferEvent {}
+
+class AcceptOffer extends OfferEvent {
+  final String offerId;
+  final String requesterId;
+  final String requesterName;
+  const AcceptOffer({
+    required this.offerId,
+    required this.requesterId,
+    required this.requesterName,
+  });
+  @override
+  List<Object?> get props => [offerId, requesterId, requesterName];
+}
+
+class DeclineOffer extends OfferEvent {
+  final String offerId;
+  final String requesterId;
+  final String requesterName;
+  const DeclineOffer({
+    required this.offerId,
+    required this.requesterId,
+    required this.requesterName,
+  });
+  @override
+  List<Object?> get props => [offerId, requesterId, requesterName];
+}
+
+class WithdrawOffer extends OfferEvent {
+  final String offerId;
+  final String requesterId;
+  final String requesterName;
+  const WithdrawOffer({
+    required this.offerId,
+    required this.requesterId,
+    required this.requesterName,
+  });
+  @override
+  List<Object?> get props => [offerId, requesterId, requesterName];
+}
+
+class RequestRevision extends OfferEvent {
+  final String offerId;
+  final String requesterId;
+  final String requesterName;
+  final String revisionNotes;
+  const RequestRevision({
+    required this.offerId,
+    required this.requesterId,
+    required this.requesterName,
+    required this.revisionNotes,
+  });
+  @override
+  List<Object?> get props =>
+      [offerId, requesterId, requesterName, revisionNotes];
+}
 
 class LoadUserNotifications extends OfferEvent {
   final String userId;
@@ -187,13 +244,19 @@ class OfferState extends Equatable {
 class OfferBloc extends Bloc<OfferEvent, OfferState> {
   final OfferRepository _repository;
   final OfferNotificationRepository _notificationRepository;
+  final NotificationService _notificationService;
 
-  OfferBloc(this._repository, this._notificationRepository)
+  OfferBloc(
+      this._repository, this._notificationRepository, this._notificationService)
       : super(const OfferState()) {
     on<LoadUserOffers>(_onLoadUser);
     on<LoadAgentOffers>(_onLoadAgent);
     on<CreateOffer>(_onCreate);
     on<UpdateOffer>(_onUpdate);
+    on<AcceptOffer>(_onAccept);
+    on<DeclineOffer>(_onDecline);
+    on<WithdrawOffer>(_onWithdraw);
+    on<RequestRevision>(_onRequestRevision);
     on<CompareOffers>(_onCompare);
     on<LoadOfferRevisions>(_onLoadRevisions);
     on<UpdateOfferDraft>(_onDraft);
@@ -228,12 +291,41 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     emit(state.copyWith(isSubmitting: true, error: null));
     final r = await _repository.createOffer(
         offerData: e.offerData, requesterId: e.requesterId);
-    r.fold(
-        (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
-        (_) => emit(state.copyWith(
-            isSubmitting: false,
-            successMessage: 'Offer created',
-            currentDraft: const {})));
+    r.fold((f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+        (result) async {
+      // Send notification to agent/seller about new offer
+      final parties = result['parties'] as Map<String, dynamic>? ??
+          e.offerData['parties'] as Map<String, dynamic>? ??
+          {};
+      final agent = parties['agent'] as Map<String, dynamic>? ?? {};
+      final agentId =
+          agent['id'] as String? ?? result['agentId'] as String? ?? '';
+      final propertyMap = result['property'] as Map<String, dynamic>? ??
+          e.offerData['property'] as Map<String, dynamic>? ??
+          {};
+      final propertyTitle = propertyMap['title'] as String? ??
+          propertyMap['propertyName'] as String? ??
+          '';
+      final offerId =
+          result['id'] as String? ?? result['offerID'] as String? ?? '';
+
+      if (agentId.isNotEmpty) {
+        try {
+          await _notificationService.createNotification(
+            userId: agentId,
+            title: 'New Offer Submitted',
+            body: 'A new offer has been submitted for $propertyTitle.',
+            type: 'offer',
+            data: {'offerId': offerId},
+          );
+        } catch (_) {}
+      }
+
+      emit(state.copyWith(
+          isSubmitting: false,
+          successMessage: 'Offer created',
+          currentDraft: const {}));
+    });
   }
 
   Future<void> _onUpdate(UpdateOffer e, Emitter<OfferState> emit) async {
@@ -244,6 +336,219 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
         (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
         (_) => emit(state.copyWith(
             isSubmitting: false, successMessage: 'Offer updated')));
+  }
+
+  Future<void> _onAccept(AcceptOffer e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    // Find the offer to get its data
+    final offer = state.offers.cast<OfferModel?>().firstWhere(
+          (o) => o?.id == e.offerId,
+          orElse: () => null,
+        );
+    if (offer == null) {
+      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      return;
+    }
+
+    final offerData = offer.toJson();
+    offerData['status'] = 'accepted';
+
+    final r = await _repository.updateOffer(
+      offerData: offerData,
+      requesterId: e.requesterId,
+      requestorName: e.requesterName,
+      requestorRole: 'agent',
+      changeNotes: 'Offer accepted',
+    );
+
+    r.fold(
+      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (_) {
+        // Update the offer in local state
+        final updatedOffers = state.offers.map((o) {
+          if (o.id == e.offerId) {
+            return o.copyWith(status: OfferStatus.accepted);
+          }
+          return o;
+        }).toList();
+
+        // Notify the buyer
+        final buyerId =
+            offer.buyerId.isNotEmpty ? offer.buyerId : offer.buyer.id;
+        if (buyerId.isNotEmpty) {
+          _notificationService.createNotification(
+            userId: buyerId,
+            title: 'Offer Accepted!',
+            body: 'Your offer for ${offer.property.title} has been accepted.',
+            type: 'offer',
+            data: {'offerId': e.offerId},
+          );
+        }
+
+        emit(state.copyWith(
+          isSubmitting: false,
+          offers: updatedOffers,
+          successMessage: 'Offer accepted',
+        ));
+      },
+    );
+  }
+
+  Future<void> _onDecline(DeclineOffer e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    final offer = state.offers.cast<OfferModel?>().firstWhere(
+          (o) => o?.id == e.offerId,
+          orElse: () => null,
+        );
+    if (offer == null) {
+      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      return;
+    }
+
+    final offerData = offer.toJson();
+    offerData['status'] = 'declined';
+
+    final r = await _repository.updateOffer(
+      offerData: offerData,
+      requesterId: e.requesterId,
+      requestorName: e.requesterName,
+      requestorRole: 'agent',
+      changeNotes: 'Offer declined',
+    );
+
+    r.fold(
+      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (_) {
+        final updatedOffers = state.offers.map((o) {
+          if (o.id == e.offerId) {
+            return o.copyWith(status: OfferStatus.declined);
+          }
+          return o;
+        }).toList();
+
+        final buyerId =
+            offer.buyerId.isNotEmpty ? offer.buyerId : offer.buyer.id;
+        if (buyerId.isNotEmpty) {
+          _notificationService.createNotification(
+            userId: buyerId,
+            title: 'Offer Declined',
+            body: 'Your offer for ${offer.property.title} has been declined.',
+            type: 'offer',
+            data: {'offerId': e.offerId},
+          );
+        }
+
+        emit(state.copyWith(
+          isSubmitting: false,
+          offers: updatedOffers,
+          successMessage: 'Offer declined',
+        ));
+      },
+    );
+  }
+
+  Future<void> _onWithdraw(WithdrawOffer e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    final offer = state.offers.cast<OfferModel?>().firstWhere(
+          (o) => o?.id == e.offerId,
+          orElse: () => null,
+        );
+    if (offer == null) {
+      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      return;
+    }
+
+    final offerData = offer.toJson();
+    offerData['status'] = 'declined';
+
+    final r = await _repository.updateOffer(
+      offerData: offerData,
+      requesterId: e.requesterId,
+      requestorName: e.requesterName,
+      requestorRole: 'buyer',
+      changeNotes: 'Offer withdrawn by buyer',
+    );
+
+    r.fold(
+      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (_) {
+        final updatedOffers = state.offers.map((o) {
+          if (o.id == e.offerId) {
+            return o.copyWith(status: OfferStatus.declined);
+          }
+          return o;
+        }).toList();
+
+        // Notify the agent about withdrawal
+        final agentId = offer.agent.id;
+        if (agentId.isNotEmpty) {
+          _notificationService.createNotification(
+            userId: agentId,
+            title: 'Offer Withdrawn',
+            body:
+                '${e.requesterName} has withdrawn their offer on ${offer.property.title}.',
+            type: 'offer',
+            data: {'offerId': e.offerId},
+          );
+        }
+
+        emit(state.copyWith(
+          isSubmitting: false,
+          offers: updatedOffers,
+          successMessage: 'Offer withdrawn',
+        ));
+      },
+    );
+  }
+
+  Future<void> _onRequestRevision(
+      RequestRevision e, Emitter<OfferState> emit) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    final offer = state.offers.cast<OfferModel?>().firstWhere(
+          (o) => o?.id == e.offerId,
+          orElse: () => null,
+        );
+    if (offer == null) {
+      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      return;
+    }
+
+    // Keep status as pending but record a revision note
+    final offerData = offer.toJson();
+    final r = await _repository.updateOffer(
+      offerData: offerData,
+      requesterId: e.requesterId,
+      requestorName: e.requesterName,
+      requestorRole: 'agent',
+      changeNotes: e.revisionNotes,
+    );
+
+    r.fold(
+      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (_) {
+        final buyerId =
+            offer.buyerId.isNotEmpty ? offer.buyerId : offer.buyer.id;
+        if (buyerId.isNotEmpty) {
+          _notificationService.createNotification(
+            userId: buyerId,
+            title: 'Revision Requested',
+            body:
+                'A revision has been requested for your offer on ${offer.property.title}. Notes: ${e.revisionNotes}',
+            type: 'offer',
+            data: {'offerId': e.offerId},
+          );
+        }
+
+        emit(state.copyWith(
+          isSubmitting: false,
+          successMessage: 'Revision requested',
+        ));
+      },
+    );
   }
 
   void _onCompare(CompareOffers e, Emitter<OfferState> emit) {

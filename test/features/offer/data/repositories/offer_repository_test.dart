@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:partner_pro/core/error/failures.dart';
 import 'package:partner_pro/features/offer/data/datasources/offer_remote_datasource.dart';
 import 'package:partner_pro/features/offer/data/models/offer_notification_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
@@ -68,13 +69,8 @@ void main() {
         }
       };
 
-      when(() => remote.getUserOffers(
-            requesterId: 'agent_1',
-            propertyId: null,
-            buyerId: null,
-            sellerId: null,
-            status: null,
-          )).thenAnswer((_) async => [oldOffer]);
+      when(() => remote.getOfferById(offerId: 'offer_1'))
+          .thenAnswer((_) async => oldOffer);
 
       when(() => remote.updateOffer(
             offerData: requestOffer,
@@ -141,6 +137,147 @@ void main() {
       verifyNever(() => notificationRepo.createNotification(
             recipientUserId: 'agent_1',
             notification: any(named: 'notification'),
+          ));
+    });
+  });
+
+  group('OfferRepository.createOffer enrichment', () {
+    test('resolves assigned agent for buyer-created offers before persist',
+        () async {
+      final requestOffer = {
+        'status': 'pending',
+        'buyerId': 'buyer_1',
+        'sellerId': 'seller_1',
+        'parties': {
+          'buyer': {
+            'id': 'buyer_1',
+            'name': 'Buyer One',
+            'phoneNumber': '111',
+            'email': 'buyer@example.com',
+          },
+          'seller': {
+            'id': 'seller_1',
+            'name': '',
+            'phoneNumber': '',
+            'email': '',
+          },
+        },
+        'property': {
+          'id': 'property_1',
+          'propertyName': '123 Main St',
+          'address': {
+            'streetNumber': '123',
+            'streetName': 'Main St',
+            'city': 'Austin',
+            'state': 'TX',
+            'zip': '78701',
+          },
+        },
+      };
+
+      when(() => remote.getRelationshipForSubjectUid(subjectUid: 'buyer_1'))
+          .thenAnswer((_) async => {
+                'relationship': {
+                  'subjectUid': 'buyer_1',
+                  'agentUid': 'agent_1',
+                }
+              });
+
+      when(() => remote.getUserByUid(uid: 'agent_1')).thenAnswer((_) async => {
+            'uid': 'agent_1',
+            'display_name': 'Agent One',
+            'phone_number': '222',
+            'email': 'agent@example.com',
+          });
+
+      when(() => remote.createOffer(
+            offerData: any(named: 'offerData'),
+            requesterId: 'buyer_1',
+          )).thenAnswer((invocation) async {
+        final payload =
+            invocation.namedArguments[#offerData] as Map<String, dynamic>;
+        return {
+          ...payload,
+          'id': 'offer_1',
+          'offerID': 'offer_1',
+        };
+      });
+
+      when(() => notificationRepo.createNotification(
+            recipientUserId: any(named: 'recipientUserId'),
+            notification: any(named: 'notification'),
+          )).thenAnswer((inv) async {
+        final n = inv.namedArguments[#notification] as OfferNotificationModel;
+        return Right(n.copyWith(id: 'n1'));
+      });
+
+      final result = await repository.createOffer(
+        offerData: requestOffer,
+        requesterId: 'buyer_1',
+      );
+
+      expect(result.isRight(), true);
+
+      final captured = verify(() => remote.createOffer(
+            offerData: captureAny(named: 'offerData'),
+            requesterId: 'buyer_1',
+          )).captured.single as Map<String, dynamic>;
+
+      expect(captured['agentId'], 'agent_1');
+      expect(captured['parties']['agent']['id'], 'agent_1');
+      expect(captured['parties']['agent']['name'], 'Agent One');
+      expect(captured['parties']['seller']['id'], 'seller_1');
+    });
+
+    test('rejects buyer-created offers when no assigned agent exists',
+        () async {
+      final requestOffer = {
+        'status': 'pending',
+        'buyerId': 'buyer_1',
+        'parties': {
+          'buyer': {
+            'id': 'buyer_1',
+            'name': 'Buyer One',
+            'phoneNumber': '111',
+            'email': 'buyer@example.com',
+          },
+        },
+        'property': {
+          'id': 'property_1',
+          'propertyName': '123 Main St',
+          'address': {
+            'streetNumber': '123',
+            'streetName': 'Main St',
+            'city': 'Austin',
+            'state': 'TX',
+            'zip': '78701',
+          },
+        },
+      };
+
+      when(() => remote.getRelationshipForSubjectUid(subjectUid: 'buyer_1'))
+          .thenAnswer((_) async => null);
+
+      final result = await repository.createOffer(
+        offerData: requestOffer,
+        requesterId: 'buyer_1',
+      );
+
+      expect(result.isLeft(), true);
+      final failure = result.swap().getOrElse(
+            () => throw Exception('Expected failure'),
+          );
+      expect(
+        failure,
+        isA<ValidationFailure>().having(
+          (value) => value.message,
+          'message',
+          'No assigned agent was found for this buyer. Please connect with an agent before submitting an offer.',
+        ),
+      );
+      verifyNever(() => remote.createOffer(
+            offerData: any(named: 'offerData'),
+            requesterId: any(named: 'requesterId'),
           ));
     });
   });

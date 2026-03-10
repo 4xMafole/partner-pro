@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:partner_pro/core/enums/app_enums.dart';
+import 'package:partner_pro/features/auth/data/models/user_model.dart';
+import 'package:partner_pro/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:partner_pro/features/offer/data/models/offer_model.dart';
 import 'package:partner_pro/features/offer/data/models/offer_revision_model.dart';
 import 'package:partner_pro/features/offer/presentation/bloc/offer_bloc.dart';
@@ -14,20 +16,28 @@ import 'package:partner_pro/features/offer/presentation/pages/offer_details_page
 class MockOfferBloc extends MockBloc<OfferEvent, OfferState>
     implements OfferBloc {}
 
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+
 class FakeOfferEvent extends Fake implements OfferEvent {}
+
+class FakeAuthEvent extends Fake implements AuthEvent {}
 
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeOfferEvent());
+    registerFallbackValue(FakeAuthEvent());
   });
 
   late MockOfferBloc bloc;
+  late MockAuthBloc authBloc;
   late OfferModel offer;
   late OfferRevisionModel revision;
   late OfferState initialState;
+  late AuthState authState;
 
   setUp(() {
     bloc = MockOfferBloc();
+    authBloc = MockAuthBloc();
 
     offer = const OfferModel(
       id: 'offer_1',
@@ -64,11 +74,25 @@ void main() {
       revisions: [revision],
     );
 
+    authState = AuthState.authenticated(
+      user: const UserModel(
+        uid: 'buyer_1',
+        email: 'buyer@example.com',
+        role: 'buyer',
+      ),
+    );
+
     when(() => bloc.state).thenReturn(initialState);
+    when(() => authBloc.state).thenReturn(authState);
     whenListen(
       bloc,
       Stream<OfferState>.value(initialState),
       initialState: initialState,
+    );
+    whenListen(
+      authBloc,
+      Stream<AuthState>.value(authState),
+      initialState: authState,
     );
   });
 
@@ -76,8 +100,11 @@ void main() {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
       builder: (_, __) => MaterialApp(
-        home: BlocProvider<OfferBloc>.value(
-          value: bloc,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthBloc>.value(value: authBloc),
+            BlocProvider<OfferBloc>.value(value: bloc),
+          ],
           child: const OfferDetailsPage(offerId: 'offer_1'),
         ),
       ),
@@ -98,16 +125,16 @@ void main() {
     await tester.pumpWidget(buildPage());
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Revision #2'), findsOneWidget);
+    expect(find.textContaining('Purchase Price changed'), findsOneWidget);
 
-    await tester.ensureVisible(find.byTooltip('Compare'));
+    await tester.ensureVisible(find.text('Purchase Price changed'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Compare'));
+    await tester.tap(find.text('Purchase Price changed'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Compare with Revision #2'), findsOneWidget);
-    expect(find.textContaining('Previous: 210000'), findsOneWidget);
-    expect(find.textContaining('Current: 220000'), findsOneWidget);
+    expect(find.text('Revision #2'), findsOneWidget);
+    expect(find.text('210,000'), findsOneWidget);
+    expect(find.text('220,000'), findsOneWidget);
 
     final capturedEvents =
         verify(() => bloc.add(captureAny())).captured.cast<OfferEvent>();
