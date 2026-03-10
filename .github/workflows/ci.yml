@@ -36,17 +36,17 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+
       - name: Check test coverage
         run: |
-          dart pub global activate coverage
-          dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib/
-
           # Overall coverage (informational)
           TOTAL_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
           echo "Overall Coverage: ${TOTAL_COVERAGE}%"
 
           # Auth coverage gate (required)
-          AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "lib/auth/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
+          AUTH_COVERAGE=$(lcov --extract coverage/lcov.info "lib/features/auth/*" --summary 2>&1 | awk '/lines\.+:/ {print $2; exit}' | sed 's/%//')
           if [ -z "$AUTH_COVERAGE" ]; then
             echo "❌ Could not calculate auth coverage from lcov report"
             exit 1
