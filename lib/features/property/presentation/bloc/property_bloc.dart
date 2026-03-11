@@ -44,8 +44,7 @@ class LoadProperties extends PropertyEvent {
       this.maxYearBuilt,
       this.homeTypes});
   @override
-  List<Object?> get props =>
-      [
+  List<Object?> get props => [
         requesterId,
         zipCode,
         city,
@@ -280,34 +279,33 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         maxPrice: event.maxPrice,
         minBeds: event.minBeds,
         maxBeds: event.maxBeds);
-    r.fold(
-        (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+    r.fold((f) => emit(state.copyWith(isLoading: false, error: f.message)),
         (props) {
-          final hasFilters = _hasAnyFilters(event);
-          final filtered = hasFilters
-              ? _repository.filterProperties(
-                  properties: props,
-                  minPrice: event.minPrice,
-                  maxPrice: event.maxPrice,
-                  minBeds: event.minBeds,
-                  maxBeds: event.maxBeds,
-                  minBaths: event.minBaths,
-                  maxBaths: event.maxBaths,
-                  minSquareFeet: event.minSquareFeet,
-                  maxSquareFeet: event.maxSquareFeet,
-                  minYearBuilt: event.minYearBuilt,
-                  maxYearBuilt: event.maxYearBuilt,
-                  homeTypes: event.homeTypes,
-                )
-              : props;
+      final hasFilters = _hasAnyFilters(event);
+      final filtered = hasFilters
+          ? _repository.filterProperties(
+              properties: props,
+              minPrice: event.minPrice,
+              maxPrice: event.maxPrice,
+              minBeds: event.minBeds,
+              maxBeds: event.maxBeds,
+              minBaths: event.minBaths,
+              maxBaths: event.maxBaths,
+              minSquareFeet: event.minSquareFeet,
+              maxSquareFeet: event.maxSquareFeet,
+              minYearBuilt: event.minYearBuilt,
+              maxYearBuilt: event.maxYearBuilt,
+              homeTypes: event.homeTypes,
+            )
+          : props;
 
-          emit(state.copyWith(
-            isLoading: false,
-            allProperties: props,
-            filteredProperties: filtered,
-            isFilterActive: hasFilters,
-          ));
-        });
+      emit(state.copyWith(
+        isLoading: false,
+        allProperties: props,
+        filteredProperties: filtered,
+        isFilterActive: hasFilters,
+      ));
+    });
   }
 
   bool _hasAnyFilters(LoadProperties event) {

@@ -240,7 +240,8 @@ class PropertyRepository {
         final userId = (savedSearch['user_id'] ?? '').toString().trim();
         if (userId.isEmpty) continue;
 
-        if (!_matchesSavedSearch(savedSearch: savedSearch, property: property)) {
+        if (!_matchesSavedSearch(
+            savedSearch: savedSearch, property: property)) {
           continue;
         }
 
@@ -367,7 +368,8 @@ class PropertyRepository {
   }) {
     final label = property.propertyName.isNotEmpty
         ? property.propertyName
-        : '${property.address.streetNumber} ${property.address.streetName}'.trim();
+        : '${property.address.streetNumber} ${property.address.streetName}'
+            .trim();
 
     switch (changeType) {
       case 'price_change':

@@ -221,7 +221,8 @@ void main() {
   });
 
   group('PropertyRepository.processPropertySourceUpdateAlerts', () {
-    test('sends alert notifications for matching active saved searches', () async {
+    test('sends alert notifications for matching active saved searches',
+        () async {
       final property = const PropertyDataClass(
         id: 'p_alert_1',
         propertyName: '123 Main St',

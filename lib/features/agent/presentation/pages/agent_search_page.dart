@@ -27,14 +27,20 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
   RangeValues _yearRange = const RangeValues(1900, 2025);
   final Set<String> _selectedHomeTypes = {};
 
-  int? get _activeMinPrice => _priceRange.start > 0 ? _priceRange.start.toInt() : null;
-  int? get _activeMaxPrice => _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
+  int? get _activeMinPrice =>
+      _priceRange.start > 0 ? _priceRange.start.toInt() : null;
+  int? get _activeMaxPrice =>
+      _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
   int? get _activeMinBeds => _minBeds > 0 ? _minBeds : null;
   int? get _activeMinBaths => _minBaths > 0 ? _minBaths : null;
-  int? get _activeMinSqft => _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
-  int? get _activeMaxSqft => _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
-  int? get _activeMinYear => _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
-  int? get _activeMaxYear => _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
+  int? get _activeMinSqft =>
+      _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
+  int? get _activeMaxSqft =>
+      _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
+  int? get _activeMinYear =>
+      _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
+  int? get _activeMaxYear =>
+      _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
 
   @override
   void initState() {
@@ -44,7 +50,7 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
       if (a is AuthAuthenticated) {
         context
             .read<PropertyBloc>()
-        .add(LoadProperties(requesterId: a.user.uid));
+            .add(LoadProperties(requesterId: a.user.uid));
       }
     });
   }
@@ -71,8 +77,9 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     } else {
       final isZip = RegExp(r'^\d{5}$').hasMatch(query.trim());
@@ -88,8 +95,9 @@ class _AgentSearchPageState extends State<AgentSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     }
   }

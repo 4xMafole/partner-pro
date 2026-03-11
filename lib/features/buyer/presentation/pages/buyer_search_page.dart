@@ -252,8 +252,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     } else {
       final isZip = RegExp(r'^\d{5}$').hasMatch(query.trim());
@@ -270,8 +271,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     }
   }
@@ -300,16 +302,17 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
               : (_isFallbackLoad ? null : _locationCity),
           state: query.isEmpty && !_isFallbackLoad ? _locationState : null,
           statusType: status == 'Sold' ? 'Sold' : null,
-        minPrice: _activeMinPrice,
-        maxPrice: _activeMaxPrice,
-        minBeds: _activeMinBeds,
-        minBaths: _activeMinBaths,
-        minSquareFeet: _activeMinSqft,
-        maxSquareFeet: _activeMaxSqft,
-        minYearBuilt: _activeMinYear,
-        maxYearBuilt: _activeMaxYear,
-        homeTypes:
-          _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+          minPrice: _activeMinPrice,
+          maxPrice: _activeMaxPrice,
+          minBeds: _activeMinBeds,
+          minBaths: _activeMinBaths,
+          minSquareFeet: _activeMinSqft,
+          maxSquareFeet: _activeMaxSqft,
+          minYearBuilt: _activeMinYear,
+          maxYearBuilt: _activeMaxYear,
+          homeTypes: _selectedHomeTypes.isNotEmpty
+              ? _selectedHomeTypes.toList()
+              : null,
         ));
   }
 
@@ -328,8 +331,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     } else {
       context.read<PropertyBloc>().add(LoadProperties(
@@ -344,8 +348,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             maxSquareFeet: _activeMaxSqft,
             minYearBuilt: _activeMinYear,
             maxYearBuilt: _activeMaxYear,
-            homeTypes:
-                _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
+            homeTypes: _selectedHomeTypes.isNotEmpty
+                ? _selectedHomeTypes.toList()
+                : null,
           ));
     }
   }
@@ -415,7 +420,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
               ..addAll(homeTypes ?? []);
           });
 
-              _search(_searchController.text.trim());
+          _search(_searchController.text.trim());
         },
         onClear: () {
           setState(() {
@@ -500,14 +505,20 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
     return 'Listed ${days ~/ 365}yr ago';
   }
 
-  int? get _activeMinPrice => _priceRange.start > 0 ? _priceRange.start.toInt() : null;
-  int? get _activeMaxPrice => _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
+  int? get _activeMinPrice =>
+      _priceRange.start > 0 ? _priceRange.start.toInt() : null;
+  int? get _activeMaxPrice =>
+      _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
   int? get _activeMinBeds => _minBeds > 0 ? _minBeds : null;
   int? get _activeMinBaths => _minBaths > 0 ? _minBaths : null;
-  int? get _activeMinSqft => _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
-  int? get _activeMaxSqft => _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
-  int? get _activeMinYear => _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
-  int? get _activeMaxYear => _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
+  int? get _activeMinSqft =>
+      _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
+  int? get _activeMaxSqft =>
+      _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
+  int? get _activeMinYear =>
+      _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
+  int? get _activeMaxYear =>
+      _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
 
   bool get _hasActiveAdvancedFilters {
     return _activeMinPrice != null ||
