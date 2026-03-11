@@ -49,6 +49,12 @@ UI Widget -> BLoC (event) -> UseCase -> Repository -> DataSource -> Firebase/API
          <- BLoC (state) <- Either<Failure, T> <--------------------------'
 ```
 
+## UI & Subsystem Patterns
+
+- **Dialogs & Overlays:** All destructive or global confirmation prompts in the migration should use the generic `AppConfirmDialog` to preserve standardized theming and avoid `showDialog(builder: (context) => AlertDialog(...))` directly.
+- **Snackbars:** Should use the custom `context.showSnackBar(...)` extension rather than direct `ScaffoldMessenger` scaffolding injections.
+- **Loading states:** Always prefer inline skeleton or specific spinners over global page blocks. Modals should handle their own BLoC emission loading states.
+
 ## Environment
 
 All secrets are injected at build time via `--dart-define-from-file=.env`.
