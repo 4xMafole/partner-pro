@@ -206,6 +206,7 @@ class CancelShowing extends PropertyEvent {
 
 class PropertyState extends Equatable {
   final bool isLoading;
+  final bool isSavedSearchesLoading;
   final String? error;
   final List<PropertyDataClass> allProperties;
   final List<PropertyDataClass> filteredProperties;
@@ -216,6 +217,7 @@ class PropertyState extends Equatable {
 
   const PropertyState(
       {this.isLoading = false,
+      this.isSavedSearchesLoading = false,
       this.error,
       this.allProperties = const [],
       this.filteredProperties = const [],
@@ -226,6 +228,7 @@ class PropertyState extends Equatable {
 
   PropertyState copyWith(
       {bool? isLoading,
+      bool? isSavedSearchesLoading,
       String? error,
       List<PropertyDataClass>? allProperties,
       List<PropertyDataClass>? filteredProperties,
@@ -235,6 +238,8 @@ class PropertyState extends Equatable {
       bool? isFilterActive}) {
     return PropertyState(
         isLoading: isLoading ?? this.isLoading,
+        isSavedSearchesLoading:
+            isSavedSearchesLoading ?? this.isSavedSearchesLoading,
         error: error,
         allProperties: allProperties ?? this.allProperties,
         filteredProperties: filteredProperties ?? this.filteredProperties,
@@ -247,6 +252,7 @@ class PropertyState extends Equatable {
   @override
   List<Object?> get props => [
         isLoading,
+        isSavedSearchesLoading,
         error,
         allProperties,
         filteredProperties,
@@ -406,44 +412,58 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
 
   Future<void> _onLoadSavedSearches(
       LoadSavedSearches event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.getSavedSearches(
         userId: event.userId, requesterId: event.requesterId);
-    r.fold((f) => emit(state.copyWith(error: f.message)),
-        (ss) => emit(state.copyWith(savedSearches: ss)));
+    r.fold(
+        (f) => emit(
+              state.copyWith(isSavedSearchesLoading: false, error: f.message),
+            ),
+        (ss) => emit(
+              state.copyWith(
+                isSavedSearchesLoading: false,
+                savedSearches: ss,
+              ),
+            ));
   }
 
   Future<void> _onSaveSearch(
       SaveSearch event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.saveSearch(
         userId: event.userId,
         inputField: event.searchData['input_field'] ?? '',
         propertyFilter: event.searchData,
         requesterId: event.requesterId);
     r.fold(
-        (f) => emit(state.copyWith(error: f.message)),
+        (f) => emit(
+            state.copyWith(isSavedSearchesLoading: false, error: f.message)),
         (_) => add(LoadSavedSearches(
             userId: event.userId, requesterId: event.requesterId)));
   }
 
   Future<void> _onDeleteSavedSearch(
       DeleteSavedSearch event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.deleteSavedSearch(
         searchId: event.searchId, requesterId: event.requesterId);
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
       final u =
           state.savedSearches.where((s) => s['id'] != event.searchId).toList();
-      emit(state.copyWith(savedSearches: u));
+      emit(state.copyWith(savedSearches: u, isSavedSearchesLoading: false));
     });
   }
 
   Future<void> _onToggleSavedSearchAlert(
       ToggleSavedSearchAlert event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.updateSavedSearch(
         searchId: event.searchId,
         data: {'status': event.enabled},
         requesterId: event.requesterId);
     r.fold(
-        (f) => emit(state.copyWith(error: f.message)),
+        (f) => emit(
+            state.copyWith(isSavedSearchesLoading: false, error: f.message)),
         (_) => add(LoadSavedSearches(
             userId: event.userId, requesterId: event.requesterId)));
   }

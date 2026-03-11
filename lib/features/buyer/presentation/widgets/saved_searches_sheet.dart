@@ -6,13 +6,14 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 
 /// Zillow-style Saved Searches bottom sheet.
 ///
-/// Shows a list of the user's saved searches with alert toggles,
-/// delete actions, and tap-to-apply functionality.
+/// Shows a list of the user's saved searches with delete actions
+/// and tap-to-apply functionality.
 class SavedSearchesSheet extends StatelessWidget {
   final void Function(Map<String, dynamic> savedSearch)? onApply;
 
@@ -20,14 +21,6 @@ class SavedSearchesSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      context.read<PropertyBloc>().add(LoadSavedSearches(
-            userId: authState.user.uid,
-            requesterId: authState.user.uid,
-          ));
-    }
-
     return DraggableScrollableSheet(
       initialChildSize: 0.65,
       minChildSize: 0.35,
@@ -36,13 +29,21 @@ class SavedSearchesSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return Column(
           children: [
-            _buildHandle(),
             _buildTitle(context),
             const Divider(height: 1),
             Expanded(
               child: BlocBuilder<PropertyBloc, PropertyState>(
-                buildWhen: (p, c) => p.savedSearches != c.savedSearches,
+                buildWhen: (p, c) =>
+                    p.savedSearches != c.savedSearches ||
+                    p.isSavedSearchesLoading != c.isSavedSearchesLoading,
                 builder: (context, state) {
+                  if (state.isSavedSearchesLoading &&
+                      state.savedSearches.isEmpty) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
                   final searches = state.savedSearches;
                   if (searches.isEmpty) {
                     return _buildEmpty();
@@ -67,30 +68,15 @@ class SavedSearchesSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildHandle() {
-    return Center(
-      child: Container(
-        margin: EdgeInsets.only(top: 12.h, bottom: 4.h),
-        width: 40.w,
-        height: 4.h,
-        decoration: BoxDecoration(
-          color: AppColors.border,
-          borderRadius: BorderRadius.circular(2.r),
-        ),
-      ),
-    );
-  }
-
   Widget _buildTitle(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
       child: Row(
         children: [
           Icon(LucideIcons.bookmark, size: 22.sp, color: AppColors.primary),
           SizedBox(width: 10.w),
           Expanded(
-            child:
-                Text('Saved Searches', style: AppTypography.headlineSmall),
+            child: Text('Saved Searches', style: AppTypography.headlineSmall),
           ),
         ],
       ),
@@ -116,11 +102,10 @@ class SavedSearchesSheet extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
             Text('No saved searches yet',
-                style: AppTypography.titleMedium,
-                textAlign: TextAlign.center),
+                style: AppTypography.titleMedium, textAlign: TextAlign.center),
             SizedBox(height: 8.h),
             Text(
-              'Search for a city or apply filters, then tap the bookmark icon to save your search and receive alerts.',
+              'Search for a city or apply filters, then tap the bookmark icon to save your search.',
               style: AppTypography.bodySmall
                   .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
@@ -146,8 +131,7 @@ class _SavedSearchTile extends StatelessWidget {
 
     // Build display label
     final inputField = (searchData['input_field'] ?? '').toString();
-    final city =
-        (property['city'] ?? searchData['city'] ?? '').toString();
+    final city = (property['city'] ?? searchData['city'] ?? '').toString();
     final label = inputField.isNotEmpty
         ? inputField
         : city.isNotEmpty
@@ -156,18 +140,16 @@ class _SavedSearchTile extends StatelessWidget {
 
     // Build filter summary chips
     final filterParts = <String>[];
-    final statusType = (property['status_type'] ??
-            searchData['status_type'] ??
-            'For Sale')
-        .toString();
+    final statusType =
+        (property['status_type'] ?? searchData['status_type'] ?? 'For Sale')
+            .toString();
     if (statusType != 'For Sale') filterParts.add(statusType);
 
     final minPrice = property['min_price'] ?? searchData['min_price'];
     final maxPrice = property['max_price'] ?? searchData['max_price'];
     if (minPrice != null || maxPrice != null) {
       final low = _fmtCompact((minPrice ?? 0) as int);
-      final high =
-          maxPrice != null ? _fmtCompact(maxPrice as int) : 'Any';
+      final high = maxPrice != null ? _fmtCompact(maxPrice as int) : 'Any';
       filterParts.add('\$$low–\$$high');
     }
 
@@ -182,7 +164,6 @@ class _SavedSearchTile extends StatelessWidget {
       filterParts.add('${homeTypes.length} types');
     }
 
-    final alertEnabled = search['status'] == true;
     final searchId = (search['id'] ?? '').toString();
 
     // Created date
@@ -225,11 +206,6 @@ class _SavedSearchTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // Alert toggle
-                  _AlertToggle(
-                    enabled: alertEnabled,
-                    searchId: searchId,
-                  ),
                 ],
               ),
 
@@ -241,8 +217,8 @@ class _SavedSearchTile extends StatelessWidget {
                   runSpacing: 4.h,
                   children: filterParts.map((f) {
                     return Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant,
                         borderRadius: BorderRadius.circular(6.r),
@@ -262,8 +238,8 @@ class _SavedSearchTile extends StatelessWidget {
                   if (dateLabel.isNotEmpty)
                     Text(
                       'Saved $dateLabel',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textTertiary, fontSize: 11.sp),
+                      style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textTertiary, fontSize: 11.sp),
                     ),
                   const Spacer(),
                   // Delete button
@@ -293,30 +269,20 @@ class _SavedSearchTile extends StatelessWidget {
   void _confirmDelete(BuildContext context, String searchId) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Search'),
-        content:
-            const Text('Remove this saved search? You won\'t receive alerts for it anymore.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              final authState = context.read<AuthBloc>().state;
-              if (authState is AuthAuthenticated) {
-                context.read<PropertyBloc>().add(DeleteSavedSearch(
-                      searchId: searchId,
-                      requesterId: authState.user.uid,
-                    ));
-              }
-            },
-            child: Text('Delete',
-                style: TextStyle(color: AppColors.error)),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: 'Delete Search',
+        message: 'Remove this saved search?',
+        confirmLabel: 'Delete',
+        confirmColor: AppColors.error,
+        onConfirm: () {
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthAuthenticated) {
+            context.read<PropertyBloc>().add(DeleteSavedSearch(
+                  searchId: searchId,
+                  requesterId: authState.user.uid,
+                ));
+          }
+        },
       ),
     );
   }
@@ -329,61 +295,5 @@ class _SavedSearchTile extends StatelessWidget {
       return '${(n / 1000).toStringAsFixed(n % 1000 == 0 ? 0 : 1)}K';
     }
     return n.toString();
-  }
-}
-
-class _AlertToggle extends StatelessWidget {
-  final bool enabled;
-  final String searchId;
-
-  const _AlertToggle({required this.enabled, required this.searchId});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        final authState = context.read<AuthBloc>().state;
-        if (authState is AuthAuthenticated) {
-          context.read<PropertyBloc>().add(ToggleSavedSearchAlert(
-                searchId: searchId,
-                userId: authState.user.uid,
-                enabled: !enabled,
-                requesterId: authState.user.uid,
-              ));
-        }
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-        decoration: BoxDecoration(
-          color: enabled
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: enabled
-                ? AppColors.primary.withValues(alpha: 0.3)
-                : AppColors.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              enabled ? LucideIcons.bellRing : LucideIcons.bellOff,
-              size: 14.sp,
-              color: enabled ? AppColors.primary : AppColors.textTertiary,
-            ),
-            SizedBox(width: 4.w),
-            Text(
-              enabled ? 'Alerts On' : 'Alerts Off',
-              style: AppTypography.labelSmall.copyWith(
-                color: enabled ? AppColors.primary : AppColors.textTertiary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

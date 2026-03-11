@@ -9,6 +9,8 @@ import '../models/property_model.dart';
 
 @lazySingleton
 class PropertyRepository {
+  static const bool _savedSearchAlertsMuted = true;
+
   final PropertyRemoteDataSource _remote;
   final NotificationService _notificationService;
   final Map<String, _PropertySearchCacheEntry> _searchCache = {};
@@ -247,6 +249,9 @@ class PropertyRepository {
     required PropertyDataClass property,
     required String changeType,
   }) async {
+    // Feature toggle: keep saved-search alerts muted until re-enabled.
+    if (_savedSearchAlertsMuted) return const Right(0);
+
     try {
       final searches =
           await _remote.getAllActiveSavedSearches(requesterId: requesterId);
@@ -328,7 +333,9 @@ class PropertyRepository {
         } else {
           final beforePrice = _toInt(before['listPrice']);
           final afterPrice = _toInt(after['listPrice']);
-          if (beforePrice != null && afterPrice != null && beforePrice != afterPrice) {
+          if (beforePrice != null &&
+              afterPrice != null &&
+              beforePrice != afterPrice) {
             changeType = 'price_change';
           } else {
             final beforeStatus = _statusKey(before);
@@ -438,15 +445,68 @@ class PropertyRepository {
       }
     }
 
-    final minPrice = _toInt(propertyFilter['minPrice']);
-    final maxPrice = _toInt(propertyFilter['maxPrice']);
-    final minBeds = _toInt(propertyFilter['minBeds']);
-    final maxBeds = _toInt(propertyFilter['maxBeds']);
+    final minPrice =
+        _toInt(propertyFilter['min_price'] ?? propertyFilter['minPrice']);
+    final maxPrice =
+        _toInt(propertyFilter['max_price'] ?? propertyFilter['maxPrice']);
+    final minBeds =
+        _toInt(propertyFilter['min_beds'] ?? propertyFilter['minBeds']);
+    final maxBeds =
+        _toInt(propertyFilter['max_beds'] ?? propertyFilter['maxBeds']);
+    final minBaths = _toInt(propertyFilter['min_baths']);
+    final maxBaths = _toInt(propertyFilter['max_baths']);
+    final minSqft =
+        _toInt(propertyFilter['min_sqft'] ?? propertyFilter['minSquareFeet']);
+    final maxSqft =
+        _toInt(propertyFilter['max_sqft'] ?? propertyFilter['maxSquareFeet']);
+    final minYear =
+        _toInt(propertyFilter['min_year'] ?? propertyFilter['minYearBuilt']);
+    final maxYear =
+        _toInt(propertyFilter['max_year'] ?? propertyFilter['maxYearBuilt']);
+    final statusType =
+        _s(propertyFilter['status_type'] ?? propertyFilter['statusType'])
+            .toLowerCase();
+    final homeTypesRaw =
+        propertyFilter['home_types'] ?? propertyFilter['homeTypes'];
+    final homeTypes = homeTypesRaw is List
+        ? homeTypesRaw.map((e) => e.toString().toLowerCase()).toSet()
+        : <String>{};
+
+    final city = _s(propertyFilter['city']).toLowerCase();
+    if (city.isNotEmpty && property.address.city.toLowerCase() != city) {
+      return false;
+    }
+
+    final state = _s(propertyFilter['state']).toLowerCase();
+    if (state.isNotEmpty && property.address.state.toLowerCase() != state) {
+      return false;
+    }
 
     if (minPrice != null && property.listPrice < minPrice) return false;
     if (maxPrice != null && property.listPrice > maxPrice) return false;
     if (minBeds != null && property.bedrooms < minBeds) return false;
     if (maxBeds != null && property.bedrooms > maxBeds) return false;
+    if (minBaths != null && property.bathrooms < minBaths) return false;
+    if (maxBaths != null && property.bathrooms > maxBaths) return false;
+    if (minSqft != null && property.squareFootage < minSqft) return false;
+    if (maxSqft != null && property.squareFootage > maxSqft) return false;
+    if (minYear != null && property.yearBuilt < minYear) return false;
+    if (maxYear != null && property.yearBuilt > maxYear) return false;
+
+    if (statusType == 'sold' && !property.isSold) {
+      return false;
+    }
+
+    if (statusType == 'for sale' && property.isSold) {
+      return false;
+    }
+
+    if (homeTypes.isNotEmpty) {
+      final propertyType = property.propertyType.toLowerCase();
+      if (!homeTypes.contains(propertyType)) {
+        return false;
+      }
+    }
 
     return true;
   }
@@ -512,9 +572,8 @@ class PropertyRepository {
 
   Map<String, dynamic> _normalizeSourceProperty(Map<String, dynamic> raw) {
     final addressMap = _asMap(raw['address']);
-    final city = _s(raw['city']).isNotEmpty
-        ? _s(raw['city'])
-        : _s(addressMap['city']);
+    final city =
+        _s(raw['city']).isNotEmpty ? _s(raw['city']) : _s(addressMap['city']);
     final state = _s(raw['state']).isNotEmpty
         ? _s(raw['state'])
         : _s(addressMap['state']);

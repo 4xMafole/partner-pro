@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/data/models/property_model.dart';
@@ -771,33 +772,12 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   }) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text(title, style: AppTypography.headlineSmall),
-        content: Text(message, style: AppTypography.bodyMedium),
-        actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: AppTypography.button
-                    .copyWith(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              onConfirm();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: confirmColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r)),
-            ),
-            child: Text(confirmLabel, style: AppTypography.button),
-          ),
-        ],
+      builder: (ctx) => AppConfirmDialog(
+        title: title,
+        message: message,
+        onConfirm: onConfirm,
+        confirmLabel: confirmLabel,
+        confirmColor: confirmColor,
       ),
     );
   }

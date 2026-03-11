@@ -13,6 +13,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/config/env_config.dart';
 import '../../../../core/services/google_maps_service.dart';
 import '../../../../core/utils/property_sort_util.dart';
@@ -402,12 +403,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
           searchData: _buildSearchCriteria(),
           requesterId: a.user.uid,
         ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Search saved! You\'ll get alerts for new listings.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    context.showSnackBar('Search saved.');
   }
 
   /// Applies a saved search by restoring all filters and triggering search.
@@ -422,7 +418,9 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
       _lastSearchQuery = inputField;
       _locationCity = (property['city'] ?? search['city'])?.toString();
       _locationState = (property['state'] ?? search['state'])?.toString();
-      _statusType = (property['status_type'] ?? search['status_type'] ?? 'For Sale').toString();
+      _statusType =
+          (property['status_type'] ?? search['status_type'] ?? 'For Sale')
+              .toString();
 
       final minP = property['min_price'] ?? search['min_price'];
       final maxP = property['max_price'] ?? search['max_price'];
@@ -457,6 +455,14 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   void _showSavedSearchesSheet() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      context.read<PropertyBloc>().add(LoadSavedSearches(
+            userId: authState.user.uid,
+            requesterId: authState.user.uid,
+          ));
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -560,15 +566,12 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
                 _search(_searchController.text.trim());
               },
               child: Chip(
-                label: SizedBox(
-                  width: 44.w,
-                  child: Center(
-                    child: Text('Clear',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.labelSmall
-                            .copyWith(color: AppColors.error)),
-                  ),
+                label: Text(
+                  'Clear',
+                  style:
+                      AppTypography.labelSmall.copyWith(color: AppColors.error),
                 ),
+                labelPadding: EdgeInsets.symmetric(horizontal: 4.w),
                 side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
                 backgroundColor: AppColors.error.withValues(alpha: 0.06),
               ),
@@ -825,24 +828,40 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
         if (_searchController.text.trim().isNotEmpty ||
             _hasActiveAdvancedFilters) ...[
           SizedBox(width: 8.w),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
+          BlocBuilder<PropertyBloc, PropertyState>(
+            buildWhen: (p, c) =>
+                p.isSavedSearchesLoading != c.isSavedSearchesLoading,
+            builder: (context, state) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              onPressed: _saveCurrentSearch,
-              icon: Icon(LucideIcons.bookmarkPlus,
-                  size: 20.sp, color: Colors.white),
-              tooltip: 'Save this search',
-            ),
+                child: IconButton(
+                  onPressed:
+                      state.isSavedSearchesLoading ? null : _saveCurrentSearch,
+                  icon: state.isSavedSearchesLoading
+                      ? SizedBox(
+                          width: 18.w,
+                          height: 18.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(LucideIcons.bookmarkPlus,
+                          size: 20.sp, color: Colors.white),
+                  tooltip: 'Save this search',
+                ),
+              );
+            },
           ),
         ],
       ]),
