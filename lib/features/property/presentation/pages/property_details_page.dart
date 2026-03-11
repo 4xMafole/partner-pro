@@ -4,11 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app_components/custom_dialog/custom_dialog_widget.dart';
-import '../../../../core/enums/app_enums.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/enums/app_enums.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/data/models/user_model.dart';
 import '../../../offer/presentation/bloc/offer_bloc.dart';
 import '../../../offer/data/models/offer_model.dart';
 import '../../../offer/presentation/widgets/offer_process_sheet.dart';
@@ -47,12 +46,16 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     }
   }
 
-  UserModel? get _authenticatedUser {
+  void _loadPropertyOffers() {
     final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      return authState.user;
-    }
-    return null;
+    if (authState is! AuthAuthenticated) return;
+    final uid = authState.user.uid;
+    context.read<OfferBloc>().add(
+          LoadUserOffers(
+            requesterId: uid,
+            propertyId: widget.propertyId,
+          ),
+        );
   }
 
   @override
@@ -60,22 +63,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final propState = context.read<PropertyBloc>().state;
-      final user = _authenticatedUser;
-      if (user != null) {
-        final role = (user.role ?? '').toLowerCase().trim();
-        if (role == 'agent') {
-          context.read<OfferBloc>().add(LoadAgentOffers(requesterId: user.uid));
-        } else {
-          context.read<OfferBloc>().add(LoadUserOffers(
-                requesterId: user.uid,
-                propertyId: widget.propertyId,
-              ));
-        }
-      }
       setState(() {
         _isFavorite = propState.favorites
             .any((f) => f['property_id'] == widget.propertyId);
       });
+      _loadPropertyOffers();
     });
   }
 
@@ -191,7 +183,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         child: OfferProcessSheet(
           property: p,
           requesterId: uid,
-          onComplete: () {},
+          onComplete: _loadPropertyOffers,
         ),
       ),
     );
@@ -486,18 +478,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
 
                     SizedBox(height: 24.h),
 
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: BlocBuilder<OfferBloc, OfferState>(
-                        builder: (context, offerState) {
-                          final offers = _offersForProperty(offerState.offers);
-                          return _PropertyOfferStatusCard(offers: offers);
-                        },
-                      ),
-                    ),
-
-                    SizedBox(height: 20.h),
-
                     // Key stats - simple horizontal row
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -529,6 +509,44 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     ),
 
                     SizedBox(height: 28.h),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: BlocBuilder<OfferBloc, OfferState>(
+                        builder: (context, offerState) {
+                          final propertyOffers = offerState.offers
+                              .where((o) => o.propertyId == widget.propertyId)
+                              .toList()
+                            ..sort((a, b) =>
+                                (b.createdTime ?? DateTime(1970)).compareTo(
+                                    a.createdTime ?? DateTime(1970)));
+
+                          final pendingCount = propertyOffers.where((o) {
+                            final status = o.status;
+                            return status == OfferStatus.pending ||
+                                status == OfferStatus.draft;
+                          }).length;
+                          final acceptedCount = propertyOffers
+                              .where((o) => o.status == OfferStatus.accepted)
+                              .length;
+                          final declinedCount = propertyOffers
+                              .where((o) => o.status == OfferStatus.declined)
+                              .length;
+
+                          return _PropertyOfferSection(
+                            isLoading:
+                                offerState.isLoading && propertyOffers.isEmpty,
+                            pendingCount: pendingCount,
+                            acceptedCount: acceptedCount,
+                            declinedCount: declinedCount,
+                            offers: propertyOffers,
+                            formatCurrency: _formatListPrice,
+                          );
+                        },
+                      ),
+                    ),
+
+                    SizedBox(height: 20.h),
 
                     if (p != null) ...[
                       // Property details card
@@ -721,20 +739,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
         );
-  }
-
-  List<OfferModel> _offersForProperty(List<OfferModel> allOffers) {
-    final filtered = allOffers
-        .where((offer) =>
-            offer.propertyId == widget.propertyId ||
-            offer.property.id == widget.propertyId)
-        .toList();
-    filtered.sort((a, b) {
-      final aTime = a.createdTime ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bTime = b.createdTime ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return bTime.compareTo(aTime);
-    });
-    return filtered;
   }
 }
 
@@ -939,107 +943,31 @@ class _CollapsedDescription extends StatelessWidget {
   }
 }
 
-class _PropertyOfferStatusCard extends StatelessWidget {
+class _PropertyOfferSection extends StatelessWidget {
+  final bool isLoading;
+  final int pendingCount;
+  final int acceptedCount;
+  final int declinedCount;
   final List<OfferModel> offers;
+  final String Function(int) formatCurrency;
 
-  const _PropertyOfferStatusCard({required this.offers});
+  const _PropertyOfferSection({
+    required this.isLoading,
+    required this.pendingCount,
+    required this.acceptedCount,
+    required this.declinedCount,
+    required this.offers,
+    required this.formatCurrency,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    final pending =
-        offers.where((offer) => offer.status == OfferStatus.pending).length;
-    final accepted =
-        offers.where((offer) => offer.status == OfferStatus.accepted).length;
-
-    final latest = offers.isNotEmpty ? offers.first : null;
-    final latestAmount = latest?.purchasePrice ?? 0;
-    final latestStatus = _statusLabel(latest?.status);
-    final hasOffers = offers.isNotEmpty;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      ),
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(LucideIcons.fileStack, size: 20.sp, color: AppColors.primary),
-              SizedBox(width: 8.w),
-              Text('Offer Activity', style: AppTypography.titleLarge),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: [
-              _OfferCountChip(label: 'Total ${offers.length}'),
-              _OfferCountChip(label: 'Pending $pending'),
-              _OfferCountChip(label: 'Accepted $accepted'),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          if (!hasOffers)
-            Text(
-              'No offers submitted yet for this property.',
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
-            )
-          else ...[
-            Row(
-              children: [
-                Text('Latest: ',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textSecondary)),
-                Text(
-                  latestAmount > 0 ? '\$${_formatCurrency(latestAmount)}' : 'N/A',
-                  style: AppTypography.bodyMedium
-                      .copyWith(fontWeight: FontWeight.w700),
-                ),
-                SizedBox(width: 8.w),
-                _OfferStatePill(label: latestStatus, status: latest?.status),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            ...offers.take(3).map((offer) {
-              return Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      offer.purchasePrice > 0
-                          ? '\$${_formatCurrency(offer.purchasePrice)}'
-                          : 'Offer',
-                      style: AppTypography.bodyMedium,
-                    ),
-                    _OfferStatePill(
-                      label: _statusLabel(offer.status),
-                      status: offer.status,
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ],
-      ),
-    );
-  }
-
-  static String _statusLabel(OfferStatus? status) {
+  String _statusLabel(OfferStatus? status) {
     switch (status) {
+      case OfferStatus.pending:
+        return 'Pending';
       case OfferStatus.accepted:
         return 'Accepted';
       case OfferStatus.declined:
         return 'Declined';
-      case OfferStatus.pending:
-        return 'Pending';
       case OfferStatus.draft:
         return 'Draft';
       default:
@@ -1047,67 +975,123 @@ class _PropertyOfferStatusCard extends StatelessWidget {
     }
   }
 
-  static String _formatCurrency(int value) {
-    return value.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (match) => '${match[1]},',
-        );
+  Color _statusColor(OfferStatus? status) {
+    switch (status) {
+      case OfferStatus.accepted:
+        return AppColors.success;
+      case OfferStatus.declined:
+        return AppColors.error;
+      case OfferStatus.pending:
+      case OfferStatus.draft:
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
+    }
   }
-}
 
-class _OfferCountChip extends StatelessWidget {
-  final String label;
-
-  const _OfferCountChip({required this.label});
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Unknown date';
+    return '${date.month}/${date.day}/${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.labelSmall.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w600,
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.06),
         ),
       ),
-    );
-  }
-}
-
-class _OfferStatePill extends StatelessWidget {
-  final String label;
-  final OfferStatus? status;
-
-  const _OfferStatePill({required this.label, required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      OfferStatus.accepted => AppColors.success,
-      OfferStatus.pending => AppColors.warning,
-      OfferStatus.declined => AppColors.error,
-      OfferStatus.draft => AppColors.textSecondary,
-      _ => AppColors.textSecondary,
-    };
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.labelSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(LucideIcons.fileSignature,
+                  size: 20.sp, color: AppColors.primary),
+              SizedBox(width: 8.w),
+              Text('Offer Activity', style: AppTypography.titleLarge),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _StatusBadge('Pending $pendingCount', AppColors.warning),
+              _StatusBadge('Accepted $acceptedCount', AppColors.success),
+              _StatusBadge('History $declinedCount', AppColors.textSecondary),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (offers.isEmpty)
+            Text(
+              'No offers have been submitted for this property yet.',
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            )
+          else
+            Column(
+              children: offers.take(3).map((offer) {
+                final statusColor = _statusColor(offer.status);
+                return Container(
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '\$${formatCurrency(offer.purchasePrice)}',
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 3.h),
+                            Text(
+                              _formatDate(offer.createdTime),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                        child: Text(
+                          _statusLabel(offer.status),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
       ),
     );
   }
