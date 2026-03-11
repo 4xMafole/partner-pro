@@ -24,21 +24,62 @@ class RoleSelectionPage extends StatelessWidget {
       },
       child: Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(height: 60.h),
-              Text('Choose\nYour Role', style: AppTypography.displayLarge).animate().fadeIn(duration: 500.ms).slideX(begin: -0.1),
-              SizedBox(height: 8.h),
-              Text('How will you use PartnerPro?', style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary)).animate().fadeIn(delay: 200.ms),
-              SizedBox(height: 48.h),
-              _RoleCard(icon: LucideIcons.home, title: 'Buyer', description: 'Search properties, save favorites, make offers, and manage your home buying journey.', gradient: AppColors.primaryGradient, onTap: () => context.read<AuthBloc>().add(const AuthUpdateRole(role: 'buyer'))).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.15),
-              SizedBox(height: 16.h),
-              _RoleCard(icon: LucideIcons.briefcase, title: 'Agent', description: 'Manage clients, track offers, suggest properties, and grow your real estate business.', gradient: const LinearGradient(colors: [AppColors.secondary, AppColors.secondaryDark]), onTap: () => context.read<AuthBloc>().add(const AuthUpdateRole(role: 'agent'))).animate().fadeIn(delay: 500.ms, duration: 500.ms).slideY(begin: 0.15),
-              const Spacer(),
-              Center(child: Text('You can change this later in settings', style: AppTypography.caption)),
-              SizedBox(height: 32.h),
-            ]),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 40.h),
+                      Text('Choose\nYour Role', style: AppTypography.displayLarge)
+                          .animate()
+                          .fadeIn(duration: 500.ms)
+                          .slideX(begin: -0.1),
+                      SizedBox(height: 8.h),
+                      Text('How will you use PartnerPro?',
+                              style: AppTypography.bodyLarge
+                                  .copyWith(color: AppColors.textSecondary))
+                          .animate()
+                          .fadeIn(delay: 200.ms),
+                      SizedBox(height: 32.h),
+                      _RoleCard(
+                              icon: LucideIcons.home,
+                              title: 'Buyer',
+                              description:
+                                  'Search properties, save favorites, make offers, and manage your home buying journey.',
+                              gradient: AppColors.primaryGradient,
+                              onTap: () => context
+                                  .read<AuthBloc>()
+                                  .add(const AuthUpdateRole(role: 'buyer')))
+                          .animate()
+                          .fadeIn(delay: 300.ms, duration: 500.ms)
+                          .slideY(begin: 0.15),
+                      SizedBox(height: 16.h),
+                      _RoleCard(
+                              icon: LucideIcons.briefcase,
+                              title: 'Agent',
+                              description:
+                                  'Manage clients, track offers, suggest properties, and grow your real estate business.',
+                              gradient: const LinearGradient(colors: [
+                                AppColors.secondary,
+                                AppColors.secondaryDark
+                              ]),
+                              onTap: () => context
+                                  .read<AuthBloc>()
+                                  .add(const AuthUpdateRole(role: 'agent')))
+                          .animate()
+                          .fadeIn(delay: 500.ms, duration: 500.ms)
+                          .slideY(begin: 0.15),
+                      SizedBox(height: 24.h),
+                      Center(
+                          child: Text('You can change this later in settings',
+                              style: AppTypography.caption)),
+                      SizedBox(height: 24.h),
+                    ]),
+              ),
+            ),
           ),
         ),
       ),

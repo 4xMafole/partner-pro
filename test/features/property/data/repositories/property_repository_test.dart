@@ -327,4 +327,171 @@ void main() {
           ));
     });
   });
+
+  group('PropertyRepository.syncExternalProperties', () {
+    test('creates new property and triggers new-property alert flow', () async {
+      when(() => remote.upsertExternalProperty(
+            requesterId: 'system',
+            externalId: any(named: 'externalId'),
+            source: 'zillow',
+            propertyData: any(named: 'propertyData'),
+          )).thenAnswer((_) async => {
+            'id': 'prop_new_1',
+            'isNew': true,
+            'before': null,
+            'after': {
+              'id': 'prop_new_1',
+              'propertyName': '123 Main St',
+              'listPrice': 450000,
+              'bedrooms': 3,
+              'address': {
+                'city': 'Austin',
+                'state': 'TX',
+                'zip': '78701',
+              }
+            }
+          });
+
+      when(() => remote.getAllActiveSavedSearches(requesterId: 'system'))
+          .thenAnswer((_) async => [
+                {
+                  'id': 'search_1',
+                  'user_id': 'buyer_1',
+                  'status': true,
+                  'search': {
+                    'input_field': 'Austin',
+                    'property': {
+                      'minPrice': '400000',
+                      'maxPrice': '500000',
+                    }
+                  }
+                }
+              ]);
+
+      when(() => notificationService.createNotification(
+            userId: any(named: 'userId'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            type: any(named: 'type'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async {});
+
+      final result = await repository.syncExternalProperties(
+        requesterId: 'system',
+        source: 'zillow',
+        sourceProperties: [
+          {
+            'zpid': 'z_123',
+            'address': {
+              'city': 'Austin',
+              'state': 'TX',
+              'zipcode': '78701',
+            },
+            'price': 450000,
+            'bedrooms': 3,
+            'status': 'FOR_SALE'
+          }
+        ],
+      );
+
+      expect(result.isRight(), true);
+      final summary = result.getOrElse(() => <String, int>{});
+      expect(summary['processed'], 1);
+      expect(summary['created'], 1);
+      expect(summary['newAlerts'], 1);
+      verify(() => notificationService.createNotification(
+            userId: 'buyer_1',
+            title: 'New Property Alert',
+            body: any(named: 'body'),
+            type: 'property_alert',
+            data: any(named: 'data'),
+          )).called(1);
+    });
+
+    test('detects price change on existing property and triggers price alert',
+        () async {
+      when(() => remote.upsertExternalProperty(
+            requesterId: 'system',
+            externalId: any(named: 'externalId'),
+            source: 'zillow',
+            propertyData: any(named: 'propertyData'),
+          )).thenAnswer((_) async => {
+            'id': 'prop_existing_1',
+            'isNew': false,
+            'before': {
+              'id': 'prop_existing_1',
+              'listPrice': 420000,
+              'isSold': false,
+              'isPending': false,
+            },
+            'after': {
+              'id': 'prop_existing_1',
+              'propertyName': '456 Market St',
+              'listPrice': 399000,
+              'bedrooms': 2,
+              'isSold': false,
+              'isPending': false,
+              'address': {
+                'city': 'Austin',
+                'state': 'TX',
+                'zip': '78702',
+              }
+            }
+          });
+
+      when(() => remote.getAllActiveSavedSearches(requesterId: 'system'))
+          .thenAnswer((_) async => [
+                {
+                  'id': 'search_2',
+                  'user_id': 'buyer_2',
+                  'status': true,
+                  'search': {
+                    'input_field': 'Austin',
+                    'property': {
+                      'minPrice': '300000',
+                      'maxPrice': '450000',
+                    }
+                  }
+                }
+              ]);
+
+      when(() => notificationService.createNotification(
+            userId: any(named: 'userId'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            type: any(named: 'type'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async {});
+
+      final result = await repository.syncExternalProperties(
+        requesterId: 'system',
+        source: 'zillow',
+        sourceProperties: [
+          {
+            'zpid': 'z_456',
+            'address': {
+              'city': 'Austin',
+              'state': 'TX',
+              'zipcode': '78702',
+            },
+            'price': 399000,
+            'bedrooms': 2,
+            'status': 'FOR_SALE'
+          }
+        ],
+      );
+
+      expect(result.isRight(), true);
+      final summary = result.getOrElse(() => <String, int>{});
+      expect(summary['updated'], 1);
+      expect(summary['priceAlerts'], 1);
+      verify(() => notificationService.createNotification(
+            userId: 'buyer_2',
+            title: 'Price Change Alert',
+            body: any(named: 'body'),
+            type: 'property_alert',
+            data: any(named: 'data'),
+          )).called(1);
+    });
+  });
 }

@@ -27,7 +27,7 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        final uid = authState.user.uid ?? '';
+        final uid = authState.user.uid;
         context
             .read<AgentBloc>()
             .add(LoadClients(agentId: uid, requesterId: uid));
@@ -95,17 +95,21 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                 final pendingOffers = offerState.offers
                     .where((o) => o.status == 'pending')
                     .length;
-                return Row(
-                        children: [
-                  _StatCard('Active\nClients', '$clientCount',
+              return GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10.w,
+                  mainAxisSpacing: 10.h,
+                  childAspectRatio: 0.95,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _StatCard('Active\nClients', '$clientCount',
                       LucideIcons.users, AppColors.secondary),
-                  SizedBox(width: 12.w),
-                  _StatCard('Pending\nOffers', '$pendingOffers',
+                    _StatCard('Pending\nOffers', '$pendingOffers',
                       LucideIcons.fileText, AppColors.tertiary),
-                  SizedBox(width: 12.w),
-                  _StatCard('Total\nOffers', '${offerState.offers.length}',
+                    _StatCard('Total\nOffers', '${offerState.offers.length}',
                       LucideIcons.trendingUp, AppColors.success),
-                ].map((w) => Expanded(child: w)).toList())
+                  ])
                     .animate()
                     .fadeIn(delay: 200.ms);
               });
@@ -118,16 +122,22 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Quick Actions', style: AppTypography.headlineSmall),
               SizedBox(height: 12.h),
-              Row(children: [
-                _ActionChip(LucideIcons.userPlus, 'Invite Buyer',
-                    () => context.push(RouteNames.agentInvite)),
-                SizedBox(width: 10.w),
-                _ActionChip(LucideIcons.search, 'Search Property',
-                    () => context.go(RouteNames.agentSearch)),
-                SizedBox(width: 10.w),
-                _ActionChip(LucideIcons.crown, 'Subscription',
-                    () => context.push(RouteNames.agentSubscription)),
-              ]),
+              GridView.count(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10.w,
+                mainAxisSpacing: 10.h,
+                childAspectRatio: 1.05,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _ActionChip(LucideIcons.userPlus, 'Invite Buyer',
+                      () => context.push(RouteNames.agentInvite)),
+                  _ActionChip(LucideIcons.search, 'Search Property',
+                      () => context.go(RouteNames.agentSearch)),
+                  _ActionChip(LucideIcons.crown, 'Subscription',
+                      () => context.push(RouteNames.agentSubscription)),
+                ],
+              ),
             ]).animate().fadeIn(delay: 300.ms),
           )),
           SliverToBoxAdapter(

@@ -269,6 +269,90 @@ class PropertyRepository {
     }
   }
 
+  Future<Either<Failure, Map<String, int>>> syncExternalProperties({
+    required String requesterId,
+    required String source,
+    required List<Map<String, dynamic>> sourceProperties,
+  }) async {
+    try {
+      var processed = 0;
+      var created = 0;
+      var updated = 0;
+      var newAlerts = 0;
+      var priceAlerts = 0;
+      var statusAlerts = 0;
+
+      for (final raw in sourceProperties) {
+        final normalized = _normalizeSourceProperty(raw);
+        final externalId = _s(normalized['external_id']);
+        if (externalId.isEmpty) continue;
+
+        final upsert = await _remote.upsertExternalProperty(
+          requesterId: requesterId,
+          externalId: externalId,
+          source: source,
+          propertyData: normalized,
+        );
+
+        processed += 1;
+        final isNew = upsert['isNew'] == true;
+        if (isNew) {
+          created += 1;
+        } else {
+          updated += 1;
+        }
+
+        final before = _asMap(upsert['before']);
+        final after = _asMap(upsert['after']);
+        if (after.isEmpty) continue;
+
+        String? changeType;
+        if (isNew) {
+          changeType = 'new_property';
+        } else {
+          final beforePrice = _toInt(before['listPrice']);
+          final afterPrice = _toInt(after['listPrice']);
+          if (beforePrice != null && afterPrice != null && beforePrice != afterPrice) {
+            changeType = 'price_change';
+          } else {
+            final beforeStatus = _statusKey(before);
+            final afterStatus = _statusKey(after);
+            if (beforeStatus != afterStatus) {
+              changeType = 'status_change';
+            }
+          }
+        }
+
+        if (changeType != null) {
+          final alertCount = await processPropertySourceUpdateAlerts(
+            requesterId: requesterId,
+            property: PropertyDataClass.fromJson(after),
+            changeType: changeType,
+          );
+
+          alertCount.fold((_) {}, (_) {
+            if (changeType == 'new_property') newAlerts += 1;
+            if (changeType == 'price_change') priceAlerts += 1;
+            if (changeType == 'status_change') statusAlerts += 1;
+          });
+        }
+      }
+
+      return Right({
+        'processed': processed,
+        'created': created,
+        'updated': updated,
+        'newAlerts': newAlerts,
+        'priceAlerts': priceAlerts,
+        'statusAlerts': statusAlerts,
+      });
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
   Future<Either<Failure, List<Map<String, dynamic>>>> getShowings({
     required String userId,
     required String requesterId,
@@ -400,6 +484,98 @@ class PropertyRepository {
     final text = value.toString().trim();
     if (text.isEmpty) return null;
     return int.tryParse(text);
+  }
+
+  String _statusKey(Map<String, dynamic> payload) {
+    final sold = payload['isSold'] == true;
+    final pending = payload['isPending'] == true;
+    if (sold) return 'sold';
+    if (pending) return 'pending';
+    return 'active';
+  }
+
+  Map<String, dynamic> _normalizeSourceProperty(Map<String, dynamic> raw) {
+    final addressMap = _asMap(raw['address']);
+    final city = _s(raw['city']).isNotEmpty
+        ? _s(raw['city'])
+        : _s(addressMap['city']);
+    final state = _s(raw['state']).isNotEmpty
+        ? _s(raw['state'])
+        : _s(addressMap['state']);
+    final zip = _s(raw['zip']).isNotEmpty
+        ? _s(raw['zip'])
+        : _s(addressMap['zipcode']).isNotEmpty
+            ? _s(addressMap['zipcode'])
+            : _s(addressMap['zip']);
+
+    final statusText = _s(raw['status']).toLowerCase();
+    final isSold = statusText.contains('sold') || statusText.contains('closed');
+    final isPending = statusText.contains('pending') ||
+        statusText.contains('under contract') ||
+        statusText.contains('contingent');
+
+    final photos = (raw['photos'] is List ? raw['photos'] as List : const []);
+    final media = photos
+        .map((item) {
+          if (item is String) return item;
+          if (item is Map) {
+            final map = _asMap(item);
+            return _s(map['url']).isNotEmpty
+                ? _s(map['url'])
+                : _s(map['href']).isNotEmpty
+                    ? _s(map['href'])
+                    : _s(map['src']);
+          }
+          return '';
+        })
+        .where((item) => item.isNotEmpty)
+        .toList();
+
+    final externalId = _s(raw['external_id']).isNotEmpty
+        ? _s(raw['external_id'])
+        : _s(raw['zpid']).isNotEmpty
+            ? _s(raw['zpid'])
+            : _s(raw['zpId']);
+
+    return {
+      'external_id': externalId,
+      'zpId': externalId,
+      'propertyName': _s(raw['propertyName']).isNotEmpty
+          ? _s(raw['propertyName'])
+          : _s(raw['address']).isNotEmpty
+              ? _s(raw['address'])
+              : _s(addressMap['streetAddress']),
+      'listPrice': _toInt(raw['price']) ?? _toInt(raw['listPrice']) ?? 0,
+      'bedrooms': _toInt(raw['bedrooms']) ?? _toInt(raw['beds']) ?? 0,
+      'bathrooms': _toInt(raw['bathrooms']) ?? _toInt(raw['baths']) ?? 0,
+      'squareFootage':
+          _toInt(raw['livingArea']) ?? _toInt(raw['squareFootage']) ?? 0,
+      'propertyType': _s(raw['homeType']).isNotEmpty
+          ? _s(raw['homeType'])
+          : _s(raw['propertyType']),
+      'home_type': _s(raw['homeType']).isNotEmpty
+          ? _s(raw['homeType'])
+          : _s(raw['propertyType']),
+      'city': city,
+      'state': state,
+      'zip': zip,
+      'address': {
+        'streetName': _s(addressMap['streetName']),
+        'streetNumber': _s(addressMap['streetNumber']),
+        'city': city,
+        'state': state,
+        'zip': zip,
+      },
+      'media': media,
+      'isSold': isSold,
+      'isPending': isPending,
+      'listDate': _s(raw['listingDate']),
+      'onMarketDate': _s(raw['onMarketDate']),
+      'agentName': _s(raw['listingAgentName']),
+      'agentEmail': _s(raw['listingAgentEmail']),
+      'agentPhoneNumber': _s(raw['listingAgentPhone']),
+      'updatedBy': 'source_sync',
+    };
   }
 
   String _buildSearchCacheKey({

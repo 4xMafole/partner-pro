@@ -89,6 +89,69 @@ class PropertyRemoteDataSource {
         .toList();
   }
 
+  /// Finds a property by external source id (e.g. Zillow zpid).
+  Future<Map<String, dynamic>?> getPropertyByExternalId({
+    required String externalId,
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.propertiesCollection)
+        .where('external_id', isEqualTo: externalId)
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    final doc = snap.docs.first;
+    return {...doc.data(), 'id': doc.id};
+  }
+
+  /// Upserts source-synced property document by external id.
+  Future<Map<String, dynamic>> upsertExternalProperty({
+    required String requesterId,
+    required String externalId,
+    required String source,
+    required Map<String, dynamic> propertyData,
+  }) async {
+    final collection = _firestore.collection(AppConstants.propertiesCollection);
+    final existing = await collection
+        .where('external_id', isEqualTo: externalId)
+        .limit(1)
+        .get();
+
+    final payload = <String, dynamic>{
+      ...propertyData,
+      'external_id': externalId,
+      'source': source,
+      'updated_at': FieldValue.serverTimestamp(),
+      'updated_by': requesterId,
+    };
+
+    if (existing.docs.isEmpty) {
+      final docRef = await collection.add({
+        ...payload,
+        'created_at': FieldValue.serverTimestamp(),
+        'created_by': requesterId,
+      });
+      final afterSnap = await docRef.get();
+      return {
+        'id': docRef.id,
+        'isNew': true,
+        'before': null,
+        'after': {...?afterSnap.data(), 'id': docRef.id},
+      };
+    }
+
+    final docRef = existing.docs.first.reference;
+    final before = existing.docs.first.data();
+    await docRef.update(payload);
+    final afterSnap = await docRef.get();
+    return {
+      'id': docRef.id,
+      'isNew': false,
+      'before': {...before, 'id': docRef.id},
+      'after': {...?afterSnap.data(), 'id': docRef.id},
+    };
+  }
+
   // -- Favorites --
 
   /// Fetches user's favorite properties.

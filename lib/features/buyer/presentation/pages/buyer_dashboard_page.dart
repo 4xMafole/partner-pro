@@ -26,7 +26,7 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final a = context.read<AuthBloc>().state;
       if (a is AuthAuthenticated) {
-        final uid = a.user.uid ?? '';
+        final uid = a.user.uid;
         context.read<PropertyBloc>().add(LoadProperties(requesterId: uid));
         context
             .read<PropertyBloc>()
@@ -95,23 +95,43 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         SliverToBoxAdapter(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            _QuickAction(
-                icon: LucideIcons.mapPin, label: 'Near Me', onTap: () {}),
-            _QuickAction(
-                icon: LucideIcons.calendar,
-                label: 'Showings',
-                onTap: () => context.push(RouteNames.scheduledShowings)),
-            _QuickAction(
-                icon: LucideIcons.fileText,
-                label: 'Offers',
-                onTap: () => context.go(RouteNames.myHomes)),
-            _QuickAction(
-                icon: LucideIcons.shield,
-                label: 'Docs',
-                onTap: () => context.push(RouteNames.storeDocuments)),
-          ]).animate().fadeIn(delay: 300.ms),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Quick Start', style: AppTypography.headlineSmall),
+              SizedBox(height: 12.h),
+              GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.w,
+                mainAxisSpacing: 10.h,
+                childAspectRatio: 2.35,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _QuickAction(
+                      icon: LucideIcons.mapPin,
+                      label: 'Near Me',
+                      subtitle: 'Homes close to you',
+                      onTap: () {}),
+                  _QuickAction(
+                      icon: LucideIcons.calendar,
+                      label: 'Showings',
+                      subtitle: 'Manage tours',
+                      onTap: () => context.push(RouteNames.scheduledShowings)),
+                  _QuickAction(
+                      icon: LucideIcons.fileText,
+                      label: 'Offers',
+                      subtitle: 'Track your offers',
+                      onTap: () => context.go(RouteNames.myHomes)),
+                  _QuickAction(
+                      icon: LucideIcons.shield,
+                      label: 'Docs',
+                      subtitle: 'Secure documents',
+                      onTap: () => context.push(RouteNames.storeDocuments)),
+                ],
+              ),
+            ],
+          ).animate().fadeIn(delay: 300.ms),
         )),
         SliverToBoxAdapter(
             child: Padding(
@@ -250,24 +270,51 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
 class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String subtitle;
   final VoidCallback onTap;
   const _QuickAction(
-      {required this.icon, required this.label, required this.onTap});
+    {required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap});
   @override
   Widget build(BuildContext context) {
     return InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.r),
-        child: Column(children: [
-          Container(
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16.r)),
-              child: Icon(icon, size: 22.sp, color: AppColors.primary)),
-          SizedBox(height: 6.h),
-          Text(label, style: AppTypography.labelSmall),
-        ]));
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.12),
+          width: 0.8)),
+      child: Row(children: [
+        Container(
+          width: 34.w,
+          height: 34.w,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10.r)),
+          child: Icon(icon, size: 18.sp, color: AppColors.primary)),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          Text(label,
+            style: AppTypography.labelSmall
+              .copyWith(fontWeight: FontWeight.w700)),
+          SizedBox(height: 2.h),
+          Text(subtitle,
+            style: AppTypography.caption
+              .copyWith(color: AppColors.textSecondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis),
+          ])),
+      ])));
   }
 }
 
