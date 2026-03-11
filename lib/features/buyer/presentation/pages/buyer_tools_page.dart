@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -6,6 +7,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/route_names.dart';
+import '../../../property/presentation/bloc/property_bloc.dart';
+import '../widgets/saved_searches_sheet.dart';
 
 class BuyerToolsPage extends StatelessWidget {
   const BuyerToolsPage({super.key});
@@ -13,6 +16,7 @@ class BuyerToolsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tools = [
+      _ToolItem(LucideIcons.bookmark, 'Saved Searches', 'View & manage search alerts', () => _showSavedSearches(context)),
       _ToolItem(LucideIcons.folderOpen, 'Documents', 'Store & manage your records', () => context.push(RouteNames.storeDocuments)),
       _ToolItem(LucideIcons.dollarSign, 'Proof of Funds', 'Upload financial documents', () => context.push(RouteNames.proofFunds)),
       _ToolItem(LucideIcons.fileCheck, 'Pre-Approvals', 'Manage mortgage pre-approvals', () => context.push(RouteNames.preapprovals)),
@@ -31,6 +35,21 @@ class BuyerToolsPage extends StatelessWidget {
           trailing: Icon(LucideIcons.chevronRight, size: 20.sp, color: AppColors.textTertiary), onTap: tool.onTap,
         ));
       }),
+    );
+  }
+
+  void _showSavedSearches(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: context.read<PropertyBloc>(),
+        child: const SavedSearchesSheet(),
+      ),
     );
   }
 }

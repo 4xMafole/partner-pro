@@ -166,6 +166,18 @@ class DeleteSavedSearch extends PropertyEvent {
   List<Object?> get props => [searchId, requesterId];
 }
 
+class ToggleSavedSearchAlert extends PropertyEvent {
+  final String searchId, userId, requesterId;
+  final bool enabled;
+  const ToggleSavedSearchAlert(
+      {required this.searchId,
+      required this.userId,
+      required this.enabled,
+      required this.requesterId});
+  @override
+  List<Object?> get props => [searchId, userId, enabled, requesterId];
+}
+
 class LoadShowings extends PropertyEvent {
   final String userId, requesterId;
   const LoadShowings({required this.userId, required this.requesterId});
@@ -260,6 +272,7 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     on<LoadSavedSearches>(_onLoadSavedSearches);
     on<SaveSearch>(_onSaveSearch);
     on<DeleteSavedSearch>(_onDeleteSavedSearch);
+    on<ToggleSavedSearchAlert>(_onToggleSavedSearchAlert);
     on<LoadShowings>(_onLoadShowings);
     on<CreateShowing>(_onCreateShowing);
     on<CancelShowing>(_onCancelShowing);
@@ -421,6 +434,18 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
           state.savedSearches.where((s) => s['id'] != event.searchId).toList();
       emit(state.copyWith(savedSearches: u));
     });
+  }
+
+  Future<void> _onToggleSavedSearchAlert(
+      ToggleSavedSearchAlert event, Emitter<PropertyState> emit) async {
+    final r = await _repository.updateSavedSearch(
+        searchId: event.searchId,
+        data: {'status': event.enabled},
+        requesterId: event.requesterId);
+    r.fold(
+        (f) => emit(state.copyWith(error: f.message)),
+        (_) => add(LoadSavedSearches(
+            userId: event.userId, requesterId: event.requesterId)));
   }
 
   Future<void> _onLoadShowings(

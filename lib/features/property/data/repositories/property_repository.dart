@@ -226,6 +226,22 @@ class PropertyRepository {
     }
   }
 
+  Future<Either<Failure, void>> updateSavedSearch({
+    required String searchId,
+    required Map<String, dynamic> data,
+    required String requesterId,
+  }) async {
+    try {
+      await _remote.updateSavedSearch(
+          searchId: searchId, data: data, requesterId: requesterId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
   Future<Either<Failure, int>> processPropertySourceUpdateAlerts({
     required String requesterId,
     required PropertyDataClass property,

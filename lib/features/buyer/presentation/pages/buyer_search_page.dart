@@ -22,6 +22,7 @@ import '../../../property/data/models/property_model.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../property/presentation/widgets/property_map.dart';
 import '../widgets/property_filter_sheet.dart';
+import '../widgets/saved_searches_sheet.dart';
 
 class BuyerSearchPage extends StatefulWidget {
   const BuyerSearchPage({super.key});
@@ -363,21 +364,110 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   void _navigateToProperty(PropertyDataClass property) {
-    final a = context.read<AuthBloc>().state;
-    if (a is AuthAuthenticated && _lastSearchQuery.isNotEmpty) {
-      context.read<PropertyBloc>().add(SaveSearch(
-            userId: a.user.uid,
-            searchData: {
-              'input_field': _lastSearchQuery,
-              'property_id': property.id,
-              'property_name': property.propertyName,
-            },
-            requesterId: a.user.uid,
-          ));
-    }
     context.push(
       RouteNames.propertyDetails.replaceFirst(':id', property.id),
       extra: {'fromSearch': true},
+    );
+  }
+
+  /// Builds a map of the current search criteria for saving.
+  Map<String, dynamic> _buildSearchCriteria() {
+    return {
+      'input_field': _lastSearchQuery,
+      'city': _locationCity,
+      'state': _locationState,
+      'status_type': _statusType,
+      if (_activeMinPrice != null) 'min_price': _activeMinPrice,
+      if (_activeMaxPrice != null) 'max_price': _activeMaxPrice,
+      if (_activeMinBeds != null) 'min_beds': _activeMinBeds,
+      if (_activeMinBaths != null) 'min_baths': _activeMinBaths,
+      if (_activeMinSqft != null) 'min_sqft': _activeMinSqft,
+      if (_activeMaxSqft != null) 'max_sqft': _activeMaxSqft,
+      if (_activeMinYear != null) 'min_year': _activeMinYear,
+      if (_activeMaxYear != null) 'max_year': _activeMaxYear,
+      if (_selectedHomeTypes.isNotEmpty)
+        'home_types': _selectedHomeTypes.toList(),
+    };
+  }
+
+  /// Explicitly saves the current search with all active filters.
+  void _saveCurrentSearch() {
+    final a = context.read<AuthBloc>().state;
+    if (a is! AuthAuthenticated) return;
+    final query = _searchController.text.trim();
+    if (query.isEmpty && !_hasActiveAdvancedFilters) return;
+
+    context.read<PropertyBloc>().add(SaveSearch(
+          userId: a.user.uid,
+          searchData: _buildSearchCriteria(),
+          requesterId: a.user.uid,
+        ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Search saved! You\'ll get alerts for new listings.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Applies a saved search by restoring all filters and triggering search.
+  void _applySavedSearch(Map<String, dynamic> savedSearch) {
+    final search =
+        savedSearch['search'] as Map<String, dynamic>? ?? savedSearch;
+    final property = search['property'] as Map<String, dynamic>? ?? search;
+
+    setState(() {
+      final inputField = (search['input_field'] ?? '').toString();
+      _searchController.text = inputField;
+      _lastSearchQuery = inputField;
+      _locationCity = (property['city'] ?? search['city'])?.toString();
+      _locationState = (property['state'] ?? search['state'])?.toString();
+      _statusType = (property['status_type'] ?? search['status_type'] ?? 'For Sale').toString();
+
+      final minP = property['min_price'] ?? search['min_price'];
+      final maxP = property['max_price'] ?? search['max_price'];
+      _priceRange = RangeValues(
+        minP != null ? (minP as num).toDouble() : 0,
+        maxP != null ? (maxP as num).toDouble() : _defaultMaxPrice.toDouble(),
+      );
+
+      _minBeds = (property['min_beds'] ?? search['min_beds'] ?? 0) as int;
+      _minBaths = (property['min_baths'] ?? search['min_baths'] ?? 0) as int;
+
+      final minSq = property['min_sqft'] ?? search['min_sqft'];
+      final maxSq = property['max_sqft'] ?? search['max_sqft'];
+      _sqftRange = RangeValues(
+        minSq != null ? (minSq as num).toDouble() : 0,
+        maxSq != null ? (maxSq as num).toDouble() : _defaultMaxSqft.toDouble(),
+      );
+
+      final minY = property['min_year'] ?? search['min_year'];
+      final maxY = property['max_year'] ?? search['max_year'];
+      _yearRange = RangeValues(
+        minY != null ? (minY as num).toDouble() : _defaultMinYear.toDouble(),
+        maxY != null ? (maxY as num).toDouble() : _defaultMaxYear.toDouble(),
+      );
+
+      final ht = property['home_types'] ?? search['home_types'];
+      _selectedHomeTypes.clear();
+      if (ht is List) _selectedHomeTypes.addAll(ht.cast<String>());
+    });
+
+    _search(_searchController.text.trim());
+  }
+
+  void _showSavedSearchesSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: context.read<PropertyBloc>(),
+        child: SavedSearchesSheet(onApply: _applySavedSearch),
+      ),
     );
   }
 
@@ -624,6 +714,11 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
           ]),
         ),
         IconButton(
+          onPressed: _showSavedSearchesSheet,
+          icon: Icon(LucideIcons.bookmark),
+          tooltip: 'Saved Searches',
+        ),
+        IconButton(
           onPressed: () => setState(() => _isMapView = !_isMapView),
           icon: Icon(_isMapView ? LucideIcons.layoutList : LucideIcons.map),
           tooltip: _isMapView ? 'List view' : 'Map view',
@@ -726,6 +821,30 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             );
           },
         ),
+        // Save search button — visible when search text or filters are active
+        if (_searchController.text.trim().isNotEmpty ||
+            _hasActiveAdvancedFilters) ...[
+          SizedBox(width: 8.w),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: _saveCurrentSearch,
+              icon: Icon(LucideIcons.bookmarkPlus,
+                  size: 20.sp, color: Colors.white),
+              tooltip: 'Save this search',
+            ),
+          ),
+        ],
       ]),
     );
   }

@@ -277,6 +277,18 @@ class PropertyRemoteDataSource {
         .delete();
   }
 
+  /// Updates a saved search (toggle alert, rename, update filters).
+  Future<void> updateSavedSearch({
+    required String searchId,
+    required Map<String, dynamic> data,
+    required String requesterId,
+  }) async {
+    await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .doc(searchId)
+        .update(data);
+  }
+
   // -- Show Property (Showings) --
 
   /// Gets showing requests for a user.

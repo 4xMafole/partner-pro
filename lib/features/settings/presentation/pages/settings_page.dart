@@ -8,6 +8,8 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../buyer/presentation/widgets/saved_searches_sheet.dart';
+import '../../../property/presentation/bloc/property_bloc.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -42,6 +44,12 @@ class SettingsPage extends StatelessWidget {
                 icon: LucideIcons.bell,
                 title: 'Notification Preferences',
                 onTap: () => context.push(RouteNames.notificationSettings),
+              ),
+              _SettingsTile(
+                icon: LucideIcons.bookmark,
+                title: 'Saved Searches',
+                subtitle: 'Manage search alerts',
+                onTap: () => _showSavedSearches(context),
               ),
             ],
           ),
@@ -93,6 +101,21 @@ class SettingsPage extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
         ],
+      ),
+    );
+  }
+
+  void _showSavedSearches(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: context.read<PropertyBloc>(),
+        child: const SavedSearchesSheet(),
       ),
     );
   }
