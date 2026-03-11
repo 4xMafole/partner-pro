@@ -204,6 +204,20 @@ class CancelShowing extends PropertyEvent {
   List<Object?> get props => [showingId, requesterId];
 }
 
+class RecordPropertyView extends PropertyEvent {
+  final String userId, propertyId, requesterId;
+  const RecordPropertyView({required this.userId, required this.propertyId, required this.requesterId});
+  @override
+  List<Object?> get props => [userId, propertyId, requesterId];
+}
+
+class LoadRecentlyViewed extends PropertyEvent {
+  final String userId, requesterId;
+  const LoadRecentlyViewed({required this.userId, required this.requesterId});
+  @override
+  List<Object?> get props => [userId, requesterId];
+}
+
 class PropertyState extends Equatable {
   final bool isLoading;
   final bool isSavedSearchesLoading;
@@ -213,6 +227,7 @@ class PropertyState extends Equatable {
   final List<Map<String, dynamic>> favorites;
   final List<Map<String, dynamic>> savedSearches;
   final List<Map<String, dynamic>> showings;
+  final List<Map<String, dynamic>> recentlyViewed;
   final bool isFilterActive;
 
   const PropertyState(
@@ -224,6 +239,7 @@ class PropertyState extends Equatable {
       this.favorites = const [],
       this.savedSearches = const [],
       this.showings = const [],
+      this.recentlyViewed = const [],
       this.isFilterActive = false});
 
   PropertyState copyWith(
@@ -235,6 +251,7 @@ class PropertyState extends Equatable {
       List<Map<String, dynamic>>? favorites,
       List<Map<String, dynamic>>? savedSearches,
       List<Map<String, dynamic>>? showings,
+      List<Map<String, dynamic>>? recentlyViewed,
       bool? isFilterActive}) {
     return PropertyState(
         isLoading: isLoading ?? this.isLoading,
@@ -246,6 +263,7 @@ class PropertyState extends Equatable {
         favorites: favorites ?? this.favorites,
         savedSearches: savedSearches ?? this.savedSearches,
         showings: showings ?? this.showings,
+        recentlyViewed: recentlyViewed ?? this.recentlyViewed,
         isFilterActive: isFilterActive ?? this.isFilterActive);
   }
 
@@ -259,6 +277,7 @@ class PropertyState extends Equatable {
         favorites,
         savedSearches,
         showings,
+        recentlyViewed,
         isFilterActive
       ];
 }
@@ -282,6 +301,8 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     on<LoadShowings>(_onLoadShowings);
     on<CreateShowing>(_onCreateShowing);
     on<CancelShowing>(_onCancelShowing);
+    on<RecordPropertyView>(_onRecordPropertyView);
+    on<LoadRecentlyViewed>(_onLoadRecentlyViewed);
   }
 
   Future<void> _onLoad(
@@ -500,5 +521,19 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
           state.showings.where((s) => s['id'] != event.showingId).toList();
       emit(state.copyWith(showings: u));
     });
+  }
+
+  Future<void> _onRecordPropertyView(
+      RecordPropertyView event, Emitter<PropertyState> emit) async {
+    await _repository.recordPropertyView(
+        userId: event.userId, propertyId: event.propertyId, requesterId: event.requesterId);
+  }
+
+  Future<void> _onLoadRecentlyViewed(
+      LoadRecentlyViewed event, Emitter<PropertyState> emit) async {
+    final r = await _repository.getRecentlyViewed(
+        userId: event.userId, requesterId: event.requesterId);
+    r.fold((f) => emit(state.copyWith(error: f.message)),
+        (rv) => emit(state.copyWith(recentlyViewed: rv)));
   }
 }

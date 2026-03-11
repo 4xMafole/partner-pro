@@ -34,7 +34,7 @@ class _AgentClientsPageState extends State<AgentClientsPage> with SingleTickerPr
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        final uid = authState.user.uid ?? '';
+        final uid = authState.user.uid;
         context.read<AgentBloc>().add(LoadClients(agentId: uid, requesterId: uid));
         context.read<AgentBloc>().add(LoadInvitations(inviterUid: uid));
       }
@@ -75,6 +75,12 @@ class _AgentClientsPageState extends State<AgentClientsPage> with SingleTickerPr
                 decoration: BoxDecoration(color: status == 'accepted' ? AppColors.success.withValues(alpha: 0.1) : AppColors.tertiary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12.r)),
                 child: Text(status.toUpperCase(), style: AppTypography.labelSmall.copyWith(color: status == 'accepted' ? AppColors.success : AppColors.tertiary)),
               ) : null,
+              onTap: () {
+                final clientId = contact['id'] as String? ?? contact['clientID'] as String? ?? '';
+                if (clientId.isNotEmpty) {
+                  context.push(RouteNames.clientDetail.replaceFirst(':id', clientId));
+                }
+              },
             );
           },
         );

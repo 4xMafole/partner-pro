@@ -71,6 +71,30 @@ class FirestoreDataSource {
     await _firestore.collection('invitations').doc(invitationId).delete();
   }
 
+  /// Get pending invitations for a buyer by email.
+  Future<List<Map<String, dynamic>>> getInvitationsForBuyer(String email) async {
+    final snap = await _firestore
+        .collection('invitations')
+        .where('inviteeEmail', isEqualTo: email)
+        .where('status', isEqualTo: 'pending')
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
+
+  /// Stream pending invitations for a buyer by email.
+  Stream<List<Map<String, dynamic>>> watchInvitationsForBuyer(String email) {
+    return _firestore
+        .collection('invitations')
+        .where('inviteeEmail', isEqualTo: email)
+        .where('status', isEqualTo: 'pending')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => {...doc.data(), 'id': doc.id})
+            .toList());
+  }
+
   // ── Relationships ──────────────────────────────────────────
 
   /// Create a relationship (agent ↔ buyer link).
@@ -136,5 +160,35 @@ class FirestoreDataSource {
       String collection, String docId) {
     return _firestore.collection(collection).doc(docId).snapshots().map(
         (snap) => snap.exists ? {...snap.data()!, 'id': snap.id} : null);
+  }
+
+  // ── Client Notes ───────────────────────────────────────────
+
+  /// Add a note between an agent and a client.
+  Future<void> addClientNote({
+    required String agentId,
+    required String clientId,
+    required String note,
+  }) async {
+    await _firestore.collection('client_notes').add({
+      'agentId': agentId,
+      'clientId': clientId,
+      'note': note,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Get notes for a specific agent-client pair.
+  Future<List<Map<String, dynamic>>> getClientNotes({
+    required String agentId,
+    required String clientId,
+  }) async {
+    final snap = await _firestore
+        .collection('client_notes')
+        .where('agentId', isEqualTo: agentId)
+        .where('clientId', isEqualTo: clientId)
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 }

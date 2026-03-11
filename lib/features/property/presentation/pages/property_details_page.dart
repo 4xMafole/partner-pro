@@ -68,6 +68,16 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             .any((f) => f['property_id'] == widget.propertyId);
       });
       _loadPropertyOffers();
+
+      // Record recently viewed
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        context.read<PropertyBloc>().add(RecordPropertyView(
+          userId: authState.user.uid,
+          propertyId: widget.propertyId,
+          requesterId: authState.user.uid,
+        ));
+      }
     });
   }
 

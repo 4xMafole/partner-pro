@@ -16,7 +16,9 @@ import '../../features/buyer/presentation/pages/buyer_search_page.dart';
 import '../../features/buyer/presentation/pages/my_homes_page.dart';
 import '../../features/buyer/presentation/pages/buyer_tools_page.dart';
 import '../../features/buyer/presentation/pages/buyer_chat_page.dart';
+import '../../features/buyer/presentation/pages/buyer_invitations_page.dart';
 import '../../features/agent/presentation/pages/agent_shell.dart';
+import '../../features/agent/presentation/pages/client_detail_page.dart';
 import '../../features/agent/presentation/pages/agent_dashboard_page.dart';
 import '../../features/agent/presentation/pages/agent_offers_page.dart';
 import '../../features/agent/presentation/pages/agent_clients_page.dart';
@@ -329,6 +331,20 @@ class AppRouter {
         name: 'buyerChat',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const BuyerChatPage(),
+      ),
+      GoRoute(
+        path: RouteNames.buyerInvitations,
+        name: 'buyerInvitations',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const BuyerInvitationsPage(),
+      ),
+      GoRoute(
+        path: RouteNames.clientDetail,
+        name: 'clientDetail',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => ClientDetailPage(
+          clientId: state.pathParameters['id']!,
+        ),
       ),
     ],
   );

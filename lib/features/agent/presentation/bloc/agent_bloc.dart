@@ -54,19 +54,49 @@ class MergeContacts extends AgentEvent {
   @override List<Object?> get props => [apiContacts, firebaseInvitations, selectedTab];
 }
 
+class LoadBuyerInvitations extends AgentEvent {
+  final String buyerEmail;
+  const LoadBuyerInvitations({required this.buyerEmail});
+  @override List<Object?> get props => [buyerEmail];
+}
+
+class AcceptInvitation extends AgentEvent {
+  final String invitationId, agentId, buyerId, agentName, buyerName, buyerEmail;
+  const AcceptInvitation({required this.invitationId, required this.agentId, required this.buyerId, required this.agentName, required this.buyerName, required this.buyerEmail});
+  @override List<Object?> get props => [invitationId];
+}
+
+class DeclineInvitation extends AgentEvent {
+  final String invitationId, buyerEmail;
+  const DeclineInvitation({required this.invitationId, required this.buyerEmail});
+  @override List<Object?> get props => [invitationId];
+}
+
+class LoadClientDetail extends AgentEvent {
+  final String agentId, clientId, requesterId;
+  const LoadClientDetail({required this.agentId, required this.clientId, required this.requesterId});
+  @override List<Object?> get props => [clientId];
+}
+
+class AddClientNote extends AgentEvent {
+  final String agentId, clientId, note;
+  const AddClientNote({required this.agentId, required this.clientId, required this.note});
+  @override List<Object?> get props => [agentId, clientId, note];
+}
+
 class AgentState extends Equatable {
   final bool isLoading, isSending;
   final String? error, successMessage;
-  final Map<String, dynamic>? agentProfile;
-  final List<Map<String, dynamic>> clients, activities, invitations, mergedContacts;
+  final Map<String, dynamic>? agentProfile, clientDetail;
+  final List<Map<String, dynamic>> clients, activities, invitations, mergedContacts, buyerInvitations, clientNotes, clientActivities;
 
-  const AgentState({this.isLoading = false, this.isSending = false, this.error, this.successMessage, this.agentProfile, this.clients = const [], this.activities = const [], this.invitations = const [], this.mergedContacts = const []});
+  const AgentState({this.isLoading = false, this.isSending = false, this.error, this.successMessage, this.agentProfile, this.clientDetail, this.clients = const [], this.activities = const [], this.invitations = const [], this.mergedContacts = const [], this.buyerInvitations = const [], this.clientNotes = const [], this.clientActivities = const []});
 
-  AgentState copyWith({bool? isLoading, bool? isSending, String? error, String? successMessage, Map<String, dynamic>? agentProfile, List<Map<String, dynamic>>? clients, List<Map<String, dynamic>>? activities, List<Map<String, dynamic>>? invitations, List<Map<String, dynamic>>? mergedContacts}) {
-    return AgentState(isLoading: isLoading ?? this.isLoading, isSending: isSending ?? this.isSending, error: error, successMessage: successMessage, agentProfile: agentProfile ?? this.agentProfile, clients: clients ?? this.clients, activities: activities ?? this.activities, invitations: invitations ?? this.invitations, mergedContacts: mergedContacts ?? this.mergedContacts);
+  AgentState copyWith({bool? isLoading, bool? isSending, String? error, String? successMessage, Map<String, dynamic>? agentProfile, Map<String, dynamic>? clientDetail, List<Map<String, dynamic>>? clients, List<Map<String, dynamic>>? activities, List<Map<String, dynamic>>? invitations, List<Map<String, dynamic>>? mergedContacts, List<Map<String, dynamic>>? buyerInvitations, List<Map<String, dynamic>>? clientNotes, List<Map<String, dynamic>>? clientActivities}) {
+    return AgentState(isLoading: isLoading ?? this.isLoading, isSending: isSending ?? this.isSending, error: error, successMessage: successMessage, agentProfile: agentProfile ?? this.agentProfile, clientDetail: clientDetail ?? this.clientDetail, clients: clients ?? this.clients, activities: activities ?? this.activities, invitations: invitations ?? this.invitations, mergedContacts: mergedContacts ?? this.mergedContacts, buyerInvitations: buyerInvitations ?? this.buyerInvitations, clientNotes: clientNotes ?? this.clientNotes, clientActivities: clientActivities ?? this.clientActivities);
   }
 
-  @override List<Object?> get props => [isLoading, isSending, error, successMessage, agentProfile, clients, activities, invitations, mergedContacts];
+  @override List<Object?> get props => [isLoading, isSending, error, successMessage, agentProfile, clientDetail, clients, activities, invitations, mergedContacts, buyerInvitations, clientNotes, clientActivities];
 }
 
 @injectable
@@ -81,6 +111,11 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
     on<LoadInvitations>(_onLoadInvitations);
     on<SendInvitations>(_onSendInvitations);
     on<MergeContacts>(_onMerge);
+    on<LoadBuyerInvitations>(_onLoadBuyerInvitations);
+    on<AcceptInvitation>(_onAcceptInvitation);
+    on<DeclineInvitation>(_onDeclineInvitation);
+    on<LoadClientDetail>(_onLoadClientDetail);
+    on<AddClientNote>(_onAddClientNote);
   }
 
   Future<void> _onLoadProfile(LoadAgentProfile e, Emitter<AgentState> emit) async {
@@ -137,5 +172,71 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
   void _onMerge(MergeContacts e, Emitter<AgentState> emit) {
     final merged = _repository.mergeContactsWithInvitations(apiContacts: e.apiContacts, firebaseInvitations: e.firebaseInvitations, selectedTab: e.selectedTab);
     emit(state.copyWith(mergedContacts: merged));
+  }
+
+  Future<void> _onLoadBuyerInvitations(LoadBuyerInvitations e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final r = await _repository.getBuyerInvitations(e.buyerEmail);
+    r.fold(
+      (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+      (inv) => emit(state.copyWith(isLoading: false, buyerInvitations: inv)),
+    );
+  }
+
+  Future<void> _onAcceptInvitation(AcceptInvitation e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final r = await _repository.acceptInvitation(
+      invitationId: e.invitationId, agentId: e.agentId, buyerId: e.buyerId,
+      agentName: e.agentName, buyerName: e.buyerName,
+    );
+    r.fold(
+      (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+      (_) {
+        emit(state.copyWith(isLoading: false, successMessage: 'Invitation accepted'));
+        add(LoadBuyerInvitations(buyerEmail: e.buyerEmail));
+      },
+    );
+  }
+
+  Future<void> _onDeclineInvitation(DeclineInvitation e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final r = await _repository.declineInvitation(e.invitationId);
+    r.fold(
+      (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+      (_) {
+        emit(state.copyWith(isLoading: false, successMessage: 'Invitation declined'));
+        add(LoadBuyerInvitations(buyerEmail: e.buyerEmail));
+      },
+    );
+  }
+
+  Future<void> _onLoadClientDetail(LoadClientDetail e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    final profileResult = await _repository.fetchUserAccount(id: e.clientId);
+    final notesResult = await _repository.getClientNotes(agentId: e.agentId, clientId: e.clientId);
+    // Get activities filtered to this client
+    final activitiesResult = await _repository.getClientActivities(agentId: e.agentId, requesterId: e.requesterId);
+
+    profileResult.fold(
+      (f) => emit(state.copyWith(isLoading: false, error: f.message)),
+      (profile) {
+        final notes = notesResult.fold((_) => <Map<String, dynamic>>[], (n) => n);
+        final allActivities = activitiesResult.fold((_) => <Map<String, dynamic>>[], (a) => a);
+        final clientActivities = allActivities.where((a) => a['user_id'] == e.clientId).toList();
+        emit(state.copyWith(isLoading: false, clientDetail: profile, clientNotes: notes, clientActivities: clientActivities));
+      },
+    );
+  }
+
+  Future<void> _onAddClientNote(AddClientNote e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isSending: true, error: null));
+    final r = await _repository.addClientNote(agentId: e.agentId, clientId: e.clientId, note: e.note);
+    r.fold(
+      (f) => emit(state.copyWith(isSending: false, error: f.message)),
+      (_) {
+        emit(state.copyWith(isSending: false, successMessage: 'Note added'));
+        add(LoadClientDetail(agentId: e.agentId, clientId: e.clientId, requesterId: e.agentId));
+      },
+    );
   }
 }

@@ -148,6 +148,69 @@ class AgentRepository {
   Stream<List<Map<String, dynamic>>> watchRelationships({required String userId, required bool isAgent}) =>
       _firestore.watchRelationships(userId: userId, isAgent: isAgent);
 
+  // -- Buyer-side Invitations --
+
+  Future<Either<Failure, List<Map<String, dynamic>>>> getBuyerInvitations(String email) async {
+    try {
+      return Right(await _firestore.getInvitationsForBuyer(email));
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> acceptInvitation({
+    required String invitationId,
+    required String agentId,
+    required String buyerId,
+    required String agentName,
+    required String buyerName,
+  }) async {
+    try {
+      await _firestore.updateInvitationStatus(invitationId: invitationId, status: 'accepted');
+      await _firestore.createRelationship(
+        agentId: agentId, buyerId: buyerId, agentName: agentName, buyerName: buyerName,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> declineInvitation(String invitationId) async {
+    try {
+      await _firestore.updateInvitationStatus(invitationId: invitationId, status: 'declined');
+      return const Right(null);
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
+  // -- Client Notes --
+
+  Future<Either<Failure, void>> addClientNote({
+    required String agentId,
+    required String clientId,
+    required String note,
+  }) async {
+    try {
+      await _firestore.addClientNote(agentId: agentId, clientId: clientId, note: note);
+      return const Right(null);
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<Map<String, dynamic>>>> getClientNotes({
+    required String agentId,
+    required String clientId,
+  }) async {
+    try {
+      return Right(await _firestore.getClientNotes(agentId: agentId, clientId: clientId));
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
   // -- Business Logic: Merge contacts --
 
   List<Map<String, dynamic>> mergeContactsWithInvitations({

@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../../app/di/injection.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/services/file_service.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../agent/presentation/bloc/agent_bloc.dart';
@@ -22,6 +28,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController _phoneController;
   late final TextEditingController _mlsController;
   late final TextEditingController _brokerageController;
+
+  bool _isUploadingImage = false;
+  String? _localImagePath;
+
+  bool get _isAgent {
+    final authState = context.read<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    return user?.role == 'agent';
+  }
 
   @override
   void initState() {
@@ -53,18 +68,51 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  Future<void> _pickAndUploadImage() async {
+    final authState = context.read<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    if (user == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 80);
+    if (picked == null) return;
+
+    setState(() { _isUploadingImage = true; _localImagePath = picked.path; });
+
+    try {
+      final bytes = await picked.readAsBytes();
+      final fileService = getIt<FileService>();
+      final uploaded = await fileService.uploadFile(
+        userId: user.uid,
+        directory: 'profile',
+        fileName: 'avatar_${DateTime.now().millisecondsSinceEpoch}.${picked.path.split('.').last}',
+        bytes: bytes,
+      );
+
+      context.read<AgentBloc>().add(UpdateAgentProfile(
+        userData: {'photo_url': uploaded.downloadUrl},
+      ));
+    } catch (e) {
+      if (mounted) context.showSnackBar('Failed to upload image', isError: true);
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
+  }
+
   void _saveProfile() {
     if (!_formKey.currentState!.validate()) return;
 
-    context.read<AgentBloc>().add(UpdateAgentProfile(
-      userData: {
-        'first_name': _firstNameController.text.trim(),
-        'last_name': _lastNameController.text.trim(),
-        'phone_number': _phoneController.text.trim(),
-        'mls_id': _mlsController.text.trim(),
-        'brokerage_name': _brokerageController.text.trim(),
-      },
-    ));
+    final data = <String, dynamic>{
+      'first_name': _firstNameController.text.trim(),
+      'last_name': _lastNameController.text.trim(),
+      'phone_number': _phoneController.text.trim(),
+    };
+    if (_isAgent) {
+      data['mls_id'] = _mlsController.text.trim();
+      data['brokerage_name'] = _brokerageController.text.trim();
+    }
+
+    context.read<AgentBloc>().add(UpdateAgentProfile(userData: data));
   }
 
   @override
@@ -88,15 +136,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       body: BlocConsumer<AgentBloc, AgentState>(
         listener: (context, state) {
           if (state.successMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.successMessage!), backgroundColor: AppColors.success),
-            );
+            context.showSnackBar(state.successMessage!);
             Navigator.pop(context);
           }
           if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!), backgroundColor: AppColors.error),
-            );
+            context.showSnackBar(state.error!, isError: true);
           }
           if (state.agentProfile != null) {
             final p = state.agentProfile!;
@@ -126,32 +170,43 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
-                    child: Stack(
-                      children: [
-                        BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, authState) {
-                            final user = authState is AuthAuthenticated ? authState.user : null;
-                            return AppAvatar(
-                              name: user?.displayName ?? 'User',
-                              imageUrl: user?.photoUrl,
-                              size: 96,
-                            );
-                          },
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: EdgeInsets.all(6.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: Icon(LucideIcons.camera, size: 16.sp, color: Colors.white),
+                    child: GestureDetector(
+                      onTap: _isUploadingImage ? null : _pickAndUploadImage,
+                      child: Stack(
+                        children: [
+                          BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, authState) {
+                              final user = authState is AuthAuthenticated ? authState.user : null;
+                              if (_localImagePath != null) {
+                                return CircleAvatar(
+                                  radius: 48.r,
+                                  backgroundImage: FileImage(File(_localImagePath!)),
+                                );
+                              }
+                              return AppAvatar(
+                                name: user?.displayName ?? 'User',
+                                imageUrl: user?.photoUrl,
+                                size: 96,
+                              );
+                            },
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(6.w),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: _isUploadingImage
+                                  ? SizedBox(width: 16.sp, height: 16.sp, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                  : Icon(LucideIcons.camera, size: 16.sp, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -174,16 +229,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     label: 'Phone Number',
                     keyboardType: TextInputType.phone,
                   ),
-                  SizedBox(height: 16.h),
-                  AppTextField(
-                    controller: _mlsController,
-                    label: 'MLS ID',
-                  ),
-                  SizedBox(height: 16.h),
-                  AppTextField(
-                    controller: _brokerageController,
-                    label: 'Brokerage Name',
-                  ),
+                  if (_isAgent) ...[
+                    SizedBox(height: 16.h),
+                    AppTextField(
+                      controller: _mlsController,
+                      label: 'MLS ID',
+                    ),
+                    SizedBox(height: 16.h),
+                    AppTextField(
+                      controller: _brokerageController,
+                      label: 'Brokerage Name',
+                    ),
+                  ],
                 ],
               ),
             ),

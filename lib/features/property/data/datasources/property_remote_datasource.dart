@@ -423,4 +423,47 @@ class PropertyRemoteDataSource {
 
     return DateTime(date.year, date.month, date.day, hour, minute);
   }
+
+  // -- Recently Viewed --
+
+  /// Record a property view for a user. Upserts based on user+property.
+  Future<void> recordPropertyView({
+    required String userId,
+    required String propertyId,
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.recentlyViewedCollection)
+        .where('user_id', isEqualTo: userId)
+        .where('property_id', isEqualTo: propertyId)
+        .limit(1)
+        .get();
+
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update({
+        'viewed_at': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await _firestore.collection(AppConstants.recentlyViewedCollection).add({
+        'user_id': userId,
+        'property_id': propertyId,
+        'viewed_at': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// Get recently viewed property IDs for a user.
+  Future<List<Map<String, dynamic>>> getRecentlyViewed({
+    required String userId,
+    required String requesterId,
+    int limit = 20,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.recentlyViewedCollection)
+        .where('user_id', isEqualTo: userId)
+        .orderBy('viewed_at', descending: true)
+        .limit(limit)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
 }

@@ -16,6 +16,7 @@ import '../../../../core/widgets/dashboard_quick_action.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../notifications/presentation/bloc/notification_bloc.dart';
+import '../../../agent/presentation/bloc/agent_bloc.dart';
 
 class BuyerDashboardPage extends StatefulWidget {
   const BuyerDashboardPage({super.key});
@@ -38,6 +39,8 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
             .read<PropertyBloc>()
             .add(LoadFavorites(userId: uid, requesterId: uid));
         context.read<NotificationBloc>().add(StartListening(uid));
+        context.read<AgentBloc>().add(LoadBuyerInvitations(buyerEmail: a.user.email));
+        context.read<PropertyBloc>().add(LoadRecentlyViewed(userId: uid, requesterId: uid));
       }
     });
   }
@@ -188,6 +191,41 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                 onTap: () => context.push(RouteNames.storeDocuments)),
           ]).animate().fadeIn(delay: 300.ms),
         )),
+
+        // Pending invitations banner
+        SliverToBoxAdapter(
+          child: BlocBuilder<AgentBloc, AgentState>(
+            builder: (context, agentState) {
+              final count = agentState.buyerInvitations.length;
+              if (count == 0) return const SizedBox.shrink();
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+                child: GestureDetector(
+                  onTap: () => context.push(RouteNames.buyerInvitations),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(children: [
+                      Icon(LucideIcons.userPlus, size: 20.sp, color: Colors.white),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          'You have $count pending agent invitation${count > 1 ? 's' : ''}',
+                          style: AppTypography.bodyMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Icon(LucideIcons.chevronRight, size: 18.sp, color: Colors.white),
+                    ]),
+                  ),
+                ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
+              );
+            },
+          ),
+        ),
+
         SliverToBoxAdapter(
             child: Padding(
           padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 8.h),
@@ -307,15 +345,49 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         SliverToBoxAdapter(
             child: Padding(
                 padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 8.h),
-                child: Text('Suggested for You',
+                child: Text('Recently Viewed',
                     style: AppTypography.headlineSmall))),
         SliverToBoxAdapter(
-            child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
-                child: const AppEmptyState(
-                    icon: LucideIcons.sparkles,
-                    title: 'Suggestions loading...',
-                    subtitle: 'Your agent will suggest properties here'))),
+          child: BlocBuilder<PropertyBloc, PropertyState>(
+            builder: (context, propState) {
+              final rv = propState.recentlyViewed;
+              if (rv.isEmpty) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: const AppEmptyState(
+                    icon: LucideIcons.eye,
+                    title: 'No recently viewed',
+                    subtitle: 'Properties you view will appear here',
+                  ),
+                );
+              }
+              return SizedBox(
+                height: 80.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  itemCount: rv.length > 10 ? 10 : rv.length,
+                  itemBuilder: (context, index) {
+                    final item = rv[index];
+                    final propId = item['property_id'] as String? ?? '';
+                    return Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: ActionChip(
+                        avatar: Icon(LucideIcons.home, size: 16.sp, color: AppColors.primary),
+                        label: Text(propId.length > 8 ? '${propId.substring(0, 8)}...' : propId, style: AppTypography.bodySmall),
+                        onPressed: () {
+                          if (propId.isNotEmpty) {
+                            context.push(RouteNames.propertyDetails.replaceFirst(':id', propId));
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
         SliverPadding(padding: EdgeInsets.only(bottom: 32.h)),
       ])),
     );

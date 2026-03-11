@@ -48,4 +48,6 @@ abstract final class RouteNames {
   static const agentSubscription = '/agent/subscription';
   static const agentInvite = '/agent/invite';
   static const buyerChat = '/buyer/chat';
+  static const buyerInvitations = '/buyer/invitations';
+  static const clientDetail = '/agent/client/:id';
 }
