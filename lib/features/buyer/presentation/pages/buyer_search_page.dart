@@ -403,7 +403,8 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
           searchData: _buildSearchCriteria(),
           requesterId: a.user.uid,
         ));
-    context.showSnackBar('Search saved.');
+    // Provide optimistic feedback for the user immediately.
+    context.showSnackBar('Search saved successfully.');
   }
 
   /// Applies a saved search by restoring all filters and triggering search.
@@ -829,8 +830,7 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             _hasActiveAdvancedFilters) ...[
           SizedBox(width: 8.w),
           BlocBuilder<PropertyBloc, PropertyState>(
-            buildWhen: (p, c) =>
-                p.isSavedSearchesLoading != c.isSavedSearchesLoading,
+            buildWhen: (p, c) => p.isSavedSearchesLoading != c.isSavedSearchesLoading,
             builder: (context, state) {
               return Container(
                 decoration: BoxDecoration(
@@ -845,15 +845,14 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
                   ],
                 ),
                 child: IconButton(
-                  onPressed:
-                      state.isSavedSearchesLoading ? null : _saveCurrentSearch,
+                  onPressed: state.isSavedSearchesLoading ? null : _saveCurrentSearch,
                   icon: state.isSavedSearchesLoading
                       ? SizedBox(
-                          width: 18.w,
-                          height: 18.w,
-                          child: const CircularProgressIndicator(
+                          width: 20.sp,
+                          height: 20.sp,
+                          child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : Icon(LucideIcons.bookmarkPlus,

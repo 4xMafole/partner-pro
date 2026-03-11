@@ -16,7 +16,7 @@ void main() {
   late MockNotificationService notificationService;
   late PropertyRepository repository;
 
-  setUp(() {
+  setUp(() { PropertyRepository.savedSearchAlertsMuted = false;
     remote = MockPropertyRemoteDataSource();
     notificationService = MockNotificationService();
     repository = PropertyRepository(remote, notificationService);

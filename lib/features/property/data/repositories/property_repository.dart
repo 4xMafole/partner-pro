@@ -9,7 +9,8 @@ import '../models/property_model.dart';
 
 @lazySingleton
 class PropertyRepository {
-  static const bool _savedSearchAlertsMuted = true;
+  // Toggle this flag to re-enable or permanently delete the alert dispatch logic
+  static bool savedSearchAlertsMuted = true;
 
   final PropertyRemoteDataSource _remote;
   final NotificationService _notificationService;
@@ -250,7 +251,7 @@ class PropertyRepository {
     required String changeType,
   }) async {
     // Feature toggle: keep saved-search alerts muted until re-enabled.
-    if (_savedSearchAlertsMuted) return const Right(0);
+    if (savedSearchAlertsMuted) return const Right(0);
 
     try {
       final searches =
