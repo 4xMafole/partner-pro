@@ -330,10 +330,10 @@ class PropertyRepository {
             changeType: changeType,
           );
 
-          alertCount.fold((_) {}, (_) {
-            if (changeType == 'new_property') newAlerts += 1;
-            if (changeType == 'price_change') priceAlerts += 1;
-            if (changeType == 'status_change') statusAlerts += 1;
+          alertCount.fold((_) {}, (sentCount) {
+            if (changeType == 'new_property') newAlerts += sentCount;
+            if (changeType == 'price_change') priceAlerts += sentCount;
+            if (changeType == 'status_change') statusAlerts += sentCount;
           });
         }
       }

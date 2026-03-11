@@ -493,5 +493,94 @@ void main() {
             data: any(named: 'data'),
           )).called(1);
     });
+
+    test('counts new-property alerts by number of recipients', () async {
+      when(() => remote.upsertExternalProperty(
+            requesterId: 'system',
+            externalId: any(named: 'externalId'),
+            source: 'zillow',
+            propertyData: any(named: 'propertyData'),
+          )).thenAnswer((_) async => {
+            'id': 'prop_new_2',
+            'isNew': true,
+            'before': null,
+            'after': {
+              'id': 'prop_new_2',
+              'propertyName': '789 River Rd',
+              'listPrice': 510000,
+              'bedrooms': 4,
+              'address': {
+                'city': 'Austin',
+                'state': 'TX',
+                'zip': '78703',
+              }
+            }
+          });
+
+      when(() => remote.getAllActiveSavedSearches(requesterId: 'system'))
+          .thenAnswer((_) async => [
+                {
+                  'id': 'search_a',
+                  'user_id': 'buyer_a',
+                  'status': true,
+                  'search': {
+                    'input_field': 'Austin',
+                    'property': {
+                      'minPrice': '400000',
+                      'maxPrice': '700000',
+                    }
+                  }
+                },
+                {
+                  'id': 'search_b',
+                  'user_id': 'buyer_b',
+                  'status': true,
+                  'search': {
+                    'input_field': 'Austin',
+                    'property': {
+                      'minPrice': '300000',
+                      'maxPrice': '800000',
+                    }
+                  }
+                }
+              ]);
+
+      when(() => notificationService.createNotification(
+            userId: any(named: 'userId'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            type: any(named: 'type'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async {});
+
+      final result = await repository.syncExternalProperties(
+        requesterId: 'system',
+        source: 'zillow',
+        sourceProperties: [
+          {
+            'zpid': 'z_789',
+            'address': {
+              'city': 'Austin',
+              'state': 'TX',
+              'zipcode': '78703',
+            },
+            'price': 510000,
+            'bedrooms': 4,
+            'status': 'FOR_SALE'
+          }
+        ],
+      );
+
+      expect(result.isRight(), true);
+      final summary = result.getOrElse(() => <String, int>{});
+      expect(summary['newAlerts'], 2);
+      verify(() => notificationService.createNotification(
+            userId: any(named: 'userId'),
+            title: 'New Property Alert',
+            body: any(named: 'body'),
+            type: 'property_alert',
+            data: any(named: 'data'),
+          )).called(2);
+    });
   });
 }
