@@ -45,6 +45,10 @@ class PropertyFilterSheet extends StatefulWidget {
 }
 
 class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
+  static const int _defaultMaxPrice = 100000000;
+  static const int _defaultMaxSqft = 500000;
+  static const int _defaultMinYear = 1900;
+
   late TextEditingController _minPriceCtrl;
   late TextEditingController _maxPriceCtrl;
   late TextEditingController _minSqftCtrl;
@@ -65,6 +69,8 @@ class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
     'Other'
   ];
 
+  int get _defaultMaxYear => DateTime.now().year + 10;
+
   @override
   void initState() {
     super.initState();
@@ -74,7 +80,7 @@ class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
           : widget.initialPriceRange.start.toInt().toString(),
     );
     _maxPriceCtrl = TextEditingController(
-      text: widget.initialPriceRange.end >= 5000000
+      text: widget.initialPriceRange.end >= _defaultMaxPrice
           ? ''
           : widget.initialPriceRange.end.toInt().toString(),
     );
@@ -84,17 +90,17 @@ class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
           : widget.initialSqftRange.start.toInt().toString(),
     );
     _maxSqftCtrl = TextEditingController(
-      text: widget.initialSqftRange.end >= 10000
+      text: widget.initialSqftRange.end >= _defaultMaxSqft
           ? ''
           : widget.initialSqftRange.end.toInt().toString(),
     );
     _minYearCtrl = TextEditingController(
-      text: widget.initialYearRange.start <= 1900
+      text: widget.initialYearRange.start <= _defaultMinYear
           ? ''
           : widget.initialYearRange.start.toInt().toString(),
     );
     _maxYearCtrl = TextEditingController(
-      text: widget.initialYearRange.end >= 2025
+      text: widget.initialYearRange.end >= _defaultMaxYear
           ? ''
           : widget.initialYearRange.end.toInt().toString(),
     );
@@ -135,21 +141,21 @@ class _PropertyFilterSheetState extends State<PropertyFilterSheet> {
 
   void _apply() {
     final minPrice = _parseValue(_minPriceCtrl.text, 0);
-    final maxPrice = _parseValue(_maxPriceCtrl.text, 5000000);
+    final maxPrice = _parseValue(_maxPriceCtrl.text, _defaultMaxPrice);
     final minSqft = _parseValue(_minSqftCtrl.text, 0);
-    final maxSqft = _parseValue(_maxSqftCtrl.text, 10000);
-    final minYear = _parseValue(_minYearCtrl.text, 1900);
-    final maxYear = _parseValue(_maxYearCtrl.text, 2025);
+    final maxSqft = _parseValue(_maxSqftCtrl.text, _defaultMaxSqft);
+    final minYear = _parseValue(_minYearCtrl.text, _defaultMinYear);
+    final maxYear = _parseValue(_maxYearCtrl.text, _defaultMaxYear);
 
     widget.onApply(
       minPrice: minPrice > 0 ? minPrice : null,
-      maxPrice: maxPrice < 5000000 ? maxPrice : null,
+      maxPrice: maxPrice < _defaultMaxPrice ? maxPrice : null,
       minBeds: _selectedBeds > 0 ? _selectedBeds : null,
       minBaths: _selectedBaths > 0 ? _selectedBaths : null,
       minSquareFeet: minSqft > 0 ? minSqft : null,
-      maxSquareFeet: maxSqft < 10000 ? maxSqft : null,
-      minYearBuilt: minYear > 1900 ? minYear : null,
-      maxYearBuilt: maxYear < 2025 ? maxYear : null,
+      maxSquareFeet: maxSqft < _defaultMaxSqft ? maxSqft : null,
+      minYearBuilt: minYear > _defaultMinYear ? minYear : null,
+      maxYearBuilt: maxYear < _defaultMaxYear ? maxYear : null,
       homeTypes:
           _selectedHomeTypes.isNotEmpty ? _selectedHomeTypes.toList() : null,
     );

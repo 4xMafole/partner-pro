@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/route_names.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/services/google_maps_service.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/dashboard_quick_action.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../notifications/presentation/bloc/notification_bloc.dart';
@@ -20,6 +24,8 @@ class BuyerDashboardPage extends StatefulWidget {
 }
 
 class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
+  bool _nearMeLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +40,73 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         context.read<NotificationBloc>().add(StartListening(uid));
       }
     });
+  }
+
+  Future<void> _onNearMeTapped() async {
+    if (_nearMeLoading) return;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final uid = authState.user.uid;
+
+    setState(() => _nearMeLoading = true);
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          context.showSnackBar(
+              'Location services are disabled. Please enable them in your device settings.',
+              isError: true);
+        }
+        return;
+      }
+
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        if (mounted) {
+          context.showSnackBar('Location permission is required for Near Me',
+              isError: true);
+        }
+        return;
+      }
+
+      if (mounted) {
+        context.showSnackBar('Finding properties near you...');
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      final geo = await GoogleMapsService()
+          .reverseGeocodeCityState(pos.latitude, pos.longitude);
+      final city = geo?['city'];
+      final state = geo?['state'];
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        context.read<PropertyBloc>().add(LoadProperties(
+              requesterId: uid,
+              city: city,
+              state: state,
+            ));
+        context.go(RouteNames.buyerSearch);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        context.showSnackBar('Could not detect location: $e', isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _nearMeLoading = false);
+    }
   }
 
   @override
@@ -95,43 +168,25 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         SliverToBoxAdapter(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Quick Start', style: AppTypography.headlineSmall),
-              SizedBox(height: 12.h),
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10.w,
-                mainAxisSpacing: 10.h,
-                childAspectRatio: 2.35,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _QuickAction(
-                      icon: LucideIcons.mapPin,
-                      label: 'Near Me',
-                      subtitle: 'Homes close to you',
-                      onTap: () {}),
-                  _QuickAction(
-                      icon: LucideIcons.calendar,
-                      label: 'Showings',
-                      subtitle: 'Manage tours',
-                      onTap: () => context.push(RouteNames.scheduledShowings)),
-                  _QuickAction(
-                      icon: LucideIcons.fileText,
-                      label: 'Offers',
-                      subtitle: 'Track your offers',
-                      onTap: () => context.go(RouteNames.myHomes)),
-                  _QuickAction(
-                      icon: LucideIcons.shield,
-                      label: 'Docs',
-                      subtitle: 'Secure documents',
-                      onTap: () => context.push(RouteNames.storeDocuments)),
-                ],
-              ),
-            ],
-          ).animate().fadeIn(delay: 300.ms),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            DashboardQuickAction(
+                icon: _nearMeLoading ? LucideIcons.loader : LucideIcons.mapPin,
+                label: 'Near Me',
+                onTap: _onNearMeTapped),
+            DashboardQuickAction(
+                icon: LucideIcons.calendar,
+                label: 'Showings',
+                onTap: () => context.push(RouteNames.scheduledShowings)),
+            DashboardQuickAction(
+                icon: LucideIcons.fileText,
+                label: 'Offers',
+                onTap: () => context.go(RouteNames.myHomes)),
+            DashboardQuickAction(
+                icon: LucideIcons.shield,
+                label: 'Docs',
+                onTap: () => context.push(RouteNames.storeDocuments)),
+          ]).animate().fadeIn(delay: 300.ms),
         )),
         SliverToBoxAdapter(
             child: Padding(
@@ -255,8 +310,8 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                 child: Text('Suggested for You',
                     style: AppTypography.headlineSmall))),
         SliverToBoxAdapter(
-            child: SizedBox(
-                height: 200.h,
+            child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: const AppEmptyState(
                     icon: LucideIcons.sparkles,
                     title: 'Suggestions loading...',
@@ -264,57 +319,6 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         SliverPadding(padding: EdgeInsets.only(bottom: 32.h)),
       ])),
     );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _QuickAction(
-    {required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16.r),
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.12),
-          width: 0.8)),
-      child: Row(children: [
-        Container(
-          width: 34.w,
-          height: 34.w,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10.r)),
-          child: Icon(icon, size: 18.sp, color: AppColors.primary)),
-        SizedBox(width: 10.w),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-          Text(label,
-            style: AppTypography.labelSmall
-              .copyWith(fontWeight: FontWeight.w700)),
-          SizedBox(height: 2.h),
-          Text(subtitle,
-            style: AppTypography.caption
-              .copyWith(color: AppColors.textSecondary),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-          ])),
-      ])));
   }
 }
 

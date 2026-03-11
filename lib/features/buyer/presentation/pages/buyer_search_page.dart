@@ -30,11 +30,16 @@ class BuyerSearchPage extends StatefulWidget {
 }
 
 class _BuyerSearchPageState extends State<BuyerSearchPage> {
+  static const int _defaultMaxPrice = 100000000;
+  static const int _defaultMaxSqft = 500000;
+  static const int _defaultMinYear = 1900;
+
   final _searchController = TextEditingController();
-  RangeValues _priceRange = const RangeValues(0, 2000000);
+  RangeValues _priceRange = RangeValues(0, _defaultMaxPrice.toDouble());
   int _minBeds = 0, _minBaths = 0;
-  RangeValues _sqftRange = const RangeValues(0, 10000);
-  RangeValues _yearRange = const RangeValues(1900, 2025);
+  RangeValues _sqftRange = RangeValues(0, _defaultMaxSqft.toDouble());
+  RangeValues _yearRange = RangeValues(
+      _defaultMinYear.toDouble(), (DateTime.now().year + 10).toDouble());
   final Set<String> _selectedHomeTypes = {};
   bool _isMapView = false;
   PropertySortType _sortType = PropertySortType.newest;
@@ -68,6 +73,8 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
 
   static final _currencyFormat =
       NumberFormat.currency(symbol: '\$', decimalDigits: 0);
+
+  int get _defaultMaxYear => DateTime.now().year + 10;
 
   @override
   void initState() {
@@ -403,15 +410,15 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
           setState(() {
             _priceRange = RangeValues(
               minPrice?.toDouble() ?? 0,
-              maxPrice?.toDouble() ?? 5000000,
+              maxPrice?.toDouble() ?? _defaultMaxPrice.toDouble(),
             );
             _sqftRange = RangeValues(
               minSquareFeet?.toDouble() ?? 0,
-              maxSquareFeet?.toDouble() ?? 10000,
+              maxSquareFeet?.toDouble() ?? _defaultMaxSqft.toDouble(),
             );
             _yearRange = RangeValues(
-              minYearBuilt?.toDouble() ?? 1900,
-              maxYearBuilt?.toDouble() ?? 2025,
+              minYearBuilt?.toDouble() ?? _defaultMinYear.toDouble(),
+              maxYearBuilt?.toDouble() ?? _defaultMaxYear.toDouble(),
             );
             _minBeds = minBeds ?? 0;
             _minBaths = minBaths ?? 0;
@@ -424,11 +431,12 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
         },
         onClear: () {
           setState(() {
-            _priceRange = const RangeValues(0, 5000000);
+            _priceRange = RangeValues(0, _defaultMaxPrice.toDouble());
             _minBeds = 0;
             _minBaths = 0;
-            _sqftRange = const RangeValues(0, 10000);
-            _yearRange = const RangeValues(1900, 2025);
+            _sqftRange = RangeValues(0, _defaultMaxSqft.toDouble());
+            _yearRange = RangeValues(
+                _defaultMinYear.toDouble(), _defaultMaxYear.toDouble());
             _selectedHomeTypes.clear();
           });
           _search(_searchController.text.trim());
@@ -451,19 +459,26 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  _priceRange = const RangeValues(0, 5000000);
+                  _priceRange = RangeValues(0, _defaultMaxPrice.toDouble());
                   _minBeds = 0;
                   _minBaths = 0;
-                  _sqftRange = const RangeValues(0, 10000);
-                  _yearRange = const RangeValues(1900, 2025);
+                  _sqftRange = RangeValues(0, _defaultMaxSqft.toDouble());
+                  _yearRange = RangeValues(
+                      _defaultMinYear.toDouble(), _defaultMaxYear.toDouble());
                   _selectedHomeTypes.clear();
                 });
                 _search(_searchController.text.trim());
               },
               child: Chip(
-                label: Text('Clear',
-                    style: AppTypography.labelSmall
-                        .copyWith(color: AppColors.error)),
+                label: SizedBox(
+                  width: 44.w,
+                  child: Center(
+                    child: Text('Clear',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.labelSmall
+                            .copyWith(color: AppColors.error)),
+                  ),
+                ),
                 side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
                 backgroundColor: AppColors.error.withValues(alpha: 0.06),
               ),
@@ -508,17 +523,17 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   int? get _activeMinPrice =>
       _priceRange.start > 0 ? _priceRange.start.toInt() : null;
   int? get _activeMaxPrice =>
-      _priceRange.end < 5000000 ? _priceRange.end.toInt() : null;
+      _priceRange.end < _defaultMaxPrice ? _priceRange.end.toInt() : null;
   int? get _activeMinBeds => _minBeds > 0 ? _minBeds : null;
   int? get _activeMinBaths => _minBaths > 0 ? _minBaths : null;
   int? get _activeMinSqft =>
       _sqftRange.start > 0 ? _sqftRange.start.toInt() : null;
   int? get _activeMaxSqft =>
-      _sqftRange.end < 10000 ? _sqftRange.end.toInt() : null;
+      _sqftRange.end < _defaultMaxSqft ? _sqftRange.end.toInt() : null;
   int? get _activeMinYear =>
-      _yearRange.start > 1900 ? _yearRange.start.toInt() : null;
+      _yearRange.start > _defaultMinYear ? _yearRange.start.toInt() : null;
   int? get _activeMaxYear =>
-      _yearRange.end < 2025 ? _yearRange.end.toInt() : null;
+      _yearRange.end < _defaultMaxYear ? _yearRange.end.toInt() : null;
 
   bool get _hasActiveAdvancedFilters {
     return _activeMinPrice != null ||
@@ -536,19 +551,19 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
     final labels = <String>[];
     if (_activeMinPrice != null || _activeMaxPrice != null) {
       final low = _activeMinPrice ?? 0;
-      final high = _activeMaxPrice ?? 5000000;
+      final high = _activeMaxPrice ?? _defaultMaxPrice;
       labels.add('Price ${_fmtCompact(low)}-${_fmtCompact(high)}');
     }
     if (_activeMinBeds != null) labels.add('Beds ${_activeMinBeds}+');
     if (_activeMinBaths != null) labels.add('Baths ${_activeMinBaths}+');
     if (_activeMinSqft != null || _activeMaxSqft != null) {
       final low = _activeMinSqft ?? 0;
-      final high = _activeMaxSqft ?? 10000;
+      final high = _activeMaxSqft ?? _defaultMaxSqft;
       labels.add('Sqft ${_fmtCompact(low)}-${_fmtCompact(high)}');
     }
     if (_activeMinYear != null || _activeMaxYear != null) {
-      final low = _activeMinYear ?? 1900;
-      final high = _activeMaxYear ?? 2025;
+      final low = _activeMinYear ?? _defaultMinYear;
+      final high = _activeMaxYear ?? _defaultMaxYear;
       labels.add('Year $low-$high');
     }
     if (_selectedHomeTypes.isNotEmpty) {
@@ -893,11 +908,12 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
         actionLabel: 'Clear Filters',
         onAction: () {
           setState(() {
-            _priceRange = const RangeValues(0, 2000000);
+            _priceRange = RangeValues(0, _defaultMaxPrice.toDouble());
             _minBeds = 0;
             _minBaths = 0;
-            _sqftRange = const RangeValues(0, 10000);
-            _yearRange = const RangeValues(1900, 2025);
+            _sqftRange = RangeValues(0, _defaultMaxSqft.toDouble());
+            _yearRange = RangeValues(
+                _defaultMinYear.toDouble(), _defaultMaxYear.toDouble());
             _selectedHomeTypes.clear();
           });
           context.read<PropertyBloc>().add(ClearFilter());
