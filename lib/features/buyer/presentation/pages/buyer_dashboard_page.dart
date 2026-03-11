@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/route_names.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/services/google_maps_service.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/dashboard_quick_action.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../notifications/presentation/bloc/notification_bloc.dart';
@@ -20,13 +24,15 @@ class BuyerDashboardPage extends StatefulWidget {
 }
 
 class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
+  bool _nearMeLoading = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final a = context.read<AuthBloc>().state;
       if (a is AuthAuthenticated) {
-        final uid = a.user.uid ?? '';
+        final uid = a.user.uid;
         context.read<PropertyBloc>().add(LoadProperties(requesterId: uid));
         context
             .read<PropertyBloc>()
@@ -34,6 +40,73 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         context.read<NotificationBloc>().add(StartListening(uid));
       }
     });
+  }
+
+  Future<void> _onNearMeTapped() async {
+    if (_nearMeLoading) return;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final uid = authState.user.uid;
+
+    setState(() => _nearMeLoading = true);
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          context.showSnackBar(
+              'Location services are disabled. Please enable them in your device settings.',
+              isError: true);
+        }
+        return;
+      }
+
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        if (mounted) {
+          context.showSnackBar('Location permission is required for Near Me',
+              isError: true);
+        }
+        return;
+      }
+
+      if (mounted) {
+        context.showSnackBar('Finding properties near you...');
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      final geo = await GoogleMapsService()
+          .reverseGeocodeCityState(pos.latitude, pos.longitude);
+      final city = geo?['city'];
+      final state = geo?['state'];
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        context.read<PropertyBloc>().add(LoadProperties(
+              requesterId: uid,
+              city: city,
+              state: state,
+            ));
+        context.go(RouteNames.buyerSearch);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        context.showSnackBar('Could not detect location: $e', isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _nearMeLoading = false);
+    }
   }
 
   @override
@@ -97,17 +170,19 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            _QuickAction(
-                icon: LucideIcons.mapPin, label: 'Near Me', onTap: () {}),
-            _QuickAction(
+            DashboardQuickAction(
+                icon: _nearMeLoading ? LucideIcons.loader : LucideIcons.mapPin,
+                label: 'Near Me',
+                onTap: _onNearMeTapped),
+            DashboardQuickAction(
                 icon: LucideIcons.calendar,
                 label: 'Showings',
                 onTap: () => context.push(RouteNames.scheduledShowings)),
-            _QuickAction(
+            DashboardQuickAction(
                 icon: LucideIcons.fileText,
                 label: 'Offers',
                 onTap: () => context.go(RouteNames.myHomes)),
-            _QuickAction(
+            DashboardQuickAction(
                 icon: LucideIcons.shield,
                 label: 'Docs',
                 onTap: () => context.push(RouteNames.storeDocuments)),
@@ -235,8 +310,8 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                 child: Text('Suggested for You',
                     style: AppTypography.headlineSmall))),
         SliverToBoxAdapter(
-            child: SizedBox(
-                height: 200.h,
+            child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: const AppEmptyState(
                     icon: LucideIcons.sparkles,
                     title: 'Suggestions loading...',
@@ -244,30 +319,6 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         SliverPadding(padding: EdgeInsets.only(bottom: 32.h)),
       ])),
     );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _QuickAction(
-      {required this.icon, required this.label, required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16.r),
-        child: Column(children: [
-          Container(
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16.r)),
-              child: Icon(icon, size: 22.sp, color: AppColors.primary)),
-          SizedBox(height: 6.h),
-          Text(label, style: AppTypography.labelSmall),
-        ]));
   }
 }
 

@@ -14,16 +14,55 @@ abstract class PropertyEvent extends Equatable {
 class LoadProperties extends PropertyEvent {
   final String requesterId;
   final String? zipCode, city, state, homeType, statusType;
+  final int? minPrice,
+      maxPrice,
+      minBeds,
+      maxBeds,
+      minBaths,
+      maxBaths,
+      minSquareFeet,
+      maxSquareFeet,
+      minYearBuilt,
+      maxYearBuilt;
+  final List<String>? homeTypes;
   const LoadProperties(
       {required this.requesterId,
       this.zipCode,
       this.city,
       this.state,
       this.homeType,
-      this.statusType});
+      this.statusType,
+      this.minPrice,
+      this.maxPrice,
+      this.minBeds,
+      this.maxBeds,
+      this.minBaths,
+      this.maxBaths,
+      this.minSquareFeet,
+      this.maxSquareFeet,
+      this.minYearBuilt,
+      this.maxYearBuilt,
+      this.homeTypes});
   @override
-  List<Object?> get props =>
-      [requesterId, zipCode, city, state, homeType, statusType];
+  List<Object?> get props => [
+        requesterId,
+        zipCode,
+        city,
+        state,
+        homeType,
+        statusType,
+        minPrice,
+        maxPrice,
+        minBeds,
+        maxBeds,
+        minBaths,
+        maxBaths,
+        minSquareFeet,
+        maxSquareFeet,
+        minYearBuilt,
+        maxYearBuilt,
+        homeTypes,
+      ];
 }
 
 class LoadPropertiesByZip extends PropertyEvent {
@@ -127,6 +166,18 @@ class DeleteSavedSearch extends PropertyEvent {
   List<Object?> get props => [searchId, requesterId];
 }
 
+class ToggleSavedSearchAlert extends PropertyEvent {
+  final String searchId, userId, requesterId;
+  final bool enabled;
+  const ToggleSavedSearchAlert(
+      {required this.searchId,
+      required this.userId,
+      required this.enabled,
+      required this.requesterId});
+  @override
+  List<Object?> get props => [searchId, userId, enabled, requesterId];
+}
+
 class LoadShowings extends PropertyEvent {
   final String userId, requesterId;
   const LoadShowings({required this.userId, required this.requesterId});
@@ -155,6 +206,7 @@ class CancelShowing extends PropertyEvent {
 
 class PropertyState extends Equatable {
   final bool isLoading;
+  final bool isSavedSearchesLoading;
   final String? error;
   final List<PropertyDataClass> allProperties;
   final List<PropertyDataClass> filteredProperties;
@@ -165,6 +217,7 @@ class PropertyState extends Equatable {
 
   const PropertyState(
       {this.isLoading = false,
+      this.isSavedSearchesLoading = false,
       this.error,
       this.allProperties = const [],
       this.filteredProperties = const [],
@@ -175,6 +228,7 @@ class PropertyState extends Equatable {
 
   PropertyState copyWith(
       {bool? isLoading,
+      bool? isSavedSearchesLoading,
       String? error,
       List<PropertyDataClass>? allProperties,
       List<PropertyDataClass>? filteredProperties,
@@ -184,6 +238,8 @@ class PropertyState extends Equatable {
       bool? isFilterActive}) {
     return PropertyState(
         isLoading: isLoading ?? this.isLoading,
+        isSavedSearchesLoading:
+            isSavedSearchesLoading ?? this.isSavedSearchesLoading,
         error: error,
         allProperties: allProperties ?? this.allProperties,
         filteredProperties: filteredProperties ?? this.filteredProperties,
@@ -196,6 +252,7 @@ class PropertyState extends Equatable {
   @override
   List<Object?> get props => [
         isLoading,
+        isSavedSearchesLoading,
         error,
         allProperties,
         filteredProperties,
@@ -221,6 +278,7 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     on<LoadSavedSearches>(_onLoadSavedSearches);
     on<SaveSearch>(_onSaveSearch);
     on<DeleteSavedSearch>(_onDeleteSavedSearch);
+    on<ToggleSavedSearchAlert>(_onToggleSavedSearchAlert);
     on<LoadShowings>(_onLoadShowings);
     on<CreateShowing>(_onCreateShowing);
     on<CancelShowing>(_onCancelShowing);
@@ -235,14 +293,52 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         city: event.city,
         state: event.state,
         homeType: event.homeType,
-        statusType: event.statusType);
-    r.fold(
-        (f) => emit(state.copyWith(isLoading: false, error: f.message)),
-        (props) => emit(state.copyWith(
-            isLoading: false,
-            allProperties: props,
-            filteredProperties: props,
-            isFilterActive: false)));
+        statusType: event.statusType,
+        minPrice: event.minPrice,
+        maxPrice: event.maxPrice,
+        minBeds: event.minBeds,
+        maxBeds: event.maxBeds);
+    r.fold((f) => emit(state.copyWith(isLoading: false, error: f.message)),
+        (props) {
+      final hasFilters = _hasAnyFilters(event);
+      final filtered = hasFilters
+          ? _repository.filterProperties(
+              properties: props,
+              minPrice: event.minPrice,
+              maxPrice: event.maxPrice,
+              minBeds: event.minBeds,
+              maxBeds: event.maxBeds,
+              minBaths: event.minBaths,
+              maxBaths: event.maxBaths,
+              minSquareFeet: event.minSquareFeet,
+              maxSquareFeet: event.maxSquareFeet,
+              minYearBuilt: event.minYearBuilt,
+              maxYearBuilt: event.maxYearBuilt,
+              homeTypes: event.homeTypes,
+            )
+          : props;
+
+      emit(state.copyWith(
+        isLoading: false,
+        allProperties: props,
+        filteredProperties: filtered,
+        isFilterActive: hasFilters,
+      ));
+    });
+  }
+
+  bool _hasAnyFilters(LoadProperties event) {
+    return event.minPrice != null ||
+        event.maxPrice != null ||
+        event.minBeds != null ||
+        event.maxBeds != null ||
+        event.minBaths != null ||
+        event.maxBaths != null ||
+        event.minSquareFeet != null ||
+        event.maxSquareFeet != null ||
+        event.minYearBuilt != null ||
+        event.maxYearBuilt != null ||
+        (event.homeTypes != null && event.homeTypes!.isNotEmpty);
   }
 
   Future<void> _onLoadByZip(
@@ -316,34 +412,60 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
 
   Future<void> _onLoadSavedSearches(
       LoadSavedSearches event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.getSavedSearches(
         userId: event.userId, requesterId: event.requesterId);
-    r.fold((f) => emit(state.copyWith(error: f.message)),
-        (ss) => emit(state.copyWith(savedSearches: ss)));
+    r.fold(
+        (f) => emit(
+              state.copyWith(isSavedSearchesLoading: false, error: f.message),
+            ),
+        (ss) => emit(
+              state.copyWith(
+                isSavedSearchesLoading: false,
+                savedSearches: ss,
+              ),
+            ));
   }
 
   Future<void> _onSaveSearch(
       SaveSearch event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.saveSearch(
         userId: event.userId,
         inputField: event.searchData['input_field'] ?? '',
         propertyFilter: event.searchData,
         requesterId: event.requesterId);
     r.fold(
-        (f) => emit(state.copyWith(error: f.message)),
+        (f) => emit(
+            state.copyWith(isSavedSearchesLoading: false, error: f.message)),
         (_) => add(LoadSavedSearches(
             userId: event.userId, requesterId: event.requesterId)));
   }
 
   Future<void> _onDeleteSavedSearch(
       DeleteSavedSearch event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
     final r = await _repository.deleteSavedSearch(
         searchId: event.searchId, requesterId: event.requesterId);
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
       final u =
           state.savedSearches.where((s) => s['id'] != event.searchId).toList();
-      emit(state.copyWith(savedSearches: u));
+      emit(state.copyWith(savedSearches: u, isSavedSearchesLoading: false));
     });
+  }
+
+  Future<void> _onToggleSavedSearchAlert(
+      ToggleSavedSearchAlert event, Emitter<PropertyState> emit) async {
+    emit(state.copyWith(isSavedSearchesLoading: true, error: null));
+    final r = await _repository.updateSavedSearch(
+        searchId: event.searchId,
+        data: {'status': event.enabled},
+        requesterId: event.requesterId);
+    r.fold(
+        (f) => emit(
+            state.copyWith(isSavedSearchesLoading: false, error: f.message)),
+        (_) => add(LoadSavedSearches(
+            userId: event.userId, requesterId: event.requesterId)));
   }
 
   Future<void> _onLoadShowings(

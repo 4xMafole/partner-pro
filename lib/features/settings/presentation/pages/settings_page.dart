@@ -82,9 +82,13 @@ class SettingsPage extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => context.read<AuthBloc>().add(const AuthSignOut()),
-              icon: Icon(LucideIcons.logOut, color: AppColors.error, size: 18.sp),
-              label: Text('Sign Out', style: AppTypography.labelLarge.copyWith(color: AppColors.error)),
+              onPressed: () =>
+                  context.read<AuthBloc>().add(const AuthSignOut()),
+              icon:
+                  Icon(LucideIcons.logOut, color: AppColors.error, size: 18.sp),
+              label: Text('Sign Out',
+                  style: AppTypography.labelLarge
+                      .copyWith(color: AppColors.error)),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
@@ -108,10 +112,11 @@ class _SettingsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTypography.labelSmall.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w600,
-        )),
+        Text(title,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            )),
         SizedBox(height: 8.h),
         Card(
           child: Column(children: children),
@@ -126,7 +131,11 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
-  const _SettingsTile({required this.icon, required this.title, this.subtitle, required this.onTap});
+  const _SettingsTile(
+      {required this.icon,
+      required this.title,
+      this.subtitle,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -134,9 +143,12 @@ class _SettingsTile extends StatelessWidget {
       leading: Icon(icon, size: 20.sp, color: AppColors.textSecondary),
       title: Text(title, style: AppTypography.titleMedium),
       subtitle: subtitle != null
-          ? Text(subtitle!, style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary))
+          ? Text(subtitle!,
+              style: AppTypography.bodySmall
+                  .copyWith(color: AppColors.textSecondary))
           : null,
-      trailing: Icon(LucideIcons.chevronRight, size: 18.sp, color: AppColors.textTertiary),
+      trailing: Icon(LucideIcons.chevronRight,
+          size: 18.sp, color: AppColors.textTertiary),
       onTap: onTap,
     );
   }

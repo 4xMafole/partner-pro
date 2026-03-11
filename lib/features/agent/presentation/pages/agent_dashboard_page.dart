@@ -9,6 +9,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/dashboard_quick_action.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../notifications/presentation/bloc/notification_bloc.dart';
 import '../../../offer/presentation/bloc/offer_bloc.dart';
@@ -27,7 +28,7 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        final uid = authState.user.uid ?? '';
+        final uid = authState.user.uid;
         context
             .read<AgentBloc>()
             .add(LoadClients(agentId: uid, requesterId: uid));
@@ -95,19 +96,21 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                 final pendingOffers = offerState.offers
                     .where((o) => o.status == 'pending')
                     .length;
-                return Row(
-                        children: [
-                  _StatCard('Active\nClients', '$clientCount',
-                      LucideIcons.users, AppColors.secondary),
-                  SizedBox(width: 12.w),
-                  _StatCard('Pending\nOffers', '$pendingOffers',
-                      LucideIcons.fileText, AppColors.tertiary),
-                  SizedBox(width: 12.w),
-                  _StatCard('Total\nOffers', '${offerState.offers.length}',
-                      LucideIcons.trendingUp, AppColors.success),
-                ].map((w) => Expanded(child: w)).toList())
-                    .animate()
-                    .fadeIn(delay: 200.ms);
+                return GridView.count(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 10.w,
+                    mainAxisSpacing: 10.h,
+                    childAspectRatio: 0.95,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _StatCard('Active\nClients', '$clientCount',
+                          LucideIcons.users, AppColors.secondary),
+                      _StatCard('Pending\nOffers', '$pendingOffers',
+                          LucideIcons.fileText, AppColors.tertiary),
+                      _StatCard('Total\nOffers', '${offerState.offers.length}',
+                          LucideIcons.trendingUp, AppColors.success),
+                    ]).animate().fadeIn(delay: 200.ms);
               });
             }),
           )),
@@ -118,16 +121,26 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Quick Actions', style: AppTypography.headlineSmall),
               SizedBox(height: 12.h),
-              Row(children: [
-                _ActionChip(LucideIcons.userPlus, 'Invite Buyer',
-                    () => context.push(RouteNames.agentInvite)),
-                SizedBox(width: 10.w),
-                _ActionChip(LucideIcons.search, 'Search Property',
-                    () => context.go(RouteNames.agentSearch)),
-                SizedBox(width: 10.w),
-                _ActionChip(LucideIcons.crown, 'Subscription',
-                    () => context.push(RouteNames.agentSubscription)),
-              ]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  DashboardQuickAction(
+                    icon: LucideIcons.userPlus,
+                    label: 'Invite Buyer',
+                    onTap: () => context.push(RouteNames.agentInvite),
+                  ),
+                  DashboardQuickAction(
+                    icon: LucideIcons.search,
+                    label: 'Search Property',
+                    onTap: () => context.go(RouteNames.agentSearch),
+                  ),
+                  DashboardQuickAction(
+                    icon: LucideIcons.crown,
+                    label: 'Subscription',
+                    onTap: () => context.push(RouteNames.agentSubscription),
+                  ),
+                ],
+              ),
             ]).animate().fadeIn(delay: 300.ms),
           )),
           SliverToBoxAdapter(
@@ -142,8 +155,8 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
             }
             if (state.activities.isEmpty) {
               return SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: 200.h,
+                  child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.h),
                       child: const AppEmptyState(
                           icon: LucideIcons.activity,
                           title: 'No recent activity',
@@ -201,48 +214,35 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: color.withValues(alpha: 0.2), width: 0.5)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, size: 20.sp, color: color),
-        SizedBox(height: 12.h),
-        Text(value, style: AppTypography.headlineLarge.copyWith(color: color)),
-        SizedBox(height: 4.h),
-        Text(label,
-            style: AppTypography.labelSmall
-                .copyWith(color: AppColors.textSecondary)),
-      ]),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20.sp, color: color),
+            SizedBox(height: 8.h),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value,
+                  style: AppTypography.headlineMedium
+                      .copyWith(color: color, fontWeight: FontWeight.bold)),
+            ),
+            SizedBox(height: 4.h),
+            Expanded(
+              child: Text(label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
+            ),
+          ]),
     );
-  }
-}
-
-class _ActionChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _ActionChip(this.icon, this.label, this.onTap);
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-        child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12.r),
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: AppColors.border, width: 0.5)),
-              child: Column(children: [
-                Icon(icon, size: 20.sp, color: AppColors.secondary),
-                SizedBox(height: 6.h),
-                Text(label,
-                    style: AppTypography.labelSmall,
-                    textAlign: TextAlign.center)
-              ]),
-            )));
   }
 }

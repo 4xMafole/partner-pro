@@ -6,8 +6,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../app_components/custom_dialog/custom_dialog_widget.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/enums/app_enums.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../offer/presentation/bloc/offer_bloc.dart';
+import '../../../offer/data/models/offer_model.dart';
 import '../../../offer/presentation/widgets/offer_process_sheet.dart';
 import '../../../schedule/presentation/widgets/schedule_tour_sheet.dart';
 import '../bloc/property_bloc.dart';
@@ -44,6 +46,18 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     }
   }
 
+  void _loadPropertyOffers() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final uid = authState.user.uid;
+    context.read<OfferBloc>().add(
+          LoadUserOffers(
+            requesterId: uid,
+            propertyId: widget.propertyId,
+          ),
+        );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +67,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         _isFavorite = propState.favorites
             .any((f) => f['property_id'] == widget.propertyId);
       });
+      _loadPropertyOffers();
     });
   }
 
@@ -168,7 +183,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         child: OfferProcessSheet(
           property: p,
           requesterId: uid,
-          onComplete: () {},
+          onComplete: _loadPropertyOffers,
         ),
       ),
     );
@@ -494,6 +509,44 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     ),
 
                     SizedBox(height: 28.h),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: BlocBuilder<OfferBloc, OfferState>(
+                        builder: (context, offerState) {
+                          final propertyOffers = offerState.offers
+                              .where((o) => o.propertyId == widget.propertyId)
+                              .toList()
+                            ..sort((a, b) =>
+                                (b.createdTime ?? DateTime(1970)).compareTo(
+                                    a.createdTime ?? DateTime(1970)));
+
+                          final pendingCount = propertyOffers.where((o) {
+                            final status = o.status;
+                            return status == OfferStatus.pending ||
+                                status == OfferStatus.draft;
+                          }).length;
+                          final acceptedCount = propertyOffers
+                              .where((o) => o.status == OfferStatus.accepted)
+                              .length;
+                          final declinedCount = propertyOffers
+                              .where((o) => o.status == OfferStatus.declined)
+                              .length;
+
+                          return _PropertyOfferSection(
+                            isLoading:
+                                offerState.isLoading && propertyOffers.isEmpty,
+                            pendingCount: pendingCount,
+                            acceptedCount: acceptedCount,
+                            declinedCount: declinedCount,
+                            offers: propertyOffers,
+                            formatCurrency: _formatListPrice,
+                          );
+                        },
+                      ),
+                    ),
+
+                    SizedBox(height: 20.h),
 
                     if (p != null) ...[
                       // Property details card
@@ -886,6 +939,160 @@ class _CollapsedDescription extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PropertyOfferSection extends StatelessWidget {
+  final bool isLoading;
+  final int pendingCount;
+  final int acceptedCount;
+  final int declinedCount;
+  final List<OfferModel> offers;
+  final String Function(int) formatCurrency;
+
+  const _PropertyOfferSection({
+    required this.isLoading,
+    required this.pendingCount,
+    required this.acceptedCount,
+    required this.declinedCount,
+    required this.offers,
+    required this.formatCurrency,
+  });
+
+  String _statusLabel(OfferStatus? status) {
+    switch (status) {
+      case OfferStatus.pending:
+        return 'Pending';
+      case OfferStatus.accepted:
+        return 'Accepted';
+      case OfferStatus.declined:
+        return 'Declined';
+      case OfferStatus.draft:
+        return 'Draft';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Color _statusColor(OfferStatus? status) {
+    switch (status) {
+      case OfferStatus.accepted:
+        return AppColors.success;
+      case OfferStatus.declined:
+        return AppColors.error;
+      case OfferStatus.pending:
+      case OfferStatus.draft:
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Unknown date';
+    return '${date.month}/${date.day}/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(LucideIcons.fileSignature,
+                  size: 20.sp, color: AppColors.primary),
+              SizedBox(width: 8.w),
+              Text('Offer Activity', style: AppTypography.titleLarge),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _StatusBadge('Pending $pendingCount', AppColors.warning),
+              _StatusBadge('Accepted $acceptedCount', AppColors.success),
+              _StatusBadge('History $declinedCount', AppColors.textSecondary),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (offers.isEmpty)
+            Text(
+              'No offers have been submitted for this property yet.',
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            )
+          else
+            Column(
+              children: offers.take(3).map((offer) {
+                final statusColor = _statusColor(offer.status);
+                return Container(
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '\$${formatCurrency(offer.purchasePrice)}',
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 3.h),
+                            Text(
+                              _formatDate(offer.createdTime),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                        child: Text(
+                          _statusLabel(offer.status),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -22,6 +22,10 @@ class PropertyRemoteDataSource {
     String? state,
     String? homeType,
     String? statusType,
+    int? minPrice,
+    int? maxPrice,
+    int? minBeds,
+    int? maxBeds,
     bool? isPendingUnderContract,
     bool? zillowProperties,
   }) async {
@@ -52,6 +56,19 @@ class PropertyRemoteDataSource {
           isEqualTo: isPendingUnderContract);
     }
 
+    if (minPrice != null) {
+      query = query.where('listPrice', isGreaterThanOrEqualTo: minPrice);
+    }
+    if (maxPrice != null) {
+      query = query.where('listPrice', isLessThanOrEqualTo: maxPrice);
+    }
+    if (minBeds != null) {
+      query = query.where('bedrooms', isGreaterThanOrEqualTo: minBeds);
+    }
+    if (maxBeds != null) {
+      query = query.where('bedrooms', isLessThanOrEqualTo: maxBeds);
+    }
+
     final snap = await query.limit(AppConstants.defaultPageSize).get();
     return snap.docs
         .map((doc) => PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
@@ -70,6 +87,69 @@ class PropertyRemoteDataSource {
     return snap.docs
         .map((doc) => PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
+  }
+
+  /// Finds a property by external source id (e.g. Zillow zpid).
+  Future<Map<String, dynamic>?> getPropertyByExternalId({
+    required String externalId,
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.propertiesCollection)
+        .where('external_id', isEqualTo: externalId)
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    final doc = snap.docs.first;
+    return {...doc.data(), 'id': doc.id};
+  }
+
+  /// Upserts source-synced property document by external id.
+  Future<Map<String, dynamic>> upsertExternalProperty({
+    required String requesterId,
+    required String externalId,
+    required String source,
+    required Map<String, dynamic> propertyData,
+  }) async {
+    final collection = _firestore.collection(AppConstants.propertiesCollection);
+    final existing = await collection
+        .where('external_id', isEqualTo: externalId)
+        .limit(1)
+        .get();
+
+    final payload = <String, dynamic>{
+      ...propertyData,
+      'external_id': externalId,
+      'source': source,
+      'updated_at': FieldValue.serverTimestamp(),
+      'updated_by': requesterId,
+    };
+
+    if (existing.docs.isEmpty) {
+      final docRef = await collection.add({
+        ...payload,
+        'created_at': FieldValue.serverTimestamp(),
+        'created_by': requesterId,
+      });
+      final afterSnap = await docRef.get();
+      return {
+        'id': docRef.id,
+        'isNew': true,
+        'before': null,
+        'after': {...?afterSnap.data(), 'id': docRef.id},
+      };
+    }
+
+    final docRef = existing.docs.first.reference;
+    final before = existing.docs.first.data();
+    await docRef.update(payload);
+    final afterSnap = await docRef.get();
+    return {
+      'id': docRef.id,
+      'isNew': false,
+      'before': {...before, 'id': docRef.id},
+      'after': {...?afterSnap.data(), 'id': docRef.id},
+    };
   }
 
   // -- Favorites --
@@ -157,6 +237,17 @@ class PropertyRemoteDataSource {
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
+  /// Gets all active saved searches across users.
+  Future<List<Map<String, dynamic>>> getAllActiveSavedSearches({
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .where('status', isEqualTo: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
+
   /// Saves a search query.
   Future<void> saveSearch({
     required String userId,
@@ -184,6 +275,18 @@ class PropertyRemoteDataSource {
         .collection(AppConstants.savedSearchesCollection)
         .doc(searchId)
         .delete();
+  }
+
+  /// Updates a saved search (toggle alert, rename, update filters).
+  Future<void> updateSavedSearch({
+    required String searchId,
+    required Map<String, dynamic> data,
+    required String requesterId,
+  }) async {
+    await _firestore
+        .collection(AppConstants.savedSearchesCollection)
+        .doc(searchId)
+        .update(data);
   }
 
   // -- Show Property (Showings) --
