@@ -40,4 +40,4 @@ Alert dispatching paths are short-circuited (`Right(0)`) until future business r
 - ✅ Successfully disabled/muted proactive alert notifications to users as requested. 
 
 ## Next Steps
-- Merge `feature/2.3-property-management-buyer-agent` to upstream environment branch `main`.
+- Merge `feature/2.3-property-management-buyer-agent` to upstream environment branch `develop`.
