@@ -40,7 +40,8 @@ class _SignaturePageState extends State<SignaturePage> {
   Widget build(BuildContext context) {
     // If no URL passed, check DocuSeal submission data from BLoC
     final docState = context.watch<DocumentBloc>().state;
-    final url = widget.signingUrl ?? _extractSigningUrl(docState.submissionData);
+    final url =
+        widget.signingUrl ?? _extractSigningUrl(docState.submissionData);
 
     if (url == null || url.isEmpty) {
       return Scaffold(

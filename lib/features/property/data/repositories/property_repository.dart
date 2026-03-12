@@ -662,7 +662,8 @@ class PropertyRepository {
     required String requesterId,
   }) async {
     try {
-      await _remote.recordPropertyView(userId: userId, propertyId: propertyId, requesterId: requesterId);
+      await _remote.recordPropertyView(
+          userId: userId, propertyId: propertyId, requesterId: requesterId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
@@ -674,7 +675,8 @@ class PropertyRepository {
     required String requesterId,
   }) async {
     try {
-      return Right(await _remote.getRecentlyViewed(userId: userId, requesterId: requesterId));
+      return Right(await _remote.getRecentlyViewed(
+          userId: userId, requesterId: requesterId));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

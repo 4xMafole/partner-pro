@@ -24,7 +24,9 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
         final uid = authState.user.uid ?? '';
-        context.read<PropertyBloc>().add(LoadShowings(userId: uid, requesterId: uid));
+        context
+            .read<PropertyBloc>()
+            .add(LoadShowings(userId: uid, requesterId: uid));
       }
     });
   }
@@ -55,7 +57,8 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
               final date = showing['date'] as String? ?? '';
               final time = showing['time'] as String? ?? '';
               final propertyId = showing['property_id'] as String? ?? '';
-              final address = showing['address'] as String? ?? 'Property $propertyId';
+              final address =
+                  showing['address'] as String? ?? 'Property $propertyId';
               final status = showing['status'] as String? ?? 'scheduled';
 
               return Card(
@@ -72,7 +75,8 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.calendar, size: 18.sp, color: AppColors.primary),
+                        Icon(LucideIcons.calendar,
+                            size: 18.sp, color: AppColors.primary),
                         if (date.length >= 5)
                           Text(
                             date.substring(5),
@@ -87,18 +91,23 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
                   title: Text(address, style: AppTypography.titleMedium),
                   subtitle: Text(
                     '$date at $time . ${status.toUpperCase()}',
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodySmall
+                        .copyWith(color: AppColors.textSecondary),
                   ),
                   trailing: status.toLowerCase() == 'scheduled'
                       ? IconButton(
-                          icon: Icon(LucideIcons.x, size: 18.sp, color: AppColors.error),
+                          icon: Icon(LucideIcons.x,
+                              size: 18.sp, color: AppColors.error),
                           onPressed: () {
                             final showingId = showing['id'] as String? ?? '';
                             final authState = context.read<AuthBloc>().state;
-                            if (authState is AuthAuthenticated && showingId.isNotEmpty) {
+                            if (authState is AuthAuthenticated &&
+                                showingId.isNotEmpty) {
                               context.read<PropertyBloc>().add(
-                                CancelShowing(showingId: showingId, requesterId: authState.user.uid ?? ''),
-                              );
+                                    CancelShowing(
+                                        showingId: showingId,
+                                        requesterId: authState.user.uid ?? ''),
+                                  );
                             }
                           },
                         )

@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 /// Gold-primary theme inherited from the original app, modernized.
 abstract final class AppColors {
   // ── Brand ──
-  static const Color primary = Color(0xFFD0B27D);       // Warm gold
-  static const Color primaryDark = Color(0xFF998053);    // Deep gold
-  static const Color secondary = Color(0xFF0070E0);      // Vibrant blue
-  static const Color secondaryDark = Color(0xFF0544B5);  // Deep blue
-  static const Color tertiary = Color(0xFFEE8B60);       // Coral accent
+  static const Color primary = Color(0xFFD0B27D); // Warm gold
+  static const Color primaryDark = Color(0xFF998053); // Deep gold
+  static const Color secondary = Color(0xFF0070E0); // Vibrant blue
+  static const Color secondaryDark = Color(0xFF0544B5); // Deep blue
+  static const Color tertiary = Color(0xFFEE8B60); // Coral accent
 
   // ── Surfaces ──
-  static const Color background = Color(0xFFF7F8FA);     // Slightly warmer than pure white
+  static const Color background =
+      Color(0xFFF7F8FA); // Slightly warmer than pure white
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF1F4F8);
   static const Color card = Color(0xFFFFFFFF);

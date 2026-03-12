@@ -26,7 +26,8 @@ class DocumentModel with _$DocumentModel {
     @Default('') String documentReviewed,
     @Default('') String documentReviewedBy,
   }) = _DocumentModel;
-  factory DocumentModel.fromJson(Map<String, dynamic> json) => _$DocumentModelFromJson(json);
+  factory DocumentModel.fromJson(Map<String, dynamic> json) =>
+      _$DocumentModelFromJson(json);
 }
 
 @freezed
@@ -35,7 +36,8 @@ class PdfAssetModel with _$PdfAssetModel {
     @Default('') String url,
     @Default('') String content,
   }) = _PdfAssetModel;
-  factory PdfAssetModel.fromJson(Map<String, dynamic> json) => _$PdfAssetModelFromJson(json);
+  factory PdfAssetModel.fromJson(Map<String, dynamic> json) =>
+      _$PdfAssetModelFromJson(json);
 }
 
 @freezed
@@ -44,5 +46,6 @@ class ProofOfFundsModel with _$ProofOfFundsModel {
     @Default([]) List<String> urls,
     DateTime? createdAt,
   }) = _ProofOfFundsModel;
-  factory ProofOfFundsModel.fromJson(Map<String, dynamic> json) => _$ProofOfFundsModelFromJson(json);
+  factory ProofOfFundsModel.fromJson(Map<String, dynamic> json) =>
+      _$ProofOfFundsModelFromJson(json);
 }

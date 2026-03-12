@@ -28,7 +28,9 @@ class _BuyerInvitationsPageState extends State<BuyerInvitationsPage> {
   void _loadInvitations() {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<AgentBloc>().add(LoadBuyerInvitations(buyerEmail: authState.user.email));
+      context
+          .read<AgentBloc>()
+          .add(LoadBuyerInvitations(buyerEmail: authState.user.email));
     }
   }
 
@@ -37,7 +39,8 @@ class _BuyerInvitationsPageState extends State<BuyerInvitationsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Agent Invitations')),
       body: BlocConsumer<AgentBloc, AgentState>(
-        listenWhen: (prev, curr) => curr.successMessage != null || curr.error != null,
+        listenWhen: (prev, curr) =>
+            curr.successMessage != null || curr.error != null,
         listener: (context, state) {
           if (state.successMessage != null) {
             context.showSnackBar(state.successMessage!);
@@ -84,13 +87,13 @@ class _BuyerInvitationsPageState extends State<BuyerInvitationsPage> {
     final user = authState.user;
 
     context.read<AgentBloc>().add(AcceptInvitation(
-      invitationId: inv['id'] as String,
-      agentId: inv['inviterUid'] as String,
-      buyerId: user.uid,
-      agentName: inv['inviterName'] as String? ?? '',
-      buyerName: '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim(),
-      buyerEmail: user.email,
-    ));
+          invitationId: inv['id'] as String,
+          agentId: inv['inviterUid'] as String,
+          buyerId: user.uid,
+          agentName: inv['inviterName'] as String? ?? '',
+          buyerName: '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim(),
+          buyerEmail: user.email,
+        ));
   }
 
   void _declineInvitation(Map<String, dynamic> inv) {
@@ -101,13 +104,17 @@ class _BuyerInvitationsPageState extends State<BuyerInvitationsPage> {
       context: context,
       builder: (_) => AppConfirmDialog(
         title: 'Decline Invitation',
-        message: 'Are you sure you want to decline this invitation from ${inv['inviterName']}?',
+        message:
+            'Are you sure you want to decline this invitation from ${inv['inviterName']}?',
         confirmLabel: 'Decline',
         onConfirm: () {
           context.read<AgentBloc>().add(DeclineInvitation(
-            invitationId: inv['id'] as String,
-            buyerEmail: (context.read<AuthBloc>().state as AuthAuthenticated).user.email,
-          ));
+                invitationId: inv['id'] as String,
+                buyerEmail:
+                    (context.read<AuthBloc>().state as AuthAuthenticated)
+                        .user
+                        .email,
+              ));
         },
       ),
     );
@@ -156,9 +163,13 @@ class _InvitationCard extends StatelessWidget {
                   children: [
                     Text(agentName, style: AppTypography.titleSmall),
                     SizedBox(height: 2.h),
-                    Text('Wants to connect as your agent', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                    Text('Wants to connect as your agent',
+                        style: AppTypography.bodySmall
+                            .copyWith(color: AppColors.textSecondary)),
                     if (dateStr.isNotEmpty)
-                      Text(dateStr, style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                      Text(dateStr,
+                          style: AppTypography.bodySmall
+                              .copyWith(color: AppColors.textSecondary)),
                   ],
                 ),
               ),

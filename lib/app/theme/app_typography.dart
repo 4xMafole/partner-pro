@@ -25,7 +25,7 @@ abstract final class AppTypography {
     fontSize: 24.sp,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
-  ); 
+  );
 
   // ── Headline ──
   static TextStyle headlineLarge = GoogleFonts.inter(

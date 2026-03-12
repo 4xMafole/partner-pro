@@ -10,6 +10,71 @@ class OfferRemoteDataSource {
 
   OfferRemoteDataSource(this._firestore);
 
+  CollectionReference<Map<String, dynamic>> _userOfferCollection(
+      String userId) {
+    return _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
+        .collection(AppConstants.offersCollection);
+  }
+
+  String? _stringValue(Map<String, dynamic> source, List<String> keys) {
+    for (final key in keys) {
+      final value = source[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), v));
+    }
+    return <String, dynamic>{};
+  }
+
+  Set<String> _offerParticipantIds(Map<String, dynamic> offerData) {
+    final ids = <String>{};
+    final parties = _asMap(offerData['parties']);
+
+    void addValue(String? value) {
+      if (value != null && value.isNotEmpty) ids.add(value);
+    }
+
+    addValue(_stringValue(offerData, ['buyerId', 'buyer_id']));
+    addValue(_stringValue(offerData, ['sellerId', 'seller_id']));
+    addValue(_stringValue(offerData, ['agentId', 'agent_id']));
+    addValue(_stringValue(_asMap(parties['buyer']), ['id']));
+    addValue(_stringValue(_asMap(parties['seller']), ['id']));
+    addValue(_stringValue(_asMap(parties['agent']), ['id']));
+    addValue(_stringValue(_asMap(parties['secondBuyer']), ['id']));
+    addValue(_stringValue(_asMap(parties['second_buyer']), ['id']));
+    return ids;
+  }
+
+  Future<void> _syncOfferMirrors({
+    required String offerId,
+    required Map<String, dynamic> offerData,
+    Set<String> oldParticipantIds = const <String>{},
+  }) async {
+    final participantIds = _offerParticipantIds(offerData);
+    final mirrorData = {...offerData};
+
+    final batch = _firestore.batch();
+
+    for (final uid in participantIds) {
+      batch.set(_userOfferCollection(uid).doc(offerId), mirrorData);
+    }
+
+    final staleParticipantIds = oldParticipantIds.difference(participantIds);
+    for (final uid in staleParticipantIds) {
+      batch.delete(_userOfferCollection(uid).doc(offerId));
+    }
+
+    await batch.commit();
+  }
+
   // -- Get Offers --
 
   /// Fetches offers for a buyer user.
@@ -20,62 +85,35 @@ class OfferRemoteDataSource {
     String? sellerId,
     String? status,
   }) async {
-    final base = _firestore.collection(AppConstants.offersCollection);
+    final ownerId = buyerId ?? sellerId ?? requesterId;
+    final snap = await _userOfferCollection(ownerId)
+        .orderBy('created_at', descending: true)
+        .get();
 
-    Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _runForField(
-      String field,
-      String value,
-    ) async {
-      Query<Map<String, dynamic>> q = base.where(field, isEqualTo: value);
-      if (propertyId != null) q = q.where('property_id', isEqualTo: propertyId);
-      if (status != null) q = q.where('status', isEqualTo: status);
-      try {
-        final snap = await q.orderBy('created_at', descending: true).get();
-        return snap.docs;
-      } catch (_) {
-        // Legacy docs may not have created_at indexed/populated consistently.
-        final snap = await q.get();
-        return snap.docs;
+    final data =
+        snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).where((offer) {
+      if (propertyId != null &&
+          offer['property_id'] != propertyId &&
+          offer['propertyId'] != propertyId) {
+        return false;
       }
-    }
-
-    final docsById = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
-
-    if (buyerId != null) {
-      for (final f in ['buyer_id', 'buyerId']) {
-        final docs = await _runForField(f, buyerId);
-        for (final d in docs) {
-          docsById[d.id] = d;
-        }
+      if (status != null &&
+          (offer['status']?.toString().toLowerCase() != status.toLowerCase())) {
+        return false;
       }
-    } else if (sellerId != null) {
-      for (final f in ['seller_id', 'sellerId']) {
-        final docs = await _runForField(f, sellerId);
-        for (final d in docs) {
-          docsById[d.id] = d;
-        }
+      if (buyerId != null &&
+          offer['buyer_id'] != buyerId &&
+          offer['buyerId'] != buyerId) {
+        return false;
       }
-    } else {
-      // Default buyer perspective: support both current and legacy field names.
-      for (final f in ['buyer_id', 'buyerId', 'created_by']) {
-        final docs = await _runForField(f, requesterId);
-        for (final d in docs) {
-          docsById[d.id] = d;
-        }
+      if (sellerId != null &&
+          offer['seller_id'] != sellerId &&
+          offer['sellerId'] != sellerId) {
+        return false;
       }
-    }
-
-    final docs = docsById.values.toList()
-      ..sort((a, b) {
-        final at = a.data()['created_at'];
-        final bt = b.data()['created_at'];
-        if (at is Timestamp && bt is Timestamp) {
-          return bt.compareTo(at);
-        }
-        return 0;
-      });
-
-    return docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+      return true;
+    }).toList();
+    return data;
   }
 
   /// Fetches a single offer document by ID.
@@ -95,50 +133,37 @@ class OfferRemoteDataSource {
     required String requesterId,
     String? status,
   }) async {
-    final docsById = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    final snap = await _userOfferCollection(requesterId)
+        .orderBy('created_at', descending: true)
+        .get();
 
-    Future<void> run(String field) async {
-      Query<Map<String, dynamic>> q = _firestore
-          .collection(AppConstants.offersCollection)
-          .where(field, isEqualTo: requesterId);
-      if (status != null) q = q.where('status', isEqualTo: status);
-      try {
-        final snap = await q.orderBy('created_at', descending: true).get();
-        for (final d in snap.docs) {
-          docsById[d.id] = d;
-        }
-      } catch (_) {
-        final snap = await q.get();
-        for (final d in snap.docs) {
-          docsById[d.id] = d;
-        }
-      }
-    }
-
-    await run('agent_id');
-    await run('agentId');
-
-    final docs = docsById.values.toList()
-      ..sort((a, b) {
-        final at = a.data()['created_at'];
-        final bt = b.data()['created_at'];
-        if (at is Timestamp && bt is Timestamp) {
-          return bt.compareTo(at);
-        }
-        return 0;
-      });
-
-    return docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+    final data =
+        snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).where((offer) {
+      if (status == null) return true;
+      return offer['status']?.toString().toLowerCase() == status.toLowerCase();
+    }).toList();
+    return data;
   }
 
   Future<Map<String, dynamic>?> getRelationshipForSubjectUid({
     required String subjectUid,
   }) async {
-    final snap = await _firestore
-        .collection('relationships')
+    final collection = _firestore.collection('relationships');
+    final buyerSnap = await collection
+        .where('buyerId', isEqualTo: subjectUid)
+        .where('status', isEqualTo: 'active')
+        .limit(1)
+        .get();
+    if (buyerSnap.docs.isNotEmpty) {
+      final doc = buyerSnap.docs.first;
+      return {...doc.data(), 'id': doc.id};
+    }
+
+    final legacySnap = await collection
         .where('relationship.subjectUid', isEqualTo: subjectUid)
         .limit(1)
         .get();
+    final snap = legacySnap;
     if (snap.docs.isEmpty) return null;
     final doc = snap.docs.first;
     return {...doc.data(), 'id': doc.id};
@@ -171,13 +196,15 @@ class OfferRemoteDataSource {
       'created_at': FieldValue.serverTimestamp(),
     });
     final snap = await docRef.get();
-    return {
+    final result = {
       ...?snap.data(),
       'id': docRef.id,
       'offerID': docRef.id,
       'createdDate': DateTime.now().toIso8601String(),
       'userID': requesterId,
     };
+    await _syncOfferMirrors(offerId: docRef.id, offerData: result);
+    return result;
   }
 
   /// Updates an existing offer.
@@ -197,6 +224,14 @@ class OfferRemoteDataSource {
     updateData['updated_at'] = FieldValue.serverTimestamp();
     updateData['updated_by'] = requesterId;
 
+    final currentSnap = await _firestore
+        .collection(AppConstants.offersCollection)
+        .doc(offerId)
+        .get();
+    final oldParticipantIds = currentSnap.exists
+        ? _offerParticipantIds(currentSnap.data() ?? {})
+        : <String>{};
+
     await _firestore
         .collection(AppConstants.offersCollection)
         .doc(offerId)
@@ -205,6 +240,12 @@ class OfferRemoteDataSource {
         .collection(AppConstants.offersCollection)
         .doc(offerId)
         .get();
-    return {...snap.data()!, 'id': snap.id};
+    final result = {...snap.data()!, 'id': snap.id};
+    await _syncOfferMirrors(
+      offerId: offerId,
+      offerData: result,
+      oldParticipantIds: oldParticipantIds,
+    );
+    return result;
   }
 }

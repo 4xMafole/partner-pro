@@ -46,6 +46,7 @@ import '../../features/onboarding/presentation/pages/onboarding_form_page.dart';
 import '../../features/legal/presentation/pages/legal_disclosure_page.dart';
 import '../../features/legal/presentation/pages/terms_of_use_page.dart';
 import '../../features/legal/presentation/pages/communication_consent_page.dart';
+import '../../pages/search_page/search_page_widget.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -63,17 +64,31 @@ class AppRouter {
       final authState = context.read<AuthBloc>().state;
       final isAuthenticated = authState is AuthAuthenticated;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
+      final isSearchRoute = state.matchedLocation == RouteNames.search ||
+          state.matchedLocation.startsWith('/search');
+      final isOnboardingRoute =
+          state.matchedLocation == RouteNames.onboardingForm;
 
-      if (!isAuthenticated && !isAuthRoute) {
+      if (!isAuthenticated && !isAuthRoute && !isSearchRoute) {
         return RouteNames.onboard;
       }
-      if (isAuthenticated && isAuthRoute) {
-        final user = (authState).user;
-        return user.role == null
-            ? RouteNames.roleSelection
-            : user.role == 'agent'
-                ? RouteNames.agentDashboard
-                : RouteNames.buyerDashboard;
+
+      if (authState is AuthAuthenticated) {
+        final user = authState.user;
+
+        final hasCompletedOnboarding = user.onboardingCompleted;
+
+        if (!hasCompletedOnboarding) {
+          return isOnboardingRoute ? null : RouteNames.onboardingForm;
+        }
+
+        if (hasCompletedOnboarding && (isAuthRoute || isOnboardingRoute)) {
+          return user.role == null
+              ? RouteNames.roleSelection
+              : user.role == 'agent'
+                  ? RouteNames.agentDashboard
+                  : RouteNames.buyerDashboard;
+        }
       }
       return null;
     },
@@ -92,7 +107,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.register,
         name: 'register',
-        builder: (_, __) => const RegisterPage(),
+        builder: (_, state) {
+          final role = state.uri.queryParameters['role'];
+          return RegisterPage(role: role);
+        },
       ),
       GoRoute(
         path: RouteNames.forgotPassword,
@@ -207,6 +225,12 @@ class AppRouter {
 
       // ── Standalone Routes (push on top of shell) ──
       GoRoute(
+        path: RouteNames.search,
+        name: 'search',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const SearchPageWidget(userType: null),
+      ),
+      GoRoute(
         path: RouteNames.propertyDetails,
         name: 'propertyDetails',
         parentNavigatorKey: _rootNavigatorKey,
@@ -230,7 +254,7 @@ class AppRouter {
         path: RouteNames.editProfile,
         name: 'editProfile',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, __) => const EditProfilePage(),
+        builder: (_, __) => const OnboardingFormPage(isEditing: true),
       ),
       GoRoute(
         path: RouteNames.settings,

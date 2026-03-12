@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -17,6 +18,8 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 import '../../../notifications/presentation/bloc/notification_bloc.dart';
 import '../../../agent/presentation/bloc/agent_bloc.dart';
+import '../../../property/data/models/property_model.dart';
+import '../widgets/dashboard_property_card.dart';
 
 class BuyerDashboardPage extends StatefulWidget {
   const BuyerDashboardPage({super.key});
@@ -26,6 +29,33 @@ class BuyerDashboardPage extends StatefulWidget {
 
 class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
   bool _nearMeLoading = false;
+
+  Widget _buildCardSkeletonRow() {
+    return SizedBox(
+      height: 272.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        itemCount: 3,
+        itemBuilder: (context, index) => const DashboardPropertyCard(
+          isLoading: true,
+          property: null,
+          fallbackTitle: '',
+          badgeLabel: '',
+          badgeIcon: LucideIcons.sparkles,
+          badgeColor: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  PropertyDataClass? _findPropertyById(
+      List<PropertyDataClass> all, String propertyId) {
+    for (final p in all) {
+      if (p.id == propertyId) return p;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -39,8 +69,12 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
             .read<PropertyBloc>()
             .add(LoadFavorites(userId: uid, requesterId: uid));
         context.read<NotificationBloc>().add(StartListening(uid));
-        context.read<AgentBloc>().add(LoadBuyerInvitations(buyerEmail: a.user.email));
-        context.read<PropertyBloc>().add(LoadRecentlyViewed(userId: uid, requesterId: uid));
+        context
+            .read<AgentBloc>()
+            .add(LoadBuyerInvitations(buyerEmail: a.user.email));
+        context
+            .read<PropertyBloc>()
+            .add(LoadRecentlyViewed(userId: uid, requesterId: uid));
       }
     });
   }
@@ -203,24 +237,123 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                 child: GestureDetector(
                   onTap: () => context.push(RouteNames.buyerInvitations),
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(children: [
-                      Icon(LucideIcons.userPlus, size: 20.sp, color: Colors.white),
+                      Icon(LucideIcons.userPlus,
+                          size: 20.sp, color: Colors.white),
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Text(
                           'You have $count pending agent invitation${count > 1 ? 's' : ''}',
-                          style: AppTypography.bodyMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                          style: AppTypography.bodyMedium.copyWith(
+                              color: Colors.white, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      Icon(LucideIcons.chevronRight, size: 18.sp, color: Colors.white),
+                      Icon(LucideIcons.chevronRight,
+                          size: 18.sp, color: Colors.white),
                     ]),
                   ),
                 ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
+              );
+            },
+          ),
+        ),
+
+        SliverToBoxAdapter(
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              if (authState is! AuthAuthenticated) {
+                return const SizedBox.shrink();
+              }
+              final uid = authState.user.uid;
+
+              return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection('suggestions')
+                    .orderBy('created_at', descending: true)
+                    .limit(10)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildCardSkeletonRow();
+                  }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final docs = snapshot.data!.docs;
+                  if (docs.isEmpty) return const SizedBox.shrink();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 8.h),
+                        child: Text('Suggested for You',
+                            style: AppTypography.headlineSmall),
+                      ),
+                      SizedBox(
+                        height: 272.h,
+                        child: BlocBuilder<PropertyBloc, PropertyState>(
+                          builder: (context, propState) {
+                            final allProperties = [
+                              ...propState.allProperties,
+                              ...propState.filteredProperties,
+                            ];
+
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(horizontal: 24.w),
+                              itemCount: docs.length,
+                              itemBuilder: (context, index) {
+                                final data = docs[index].data();
+                                final propertyId = (data['property_id'] ??
+                                        data['propertyId'] ??
+                                        '')
+                                    .toString();
+                                final agentName =
+                                    (data['agent_name'] ?? '').toString();
+                                final suggestedAddress =
+                                    (data['property_address'] ??
+                                            'Suggested Property')
+                                        .toString();
+                                final matched = _findPropertyById(
+                                    allProperties, propertyId);
+
+                                return DashboardPropertyCard(
+                                  property: matched,
+                                  fallbackTitle: suggestedAddress,
+                                  fallbackSubtitle: 'Open property details',
+                                  badgeLabel: 'Agent Pick',
+                                  badgeIcon: LucideIcons.send,
+                                  badgeColor: AppColors.primary,
+                                  metaText:
+                                      timeAgoFromDynamic(data['created_at']),
+                                  footerText: agentName.isEmpty
+                                      ? suggestedAddress
+                                      : 'Suggested by $agentName',
+                                  onTap: propertyId.isEmpty
+                                      ? null
+                                      : () => context.push(RouteNames
+                                          .propertyDetails
+                                          .replaceFirst(':id', propertyId)),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -239,11 +372,11 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
         )),
         SliverToBoxAdapter(
             child: SizedBox(
-                height: 260.h,
+                height: 272.h,
                 child: BlocBuilder<PropertyBloc, PropertyState>(
                     builder: (context, propState) {
                   if (propState.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _buildCardSkeletonRow();
                   }
                   final properties = propState.filteredProperties;
                   if (properties.isEmpty) {
@@ -253,94 +386,24 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                         subtitle: 'Start searching to see recommendations');
                   }
                   return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      itemCount:
-                          properties.length > 10 ? 10 : properties.length,
-                      itemBuilder: (context, index) {
-                        final p = properties[index];
-                        return GestureDetector(
-                            onTap: () => context.push(RouteNames.propertyDetails
-                                .replaceFirst(':id', p.id)),
-                            child: Container(
-                              width: 200.w,
-                              margin: EdgeInsets.only(right: 12.w),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16.r),
-                                  color: AppColors.surface,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2))
-                                  ]),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16.r)),
-                                        child: p.media.isNotEmpty
-                                            ? Image.network(p.media.first,
-                                                height: 130.h,
-                                                width: double.infinity,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) =>
-                                                    Container(
-                                                        height: 130.h,
-                                                        color: AppColors
-                                                            .surfaceVariant,
-                                                        child: Icon(
-                                                            LucideIcons.image,
-                                                            size: 32.sp,
-                                                            color: AppColors
-                                                                .textTertiary)))
-                                            : Container(
-                                                height: 130.h,
-                                                color: AppColors.surfaceVariant,
-                                                child: Center(
-                                                    child: Icon(
-                                                        LucideIcons.home,
-                                                        size: 32.sp,
-                                                        color: AppColors
-                                                            .textTertiary)))),
-                                    Padding(
-                                        padding: EdgeInsets.all(12.w),
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                  '\$${_formatNumber(p.listPrice)}',
-                                                  style: AppTypography
-                                                      .titleMedium
-                                                      .copyWith(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                  maxLines: 1),
-                                              SizedBox(height: 4.h),
-                                              Text(
-                                                  '${p.bedrooms} bd | ${p.bathrooms} ba | ${p.squareFootage} sqft',
-                                                  style: AppTypography.bodySmall
-                                                      .copyWith(
-                                                          color: AppColors
-                                                              .textSecondary),
-                                                  maxLines: 1),
-                                              SizedBox(height: 2.h),
-                                              Text(p.address.city,
-                                                  style: AppTypography
-                                                      .labelSmall
-                                                      .copyWith(
-                                                          color: AppColors
-                                                              .textTertiary),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis),
-                                            ])),
-                                  ]),
-                            ));
-                      });
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    itemCount: properties.length > 10 ? 10 : properties.length,
+                    itemBuilder: (context, index) {
+                      final p = properties[index];
+                      return DashboardPropertyCard(
+                        property: p,
+                        fallbackTitle: 'Featured Property',
+                        badgeLabel: 'Curated',
+                        badgeIcon: LucideIcons.star,
+                        badgeColor: AppColors.tertiary,
+                        metaText: 'Top Pick',
+                        onTap: () => context.push(
+                          RouteNames.propertyDetails.replaceFirst(':id', p.id),
+                        ),
+                      );
+                    },
+                  );
                 }))),
         SliverToBoxAdapter(
             child: Padding(
@@ -351,6 +414,9 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
           child: BlocBuilder<PropertyBloc, PropertyState>(
             builder: (context, propState) {
               final rv = propState.recentlyViewed;
+              if (propState.isLoading && rv.isEmpty) {
+                return _buildCardSkeletonRow();
+              }
               if (rv.isEmpty) {
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 24.h),
@@ -361,8 +427,12 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                   ),
                 );
               }
+              final allProperties = [
+                ...propState.allProperties,
+                ...propState.filteredProperties,
+              ];
               return SizedBox(
-                height: 80.h,
+                height: 272.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -370,17 +440,20 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                   itemBuilder: (context, index) {
                     final item = rv[index];
                     final propId = item['property_id'] as String? ?? '';
-                    return Padding(
-                      padding: EdgeInsets.only(right: 8.w),
-                      child: ActionChip(
-                        avatar: Icon(LucideIcons.home, size: 16.sp, color: AppColors.primary),
-                        label: Text(propId.length > 8 ? '${propId.substring(0, 8)}...' : propId, style: AppTypography.bodySmall),
-                        onPressed: () {
-                          if (propId.isNotEmpty) {
-                            context.push(RouteNames.propertyDetails.replaceFirst(':id', propId));
-                          }
-                        },
-                      ),
+                    final property = _findPropertyById(allProperties, propId);
+
+                    return DashboardPropertyCard(
+                      property: property,
+                      fallbackTitle: 'Viewed Property',
+                      fallbackSubtitle: propId,
+                      badgeLabel: 'Moments',
+                      badgeIcon: LucideIcons.eye,
+                      badgeColor: AppColors.primary,
+                      metaText: timeAgoFromDynamic(item['viewed_at']),
+                      onTap: propId.isEmpty
+                          ? null
+                          : () => context.push(RouteNames.propertyDetails
+                              .replaceFirst(':id', propId)),
                     );
                   },
                 ),
@@ -392,9 +465,4 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
       ])),
     );
   }
-}
-
-String _formatNumber(int value) {
-  return value.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 }

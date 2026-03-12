@@ -146,8 +146,8 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                       isEqualTo: currentUserUid,
                                     ),
                                   );
-                                  _model.initContacts2 = actions
-                                      .mergeContactsWithInvitations(
+                                  _model.initContacts2 =
+                                      actions.mergeContactsWithInvitations(
                                     (functions.isValidData((_model
                                                     .apiResultmtw2?.jsonBody ??
                                                 ''))!
@@ -265,8 +265,8 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                     padding: MediaQuery.viewInsetsOf(context),
                                     child: InviteContactSheetWidget(
                                       onTap: (member) async {
-                                        _model.buyerHtml = actions
-                                            .generateInvitationEmailHtml(
+                                        _model.buyerHtml =
+                                            actions.generateInvitationEmailHtml(
                                           currentUserDisplayName,
                                           FFAppState().redirectUrl,
                                           'buyer',
@@ -288,8 +288,7 @@ class _BuyerInvitePageWidgetState extends State<BuyerInvitePageWidget> {
                                               member.fullName, true),
                                         );
                                         _model.smsInvitationProvider =
-                                            actions
-                                                .generateInvitationSmsText(
+                                            actions.generateInvitationSmsText(
                                           member.fullName,
                                           FFAppState().redirectUrl,
                                           currentUserDisplayName,

@@ -61,23 +61,23 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
   bool includeBlurHash = false,
 }) async {
   createUploadMediaListTile(String label, MediaSource mediaSource) => ListTile(
-            title: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.getFont(
-                pickerFontFamily,
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-              ),
-            ),
-            tileColor: backgroundColor,
-            dense: false,
-            onTap: () => Navigator.pop(
-              context,
-              mediaSource,
-            ),
-          );
+        title: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.getFont(
+            pickerFontFamily,
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        tileColor: backgroundColor,
+        dense: false,
+        onTap: () => Navigator.pop(
+          context,
+          mediaSource,
+        ),
+      );
   final mediaSource = await showModalBottomSheet<MediaSource>(
       context: context,
       backgroundColor: backgroundColor,

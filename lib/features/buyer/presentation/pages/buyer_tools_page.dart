@@ -38,8 +38,6 @@ class BuyerToolsPage extends StatelessWidget {
           'Signature',
           'Manage your digital signature',
           () => context.push(RouteNames.signaturePage)),
-      _ToolItem(LucideIcons.creditCard, 'Subscription', 'Manage your plan',
-          () => context.push(RouteNames.subscription)),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text('Tools')),

@@ -12,6 +12,32 @@ class NotificationService {
 
   NotificationService(this._firestore, this._messaging);
 
+  /// Build a richer description by appending contextual metadata.
+  static String _enrichDescription(
+    Map<String, dynamic> raw,
+    Map<String, dynamic> meta,
+    String type,
+  ) {
+    final base =
+        (raw['message'] ?? raw['body'] ?? raw['description'] ?? '').toString();
+    final parts = <String>[];
+    final property = (meta['propertyAddress'] ?? meta['property_address'] ?? '')
+        .toString()
+        .trim();
+    final buyer =
+        (meta['buyerName'] ?? meta['buyer_name'] ?? '').toString().trim();
+    final amount =
+        (meta['offerAmount'] ?? meta['offer_amount'] ?? '').toString().trim();
+
+    if (buyer.isNotEmpty) parts.add(buyer);
+    if (property.isNotEmpty) parts.add(property);
+    if (amount.isNotEmpty) parts.add('\$$amount');
+
+    if (parts.isEmpty) return base;
+    final context = parts.join(' · ');
+    return base.isNotEmpty ? '$base\n$context' : context;
+  }
+
   Future<String?> initializeFCM() async {
     final settings = await _messaging.requestPermission(
         alert: true, badge: true, sound: true);
@@ -30,36 +56,50 @@ class NotificationService {
         .snapshots()
         .map((snap) => snap.docs.map((d) {
               final raw = d.data();
+              final rawType = raw['type'] as String? ?? 'offer';
+              // Map known Firestore type strings to enum names.
+              // Unknown types fall back to 'offer' to prevent crashes.
+              const _knownTypes = {
+                'offer',
+                'property',
+                'propertySuggestion',
+                'appointment',
+                'transactionCoordinator',
+                'revisionCreated',
+              };
+              const _aliasMap = {
+                'property_suggestion': 'propertySuggestion',
+                'transaction_coordinator': 'transactionCoordinator',
+                'revision_created': 'revisionCreated',
+                'status_changed': 'offer',
+                'statusChanged': 'offer',
+              };
+              final mappedType = _knownTypes.contains(rawType)
+                  ? rawType
+                  : (_aliasMap[rawType] ?? 'offer');
+              final meta = (raw['metadata'] as Map<String, dynamic>?) ?? {};
               final data = <String, dynamic>{
                 'id': d.id,
                 'title': raw['title'] ?? '',
-                'description':
-                    raw['message'] ?? raw['body'] ?? raw['description'] ?? '',
-                // Keep existing UI icon mapping stable by mapping offer notifications to 'offer'.
-                'type': 'offer',
+                'description': _enrichDescription(raw, meta, mappedType),
+                'type': mappedType,
                 'createdAt': raw['createdAt'],
                 'isRead': raw['isRead'] ?? false,
-                'offerId': raw['metadata']?['offerId'] ?? raw['offerId'],
+                'offerId':
+                    meta['offerId'] ?? meta['propertyId'] ?? raw['offerId'],
+                'metadata': meta,
               };
               return NotificationModel.fromJson(data);
             }).toList());
   }
 
-  Future<void> markAsRead(String notificationId) async {
-    // New schema path (preferred).
-    final hits = await _firestore
-        .collectionGroup('notifications')
-        .where(FieldPath.documentId, isEqualTo: notificationId)
-        .limit(1)
-        .get();
-
-    if (hits.docs.isNotEmpty) {
-      await hits.docs.first.reference.update({'isRead': true});
-      return;
-    }
-
-    // Legacy fallback path.
+  Future<void> markAsRead({
+    required String userId,
+    required String notificationId,
+  }) async {
     await _firestore
+        .collection('users')
+        .doc(userId)
         .collection('notifications')
         .doc(notificationId)
         .update({'isRead': true});
@@ -77,33 +117,19 @@ class NotificationService {
       batch.update(doc.reference, {'isRead': true});
     }
 
-    // Legacy fallback path for older notifications.
-    final legacySnap = await _firestore
-        .collection('notifications')
-        .where('userId', isEqualTo: userId)
-        .where('isRead', isEqualTo: false)
-        .get();
-    for (final doc in legacySnap.docs) {
-      batch.update(doc.reference, {'isRead': true});
-    }
-
     await batch.commit();
   }
 
-  Future<void> deleteNotification(String notificationId) async {
-    final hits = await _firestore
-        .collectionGroup('notifications')
-        .where(FieldPath.documentId, isEqualTo: notificationId)
-        .limit(1)
-        .get();
-
-    if (hits.docs.isNotEmpty) {
-      await hits.docs.first.reference.delete();
-      return;
-    }
-
-    // Legacy fallback path.
-    await _firestore.collection('notifications').doc(notificationId).delete();
+  Future<void> deleteNotification({
+    required String userId,
+    required String notificationId,
+  }) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .doc(notificationId)
+        .delete();
   }
 
   Future<void> createNotification(

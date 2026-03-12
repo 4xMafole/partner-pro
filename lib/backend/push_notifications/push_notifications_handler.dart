@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/schema/notifications_record.dart';
+
 import 'serialization_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-
 
 final _handledMessageIds = <String?>{};
 
@@ -22,6 +25,9 @@ class PushNotificationsHandler extends StatefulWidget {
 
 class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   bool _loading = false;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+      _firestoreNotificationSub;
+  bool _isInitialLoad = true;
 
   Future handleOpenedPushNotification() async {
     if (isWeb) {
@@ -33,6 +39,58 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
       await _handlePushNotification(notification);
     }
     FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
+
+    // Handle foreground pushes
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null && mounted) {
+        final title = message.notification?.title ?? 'New Notification';
+        final body = message.notification?.body ?? '';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: FlutterFlowTheme.of(context).titleSmall.override(
+                        fontFamily:
+                            FlutterFlowTheme.of(context).titleSmallFamily,
+                        color: FlutterFlowTheme.of(context).info,
+                        useGoogleFonts: false,
+                      ),
+                ),
+                if (body.isNotEmpty)
+                  Text(
+                    body,
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          fontFamily:
+                              FlutterFlowTheme.of(context).bodySmallFamily,
+                          color: FlutterFlowTheme.of(context).info,
+                          useGoogleFonts: false,
+                        ),
+                  ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: FlutterFlowTheme.of(context).primary,
+            action: SnackBarAction(
+              label: 'View',
+              textColor: FlutterFlowTheme.of(context).info,
+              onPressed: () => _handlePushNotification(message),
+            ),
+            duration: const Duration(seconds: 5),
+            margin: EdgeInsets.only(
+              bottom:
+                  MediaQuery.of(context).size.height - 180, // Display near top
+              left: 16,
+              right: 16,
+            ),
+          ),
+        );
+      }
+    });
   }
 
   Future _handlePushNotification(RemoteMessage message) async {
@@ -74,7 +132,88 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       handleOpenedPushNotification();
+      _listenToFirestoreNotifications();
     });
+  }
+
+  void _listenToFirestoreNotifications() {
+    if (currentUserReference == null) return;
+
+    _firestoreNotificationSub = FirebaseFirestore.instance
+        .collection('notifications')
+        .where('user_ref', isEqualTo: currentUserReference)
+        .where('is_read', isEqualTo: false)
+        .snapshots()
+        .listen((querySnapshot) {
+      if (_isInitialLoad) {
+        _isInitialLoad = false;
+        return;
+      }
+
+      for (var change in querySnapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null && mounted) {
+            final title = data['notification_title'] as String? ??
+                'New In-App Notification';
+            final body = data['notification_body'] as String? ?? '';
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: FlutterFlowTheme.of(context).titleSmall.override(
+                            fontFamily:
+                                FlutterFlowTheme.of(context).titleSmallFamily,
+                            color: FlutterFlowTheme.of(context).info,
+                            useGoogleFonts: false,
+                          ),
+                    ),
+                    if (body.isNotEmpty)
+                      Text(
+                        body,
+                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                              fontFamily:
+                                  FlutterFlowTheme.of(context).bodySmallFamily,
+                              color: FlutterFlowTheme.of(context).info,
+                              useGoogleFonts: false,
+                            ),
+                      ),
+                  ],
+                ),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: FlutterFlowTheme.of(context).primary,
+                action: SnackBarAction(
+                  label: 'View',
+                  textColor: FlutterFlowTheme.of(context).info,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    // Custom fallback action like opening a notification tab or marking it read...
+                  },
+                ),
+                duration: const Duration(seconds: 5),
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height -
+                      180, // Display near top
+                  left: 16,
+                  right: 16,
+                ),
+              ),
+            );
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _firestoreNotificationSub?.cancel();
+    super.dispose();
   }
 
   @override

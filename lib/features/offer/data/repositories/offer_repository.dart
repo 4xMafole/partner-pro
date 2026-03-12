@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../backend/schema/enums/enums.dart';
@@ -76,7 +77,10 @@ class OfferRepository {
       final relationship =
           await _remote.getRelationshipForSubjectUid(subjectUid: buyerId);
       final relationshipData = _asMap(relationship?['relationship']);
-      final resolvedAgentId = _s(relationshipData['agentUid']);
+      final resolvedAgentId = _s(relationship?['agentId']) ??
+          _s(relationship?['agentUid']) ??
+          _s(relationshipData['agentUid']) ??
+          _s(relationshipData['agentId']);
 
       if (resolvedAgentId != null && resolvedAgentId.isNotEmpty) {
         final agentUser = await _remote.getUserByUid(uid: resolvedAgentId);
@@ -94,6 +98,7 @@ class OfferRepository {
 
         enriched['parties'] = updatedParties;
         enriched['agentId'] = resolvedAgentId;
+        enriched['agent_id'] = resolvedAgentId;
       }
     }
 
@@ -814,14 +819,16 @@ class OfferRepository {
           offerAfter['offerID'] as String? ?? offerAfter['id'] as String? ?? '';
       if (offerId.isEmpty) return;
 
-      final addressMap = (offerAfter['property'] as Map<String, dynamic>? ??
-              {})['address'] as Map<String, dynamic>? ??
-          {};
-      final propertyAddress = [
-        addressMap['street_number'],
-        addressMap['street_name'],
-        addressMap['city'],
-      ].whereType<String>().where((s) => s.trim().isNotEmpty).join(' ');
+      final propertyAddress = _propertyAddressText(offerAfter);
+      await _createOfferActivity(
+        offerBefore: offerBefore,
+        offerAfter: offerAfter,
+        actorUserId: actorUserId,
+        actorName: actorName,
+        offerId: offerId,
+        propertyAddress: propertyAddress,
+        revisionCreated: revisionCreated,
+      );
 
       final oldStatus = _parseStatus(offerBefore?['status']);
       final newStatus = _parseStatus(offerAfter['status']);
@@ -873,6 +880,109 @@ class OfferRepository {
     } catch (_) {
       // Notification delivery should not block core offer operations.
     }
+  }
+
+  Future<void> _createOfferActivity({
+    required Map<String, dynamic>? offerBefore,
+    required Map<String, dynamic> offerAfter,
+    required String actorUserId,
+    required String actorName,
+    required String offerId,
+    required String propertyAddress,
+    required bool revisionCreated,
+  }) async {
+    try {
+      final buyerId = _s(offerAfter['buyerId']) ??
+          _s(offerAfter['buyer_id']) ??
+          _s(_asMap(_asMap(offerAfter['parties'])['buyer'])['id']);
+      if (buyerId == null || buyerId.isEmpty) return;
+
+      final oldStatus = _parseStatus(offerBefore?['status']);
+      final newStatus = _parseStatus(offerAfter['status']);
+      final activityType = _offerActivityType(
+        oldStatus: oldStatus,
+        newStatus: newStatus,
+        actorUserId: actorUserId,
+        buyerId: buyerId,
+        revisionCreated: revisionCreated,
+      );
+      final activityLabel = _offerActivityLabel(activityType);
+
+      await FirebaseFirestore.instance.collection('activities').add({
+        'user_id': buyerId,
+        'buyerId': buyerId,
+        'agentId': _s(offerAfter['agentId']) ??
+            _s(offerAfter['agent_id']) ??
+            _s(_asMap(_asMap(offerAfter['parties'])['agent'])['id']),
+        'sellerId': _s(offerAfter['sellerId']) ??
+            _s(offerAfter['seller_id']) ??
+            _s(_asMap(_asMap(offerAfter['parties'])['seller'])['id']),
+        'offerId': offerId,
+        'propertyId':
+            _s(offerAfter['propertyId']) ?? _s(offerAfter['property_id']),
+        'propertyAddress': propertyAddress,
+        'activityType': activityType,
+        'activityLabel': activityLabel,
+        'actorUserId': actorUserId,
+        'actorName': actorName,
+        'status': _s(offerAfter['status']) ?? '',
+        'created_at': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
+  String _offerActivityType({
+    required Status? oldStatus,
+    required Status? newStatus,
+    required String actorUserId,
+    required String buyerId,
+    required bool revisionCreated,
+  }) {
+    if (oldStatus == null && newStatus == Status.Pending) {
+      return 'offer_submitted';
+    }
+    if (revisionCreated && oldStatus == newStatus) {
+      return actorUserId == buyerId
+          ? 'offer_updated'
+          : 'offer_revision_requested';
+    }
+    return switch (newStatus) {
+      Status.Accepted => 'offer_accepted',
+      Status.Declined =>
+        actorUserId == buyerId ? 'offer_withdrawn' : 'offer_declined',
+      Status.Pending when revisionCreated => 'offer_updated',
+      _ => 'offer_updated',
+    };
+  }
+
+  String _offerActivityLabel(String type) {
+    return switch (type) {
+      'offer_submitted' => 'Submitted Offer',
+      'offer_accepted' => 'Offer Accepted',
+      'offer_declined' => 'Offer Declined',
+      'offer_withdrawn' => 'Offer Withdrawn',
+      'offer_revision_requested' => 'Revision Requested',
+      _ => 'Offer Updated',
+    };
+  }
+
+  String _propertyAddressText(Map<String, dynamic> offer) {
+    final property = _asMap(offer['property']);
+    final addressMap = _asMap(property['address']);
+    final structured = [
+      _s(addressMap['street_number']) ?? _s(addressMap['streetNumber']),
+      _s(addressMap['street_direction']) ?? _s(addressMap['streetDirection']),
+      _s(addressMap['street_name']) ?? _s(addressMap['streetName']),
+      _s(addressMap['street_type']) ?? _s(addressMap['streetType']),
+      _s(addressMap['city']),
+    ].whereType<String>().where((s) => s.isNotEmpty).join(' ');
+    if (structured.isNotEmpty) return structured;
+
+    final location = _asMap(property['location']);
+    final locationAddress = _s(location['address']);
+    if (locationAddress != null) return locationAddress;
+
+    return _s(property['title']) ?? _s(property['propertyName']) ?? 'Property';
   }
 
   Set<String> _extractRecipientUserIds(

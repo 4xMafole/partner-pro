@@ -177,6 +177,8 @@ class DeleteNotification extends OfferEvent {
 class OfferState extends Equatable {
   final bool isLoading, isSubmitting, hasChanges;
   final String? error, successMessage;
+  final String? submittingOfferId;
+  final String? submissionAction;
   final List<OfferModel> offers;
   final List<OfferRevisionModel> revisions;
   final List<OfferNotificationModel> notifications;
@@ -189,6 +191,8 @@ class OfferState extends Equatable {
       this.isSubmitting = false,
       this.error,
       this.successMessage,
+      this.submittingOfferId,
+      this.submissionAction,
       this.offers = const [],
       this.revisions = const [],
       this.notifications = const [],
@@ -202,6 +206,8 @@ class OfferState extends Equatable {
       bool? isSubmitting,
       String? error,
       String? successMessage,
+      String? submittingOfferId,
+      String? submissionAction,
       List<OfferModel>? offers,
       List<OfferRevisionModel>? revisions,
       List<OfferNotificationModel>? notifications,
@@ -214,6 +220,8 @@ class OfferState extends Equatable {
         isSubmitting: isSubmitting ?? this.isSubmitting,
         error: error,
         successMessage: successMessage,
+        submittingOfferId: submittingOfferId,
+        submissionAction: submissionAction,
         offers: offers ?? this.offers,
         revisions: revisions ?? this.revisions,
         notifications: notifications ?? this.notifications,
@@ -230,6 +238,8 @@ class OfferState extends Equatable {
         isSubmitting,
         error,
         successMessage,
+        submittingOfferId,
+        submissionAction,
         offers,
         revisions,
         notifications,
@@ -288,58 +298,97 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
   }
 
   Future<void> _onCreate(CreateOffer e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: null,
+      submissionAction: 'create',
+    ));
     final r = await _repository.createOffer(
         offerData: e.offerData, requesterId: e.requesterId);
-    r.fold((f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
-        (result) async {
-      // Send notification to agent/seller about new offer
-      final parties = result['parties'] as Map<String, dynamic>? ??
-          e.offerData['parties'] as Map<String, dynamic>? ??
-          {};
-      final agent = parties['agent'] as Map<String, dynamic>? ?? {};
-      final agentId =
-          agent['id'] as String? ?? result['agentId'] as String? ?? '';
-      final propertyMap = result['property'] as Map<String, dynamic>? ??
-          e.offerData['property'] as Map<String, dynamic>? ??
-          {};
-      final propertyTitle = propertyMap['title'] as String? ??
-          propertyMap['propertyName'] as String? ??
-          '';
-      final offerId =
-          result['id'] as String? ?? result['offerID'] as String? ?? '';
-
-      if (agentId.isNotEmpty) {
-        try {
-          await _notificationService.createNotification(
-            userId: agentId,
-            title: 'New Offer Submitted',
-            body: 'A new offer has been submitted for $propertyTitle.',
-            type: 'offer',
-            data: {'offerId': offerId},
-          );
-        } catch (_) {}
-      }
-
+    if (r.isLeft()) {
+      final failure =
+          r.swap().getOrElse(() => throw StateError('Missing failure'));
       emit(state.copyWith(
-          isSubmitting: false,
-          successMessage: 'Offer created',
-          currentDraft: const {}));
-    });
+        isSubmitting: false,
+        error: failure.message,
+        submittingOfferId: null,
+        submissionAction: null,
+      ));
+      return;
+    }
+
+    final result = r.getOrElse(() => <String, dynamic>{});
+    final parties = result['parties'] as Map<String, dynamic>? ??
+        e.offerData['parties'] as Map<String, dynamic>? ??
+        {};
+    final agent = parties['agent'] as Map<String, dynamic>? ?? {};
+    final agentId =
+        agent['id'] as String? ?? result['agentId'] as String? ?? '';
+    final propertyMap = result['property'] as Map<String, dynamic>? ??
+        e.offerData['property'] as Map<String, dynamic>? ??
+        {};
+    final propertyTitle = propertyMap['title'] as String? ??
+        propertyMap['propertyName'] as String? ??
+        '';
+    final offerId =
+        result['id'] as String? ?? result['offerID'] as String? ?? '';
+
+    if (agentId.isNotEmpty) {
+      try {
+        await _notificationService.createNotification(
+          userId: agentId,
+          title: 'New Offer Submitted',
+          body: 'A new offer has been submitted for $propertyTitle.',
+          type: 'offer',
+          data: {'offerId': offerId},
+        );
+      } catch (_) {}
+    }
+
+    emit(state.copyWith(
+      isSubmitting: false,
+      successMessage: 'Offer created',
+      currentDraft: const {},
+      submittingOfferId: null,
+      submissionAction: null,
+    ));
   }
 
   Future<void> _onUpdate(UpdateOffer e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    final offerId =
+        (e.offerData['id'] ?? e.offerData['offerID'] ?? '').toString();
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: offerId.isEmpty ? null : offerId,
+      submissionAction: 'update',
+    ));
     final r = await _repository.updateOffer(
         offerData: e.offerData, requesterId: e.requesterId);
     r.fold(
-        (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+        (f) => emit(state.copyWith(
+            isSubmitting: false,
+            error: f.message,
+            submittingOfferId: null,
+            submissionAction: null)),
         (_) => emit(state.copyWith(
-            isSubmitting: false, successMessage: 'Offer updated')));
+            isSubmitting: false,
+            successMessage: 'Offer updated',
+            submittingOfferId: null,
+            submissionAction: null)));
   }
 
   Future<void> _onAccept(AcceptOffer e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: e.offerId,
+      submissionAction: 'accept',
+    ));
 
     // Find the offer to get its data
     final offer = state.offers.cast<OfferModel?>().firstWhere(
@@ -347,7 +396,12 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
           orElse: () => null,
         );
     if (offer == null) {
-      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      emit(state.copyWith(
+        isSubmitting: false,
+        error: 'Offer not found',
+        submittingOfferId: null,
+        submissionAction: null,
+      ));
       return;
     }
 
@@ -363,7 +417,11 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     );
 
     r.fold(
-      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (f) => emit(state.copyWith(
+          isSubmitting: false,
+          error: f.message,
+          submittingOfferId: null,
+          submissionAction: null)),
       (_) {
         // Update the offer in local state
         final updatedOffers = state.offers.map((o) {
@@ -390,20 +448,33 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
           isSubmitting: false,
           offers: updatedOffers,
           successMessage: 'Offer accepted',
+          submittingOfferId: null,
+          submissionAction: null,
         ));
       },
     );
   }
 
   Future<void> _onDecline(DeclineOffer e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: e.offerId,
+      submissionAction: 'decline',
+    ));
 
     final offer = state.offers.cast<OfferModel?>().firstWhere(
           (o) => o?.id == e.offerId,
           orElse: () => null,
         );
     if (offer == null) {
-      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      emit(state.copyWith(
+        isSubmitting: false,
+        error: 'Offer not found',
+        submittingOfferId: null,
+        submissionAction: null,
+      ));
       return;
     }
 
@@ -419,7 +490,11 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     );
 
     r.fold(
-      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (f) => emit(state.copyWith(
+          isSubmitting: false,
+          error: f.message,
+          submittingOfferId: null,
+          submissionAction: null)),
       (_) {
         final updatedOffers = state.offers.map((o) {
           if (o.id == e.offerId) {
@@ -444,20 +519,33 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
           isSubmitting: false,
           offers: updatedOffers,
           successMessage: 'Offer declined',
+          submittingOfferId: null,
+          submissionAction: null,
         ));
       },
     );
   }
 
   Future<void> _onWithdraw(WithdrawOffer e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: e.offerId,
+      submissionAction: 'withdraw',
+    ));
 
     final offer = state.offers.cast<OfferModel?>().firstWhere(
           (o) => o?.id == e.offerId,
           orElse: () => null,
         );
     if (offer == null) {
-      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      emit(state.copyWith(
+        isSubmitting: false,
+        error: 'Offer not found',
+        submittingOfferId: null,
+        submissionAction: null,
+      ));
       return;
     }
 
@@ -473,7 +561,11 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     );
 
     r.fold(
-      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (f) => emit(state.copyWith(
+          isSubmitting: false,
+          error: f.message,
+          submittingOfferId: null,
+          submissionAction: null)),
       (_) {
         final updatedOffers = state.offers.map((o) {
           if (o.id == e.offerId) {
@@ -499,6 +591,8 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
           isSubmitting: false,
           offers: updatedOffers,
           successMessage: 'Offer withdrawn',
+          submittingOfferId: null,
+          submissionAction: null,
         ));
       },
     );
@@ -506,14 +600,25 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
 
   Future<void> _onRequestRevision(
       RequestRevision e, Emitter<OfferState> emit) async {
-    emit(state.copyWith(isSubmitting: true, error: null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      submittingOfferId: e.offerId,
+      submissionAction: 'request_revision',
+    ));
 
     final offer = state.offers.cast<OfferModel?>().firstWhere(
           (o) => o?.id == e.offerId,
           orElse: () => null,
         );
     if (offer == null) {
-      emit(state.copyWith(isSubmitting: false, error: 'Offer not found'));
+      emit(state.copyWith(
+        isSubmitting: false,
+        error: 'Offer not found',
+        submittingOfferId: null,
+        submissionAction: null,
+      ));
       return;
     }
 
@@ -528,7 +633,11 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
     );
 
     r.fold(
-      (f) => emit(state.copyWith(isSubmitting: false, error: f.message)),
+      (f) => emit(state.copyWith(
+          isSubmitting: false,
+          error: f.message,
+          submittingOfferId: null,
+          submissionAction: null)),
       (_) {
         final buyerId =
             offer.buyerId.isNotEmpty ? offer.buyerId : offer.buyer.id;
@@ -546,6 +655,8 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
         emit(state.copyWith(
           isSubmitting: false,
           successMessage: 'Revision requested',
+          submittingOfferId: null,
+          submissionAction: null,
         ));
       },
     );

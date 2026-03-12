@@ -56,23 +56,26 @@ class PropertyRemoteDataSource {
           isEqualTo: isPendingUnderContract);
     }
 
-    if (minPrice != null) {
-      query = query.where('listPrice', isGreaterThanOrEqualTo: minPrice);
-    }
-    if (maxPrice != null) {
-      query = query.where('listPrice', isLessThanOrEqualTo: maxPrice);
-    }
-    if (minBeds != null) {
-      query = query.where('bedrooms', isGreaterThanOrEqualTo: minBeds);
-    }
-    if (maxBeds != null) {
-      query = query.where('bedrooms', isLessThanOrEqualTo: maxBeds);
-    }
-
     final snap = await query.limit(AppConstants.defaultPageSize).get();
-    return snap.docs
+    var properties = snap.docs
         .map((doc) => PropertyDataClass.fromJson({...doc.data(), 'id': doc.id}))
         .toList();
+
+    // Apply range filters client-side to avoid composite-index explosion.
+    if (minPrice != null) {
+      properties = properties.where((p) => p.listPrice >= minPrice).toList();
+    }
+    if (maxPrice != null) {
+      properties = properties.where((p) => p.listPrice <= maxPrice).toList();
+    }
+    if (minBeds != null) {
+      properties = properties.where((p) => p.bedrooms >= minBeds).toList();
+    }
+    if (maxBeds != null) {
+      properties = properties.where((p) => p.bedrooms <= maxBeds).toList();
+    }
+
+    return properties;
   }
 
   /// Fetches properties by Zillow/Zpid ID.
@@ -160,8 +163,9 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     final snap = await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
         .collection(AppConstants.favoritesCollection)
-        .where('user_id', isEqualTo: userId)
         .orderBy('created_at', descending: true)
         .get();
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
@@ -174,12 +178,23 @@ class PropertyRemoteDataSource {
     required String requesterId,
     String notes = '',
   }) async {
-    await _firestore.collection(AppConstants.favoritesCollection).add({
+    await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
+        .collection(AppConstants.favoritesCollection)
+        .add({
       'user_id': userId,
       'property_id': propertyId,
       'status': true,
       'notes': notes,
       'created_by': userId,
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    await _firestore.collection(AppConstants.activitiesCollection).add({
+      'user_id': userId,
+      'property_id': propertyId,
+      'activityType': 'favorite_added',
+      'activityLabel': 'Favorited Property',
       'created_at': FieldValue.serverTimestamp(),
     });
   }
@@ -191,14 +206,22 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     final snap = await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
         .collection(AppConstants.favoritesCollection)
-        .where('user_id', isEqualTo: userId)
         .where('property_id', isEqualTo: propertyId)
         .limit(1)
         .get();
     for (final doc in snap.docs) {
       await doc.reference.delete();
     }
+    await _firestore.collection(AppConstants.activitiesCollection).add({
+      'user_id': userId,
+      'property_id': propertyId,
+      'activityType': 'favorite_removed',
+      'activityLabel': 'Removed Favorite',
+      'created_at': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Updates favorite notes.
@@ -209,8 +232,9 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     final snap = await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
         .collection(AppConstants.favoritesCollection)
-        .where('user_id', isEqualTo: userId)
         .where('property_id', isEqualTo: propertyId)
         .limit(1)
         .get();
@@ -230,11 +254,14 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     final snap = await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
         .collection(AppConstants.savedSearchesCollection)
-        .where('user_id', isEqualTo: userId)
-        .orderBy('created_at', descending: true)
         .get();
-    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+    final data = snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+    data.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
+    return data;
   }
 
   /// Gets all active saved searches across users.
@@ -242,7 +269,7 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     final snap = await _firestore
-        .collection(AppConstants.savedSearchesCollection)
+        .collectionGroup(AppConstants.savedSearchesCollection)
         .where('status', isEqualTo: true)
         .get();
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
@@ -255,13 +282,24 @@ class PropertyRemoteDataSource {
     required Map<String, dynamic> propertyFilter,
     required String requesterId,
   }) async {
-    await _firestore.collection(AppConstants.savedSearchesCollection).add({
+    await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
+        .collection(AppConstants.savedSearchesCollection)
+        .add({
       'user_id': userId,
       'status': true,
       'search': {
         'input_field': inputField,
         'property': propertyFilter,
       },
+      'created_at': FieldValue.serverTimestamp(),
+    });
+    await _firestore.collection(AppConstants.activitiesCollection).add({
+      'user_id': userId,
+      'activityType': 'saved_search',
+      'activityLabel': 'Saved Search',
+      'search': {'input_field': inputField, 'property': propertyFilter},
       'created_at': FieldValue.serverTimestamp(),
     });
   }
@@ -272,6 +310,8 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(requesterId)
         .collection(AppConstants.savedSearchesCollection)
         .doc(searchId)
         .delete();
@@ -284,6 +324,8 @@ class PropertyRemoteDataSource {
     required String requesterId,
   }) async {
     await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(requesterId)
         .collection(AppConstants.savedSearchesCollection)
         .doc(searchId)
         .update(data);
@@ -432,24 +474,31 @@ class PropertyRemoteDataSource {
     required String propertyId,
     required String requesterId,
   }) async {
-    final snap = await _firestore
-        .collection(AppConstants.recentlyViewedCollection)
-        .where('user_id', isEqualTo: userId)
-        .where('property_id', isEqualTo: propertyId)
-        .limit(1)
-        .get();
+    final ref = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
+        .collection(AppConstants.recentlyViewedCollection);
+    final snap =
+        await ref.where('property_id', isEqualTo: propertyId).limit(1).get();
 
     if (snap.docs.isNotEmpty) {
       await snap.docs.first.reference.update({
         'viewed_at': FieldValue.serverTimestamp(),
       });
     } else {
-      await _firestore.collection(AppConstants.recentlyViewedCollection).add({
+      await ref.add({
         'user_id': userId,
         'property_id': propertyId,
         'viewed_at': FieldValue.serverTimestamp(),
       });
     }
+    await _firestore.collection(AppConstants.activitiesCollection).add({
+      'user_id': userId,
+      'property_id': propertyId,
+      'activityType': 'property_view',
+      'activityLabel': 'Viewed Property',
+      'created_at': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Get recently viewed property IDs for a user.
@@ -459,8 +508,9 @@ class PropertyRemoteDataSource {
     int limit = 20,
   }) async {
     final snap = await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
         .collection(AppConstants.recentlyViewedCollection)
-        .where('user_id', isEqualTo: userId)
         .orderBy('viewed_at', descending: true)
         .limit(limit)
         .get();

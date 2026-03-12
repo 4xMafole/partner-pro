@@ -22,7 +22,10 @@ class FirestoreDataSource {
       batch.set(docRef, {
         'inviterUid': inviterUid,
         'inviterName': inviterName,
-        'inviteeName': invitee['name'] ?? '',
+        'inviteeName': invitee['name'] ??
+            [invitee['first_name'], invitee['last_name']]
+                .where((e) => e != null && e.toString().isNotEmpty)
+                .join(' '),
         'inviteeEmail': invitee['email'] ?? '',
         'inviteePhoneNumber': invitee['phone'] ?? '',
         'inviteeType': invitee['type'] ?? 'buyer',
@@ -40,9 +43,8 @@ class FirestoreDataSource {
         .where('inviterUid', isEqualTo: inviterUid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => {...doc.data(), 'id': doc.id})
-            .toList());
+        .map((snap) =>
+            snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
   }
 
   /// Get all invitations for an agent (one-time fetch).
@@ -72,7 +74,8 @@ class FirestoreDataSource {
   }
 
   /// Get pending invitations for a buyer by email.
-  Future<List<Map<String, dynamic>>> getInvitationsForBuyer(String email) async {
+  Future<List<Map<String, dynamic>>> getInvitationsForBuyer(
+      String email) async {
     final snap = await _firestore
         .collection('invitations')
         .where('inviteeEmail', isEqualTo: email)
@@ -90,9 +93,8 @@ class FirestoreDataSource {
         .where('status', isEqualTo: 'pending')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => {...doc.data(), 'id': doc.id})
-            .toList());
+        .map((snap) =>
+            snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
   }
 
   // ── Relationships ──────────────────────────────────────────
@@ -124,19 +126,15 @@ class FirestoreDataSource {
         .collection('relationships')
         .where(field, isEqualTo: userId)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => {...doc.data(), 'id': doc.id})
-            .toList());
+        .map((snap) =>
+            snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
   }
 
   // ── Customers / Subscriptions ──────────────────────────────
 
   /// Get Stripe customer record for a user.
   Future<Map<String, dynamic>?> getCustomer(String userId) async {
-    final snap = await _firestore
-        .collection('customers')
-        .doc(userId)
-        .get();
+    final snap = await _firestore.collection('customers').doc(userId).get();
     return snap.exists ? snap.data() : null;
   }
 
@@ -148,18 +146,19 @@ class FirestoreDataSource {
         .collection('subscriptions')
         .where('status', isEqualTo: 'active')
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => {...doc.data(), 'id': doc.id})
-            .toList());
+        .map((snap) =>
+            snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
   }
 
   // ── Generic helpers ────────────────────────────────────────
 
   /// Stream a single document.
-  Stream<Map<String, dynamic>?> watchDocument(
-      String collection, String docId) {
-    return _firestore.collection(collection).doc(docId).snapshots().map(
-        (snap) => snap.exists ? {...snap.data()!, 'id': snap.id} : null);
+  Stream<Map<String, dynamic>?> watchDocument(String collection, String docId) {
+    return _firestore
+        .collection(collection)
+        .doc(docId)
+        .snapshots()
+        .map((snap) => snap.exists ? {...snap.data()!, 'id': snap.id} : null);
   }
 
   // ── Client Notes ───────────────────────────────────────────
@@ -176,6 +175,22 @@ class FirestoreDataSource {
       'note': note,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// Update an existing client note.
+  Future<void> updateClientNote({
+    required String noteId,
+    required String updatedNote,
+  }) async {
+    await _firestore.collection('client_notes').doc(noteId).update({
+      'note': updatedNote,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Delete a client note.
+  Future<void> deleteClientNote(String noteId) async {
+    await _firestore.collection('client_notes').doc(noteId).delete();
   }
 
   /// Get notes for a specific agent-client pair.

@@ -31,9 +31,9 @@ order: 10
 | **2.1** | Offer Complete Migration | ✅ Scoped Complete | Mar 10, 2026 | Core offer lifecycle, in-app notifications, revisions |
 | **2.2** | Offer Hardening | ⏳ Upcoming | — | External notifications, device-level integration tests |
 | **2.3** | Property Management | ✅ Complete | Mar 11, 2026 | Buyer-agent property search, alerts, and offer linkage |
-| **2.4** | User & Relationship | ⏳ Pending | — | CRM, favorites, active client tracking |
+| **2.4** | User & Relationship | ✅ Complete | Mar 12, 2026 | CRM, favorites, active client tracking |
 
-**Phase 2 Progress:** 2 of 4 sprints complete (2.1 and 2.3 closed, 2.2/2.4 pending)
+**Phase 2 Progress:** 3 of 4 sprints complete (2.1, 2.3, and 2.4 closed; 2.2 pending)
 
 ---
 
@@ -354,26 +354,26 @@ firestore/
 
 #### Sprint 2.4: User & Relationship Management (1 week)
 
-**Current State:** 20% migrated (models basic)  
+**Current State:** ✅ Completed  
 **Target State:** 90% migrated (admin tools phase 3)
 
 **Tasks:**
-- [ ] Complete user profile management
+- [x] Complete user profile management
   - Profile edit screens
   - Role-specific information (agent license, seller details)
   - Profile image upload & storage
   - Password reset flow
-- [ ] Implement buyer-agent relationship system
+- [x] Implement buyer-agent relationship system
   - Agent invitation to buyers
   - Buyer acceptance flow
   - Relationship status tracking (active, archived)
   - Communication link management
-- [ ] Implement agent CRM features
+- [x] Implement agent CRM features
   - Agent dashboard showing their clients
   - Activity feed per client
   - Saved notes / follow-up tracking
   - Export client list
-- [ ] Complete favorites & saved searches
+- [x] Complete favorites & saved searches
   - Recent properties view
   - Favorite properties with sync
   - Saved searches with alert triggers

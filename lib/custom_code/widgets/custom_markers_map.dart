@@ -104,7 +104,7 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
         },
       );
       newMarkerMap[property.id] = marker;
-        }
+    }
 
     if (mounted) {
       setState(() {
@@ -230,7 +230,7 @@ class _CustomMarkersMapState extends State<CustomMarkersMap> {
       _buildPropertyCard(property),
       map.LatLng(property.latitude, property.longitude),
     );
-    }
+  }
 
   Widget _buildPropertyCard(PropertyDataClassStruct property) {
     return GestureDetector(

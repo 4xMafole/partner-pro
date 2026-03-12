@@ -55,11 +55,12 @@ void main() {
       'silently handles errors without emitting error state',
       build: () {
         when(() => mockRepository.recordPropertyView(
-              userId: 'user1',
-              propertyId: 'prop1',
-              requesterId: 'user1',
-            )).thenAnswer((_) async =>
-            const Left(ServerFailure(message: 'Write failed')));
+                  userId: 'user1',
+                  propertyId: 'prop1',
+                  requesterId: 'user1',
+                ))
+            .thenAnswer((_) async =>
+                const Left(ServerFailure(message: 'Write failed')));
         return bloc;
       },
       act: (bloc) => bloc.add(const RecordPropertyView(
@@ -74,8 +75,16 @@ void main() {
 
   group('PropertyBloc - LoadRecentlyViewed', () {
     final recentItems = [
-      {'propertyId': 'p1', 'propertyName': '123 Main St', 'viewedAt': '2024-01-10'},
-      {'propertyId': 'p2', 'propertyName': '456 Oak Ave', 'viewedAt': '2024-01-09'},
+      {
+        'propertyId': 'p1',
+        'propertyName': '123 Main St',
+        'viewedAt': '2024-01-10'
+      },
+      {
+        'propertyId': 'p2',
+        'propertyName': '456 Oak Ave',
+        'viewedAt': '2024-01-09'
+      },
     ];
 
     blocTest<PropertyBloc, PropertyState>(
@@ -87,8 +96,8 @@ void main() {
             )).thenAnswer((_) async => Right(recentItems));
         return bloc;
       },
-      act: (bloc) => bloc.add(
-          const LoadRecentlyViewed(userId: 'user1', requesterId: 'user1')),
+      act: (bloc) => bloc
+          .add(const LoadRecentlyViewed(userId: 'user1', requesterId: 'user1')),
       expect: () => [
         PropertyState(recentlyViewed: recentItems),
       ],
@@ -104,14 +113,15 @@ void main() {
       'emits error when fetching recently viewed fails',
       build: () {
         when(() => mockRepository.getRecentlyViewed(
-              userId: 'user1',
-              requesterId: 'user1',
-            )).thenAnswer((_) async =>
-            const Left(ServerFailure(message: 'Fetch failed')));
+                  userId: 'user1',
+                  requesterId: 'user1',
+                ))
+            .thenAnswer((_) async =>
+                const Left(ServerFailure(message: 'Fetch failed')));
         return bloc;
       },
-      act: (bloc) => bloc.add(
-          const LoadRecentlyViewed(userId: 'user1', requesterId: 'user1')),
+      act: (bloc) => bloc
+          .add(const LoadRecentlyViewed(userId: 'user1', requesterId: 'user1')),
       expect: () => [
         const PropertyState(error: 'Fetch failed'),
       ],

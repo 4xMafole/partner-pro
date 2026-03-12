@@ -40,7 +40,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '59466540742',
     projectId: 'partnerpro-dev',
     storageBucket: 'partnerpro-dev.firebasestorage.app',
-    iosClientId: '59466540742-5uoqp2jsg61p8bitss3ivapbbs43rfqf.apps.googleusercontent.com',
+    iosClientId:
+        '59466540742-5uoqp2jsg61p8bitss3ivapbbs43rfqf.apps.googleusercontent.com',
     iosBundleId: 'com.automaterealestate.partnerpro.dev',
   );
 

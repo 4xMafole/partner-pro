@@ -206,7 +206,10 @@ class CancelShowing extends PropertyEvent {
 
 class RecordPropertyView extends PropertyEvent {
   final String userId, propertyId, requesterId;
-  const RecordPropertyView({required this.userId, required this.propertyId, required this.requesterId});
+  const RecordPropertyView(
+      {required this.userId,
+      required this.propertyId,
+      required this.requesterId});
   @override
   List<Object?> get props => [userId, propertyId, requesterId];
 }
@@ -526,7 +529,9 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
   Future<void> _onRecordPropertyView(
       RecordPropertyView event, Emitter<PropertyState> emit) async {
     await _repository.recordPropertyView(
-        userId: event.userId, propertyId: event.propertyId, requesterId: event.requesterId);
+        userId: event.userId,
+        propertyId: event.propertyId,
+        requesterId: event.requesterId);
   }
 
   Future<void> _onLoadRecentlyViewed(

@@ -125,13 +125,14 @@ void main() {
       'emits [loading, error] when accept fails',
       build: () {
         when(() => mockRepository.acceptInvitation(
-              invitationId: 'inv1',
-              agentId: 'agent1',
-              buyerId: 'buyer1',
-              agentName: 'Agent A',
-              buyerName: 'Buyer B',
-            )).thenAnswer((_) async =>
-            const Left(FirestoreFailure(message: 'Failed to accept')));
+                  invitationId: 'inv1',
+                  agentId: 'agent1',
+                  buyerId: 'buyer1',
+                  agentName: 'Agent A',
+                  buyerName: 'Buyer B',
+                ))
+            .thenAnswer((_) async =>
+                const Left(FirestoreFailure(message: 'Failed to accept')));
         return bloc;
       },
       act: (bloc) => bloc.add(event),
@@ -199,15 +200,22 @@ void main() {
     blocTest<AgentBloc, AgentState>(
       'emits [loading, loaded] with client detail, notes, and filtered activities',
       build: () {
-        when(() =>
-                mockRepository.fetchUserAccount(id: clientId))
+        when(() => mockRepository.fetchUserAccount(id: clientId))
             .thenAnswer((_) async => Right(clientProfile));
         when(() => mockRepository.getClientNotes(
-                agentId: agentId, clientId: clientId))
-            .thenAnswer((_) async => Right(clientNotes));
+            agentId: agentId,
+            clientId: clientId)).thenAnswer((_) async => Right(clientNotes));
         when(() => mockRepository.getClientActivities(
                 agentId: agentId, requesterId: agentId))
             .thenAnswer((_) async => Right(allActivities));
+        when(() => mockRepository.getClientPropertyIntelligence(
+                clientId: clientId, agentId: agentId))
+            .thenAnswer((_) async => const Right({
+                  'suggestedProperties': <Map<String, dynamic>>[],
+                  'favoriteProperties': <Map<String, dynamic>>[],
+                  'savedSearches': <Map<String, dynamic>>[],
+                  'recentlyViewedProperties': <Map<String, dynamic>>[],
+                }));
         return bloc;
       },
       act: (bloc) => bloc.add(const LoadClientDetail(
@@ -226,16 +234,22 @@ void main() {
     blocTest<AgentBloc, AgentState>(
       'emits [loading, error] when profile fetch fails',
       build: () {
-        when(() =>
-                mockRepository.fetchUserAccount(id: clientId))
-            .thenAnswer((_) async =>
-                const Left(ServerFailure(message: 'Not found')));
+        when(() => mockRepository.fetchUserAccount(id: clientId)).thenAnswer(
+            (_) async => const Left(ServerFailure(message: 'Not found')));
         when(() => mockRepository.getClientNotes(
-                agentId: agentId, clientId: clientId))
-            .thenAnswer((_) async => const Right([]));
+            agentId: agentId,
+            clientId: clientId)).thenAnswer((_) async => const Right([]));
         when(() => mockRepository.getClientActivities(
-                agentId: agentId, requesterId: agentId))
-            .thenAnswer((_) async => const Right([]));
+            agentId: agentId,
+            requesterId: agentId)).thenAnswer((_) async => const Right([]));
+        when(() => mockRepository.getClientPropertyIntelligence(
+                clientId: clientId, agentId: agentId))
+            .thenAnswer((_) async => const Right({
+                  'suggestedProperties': <Map<String, dynamic>>[],
+                  'favoriteProperties': <Map<String, dynamic>>[],
+                  'savedSearches': <Map<String, dynamic>>[],
+                  'recentlyViewedProperties': <Map<String, dynamic>>[],
+                }));
         return bloc;
       },
       act: (bloc) => bloc.add(const LoadClientDetail(
@@ -265,8 +279,7 @@ void main() {
               note: note,
             )).thenAnswer((_) async => const Right(null));
         // After adding note, bloc dispatches LoadClientDetail
-        when(() =>
-                mockRepository.fetchUserAccount(id: clientId))
+        when(() => mockRepository.fetchUserAccount(id: clientId))
             .thenAnswer((_) async => Right({'uid': clientId}));
         when(() => mockRepository.getClientNotes(
                 agentId: agentId, clientId: clientId))
@@ -274,8 +287,16 @@ void main() {
                   {'note': note, 'createdAt': '2024-01-02'}
                 ]));
         when(() => mockRepository.getClientActivities(
-                agentId: agentId, requesterId: agentId))
-            .thenAnswer((_) async => const Right([]));
+            agentId: agentId,
+            requesterId: agentId)).thenAnswer((_) async => const Right([]));
+        when(() => mockRepository.getClientPropertyIntelligence(
+                clientId: clientId, agentId: agentId))
+            .thenAnswer((_) async => const Right({
+                  'suggestedProperties': <Map<String, dynamic>>[],
+                  'favoriteProperties': <Map<String, dynamic>>[],
+                  'savedSearches': <Map<String, dynamic>>[],
+                  'recentlyViewedProperties': <Map<String, dynamic>>[],
+                }));
         return bloc;
       },
       act: (bloc) => bloc.add(const AddClientNote(
@@ -307,11 +328,12 @@ void main() {
       'emits [sending, error] when adding note fails',
       build: () {
         when(() => mockRepository.addClientNote(
-              agentId: agentId,
-              clientId: clientId,
-              note: note,
-            )).thenAnswer((_) async =>
-            const Left(FirestoreFailure(message: 'Write failed')));
+                  agentId: agentId,
+                  clientId: clientId,
+                  note: note,
+                ))
+            .thenAnswer((_) async =>
+                const Left(FirestoreFailure(message: 'Write failed')));
         return bloc;
       },
       act: (bloc) => bloc.add(const AddClientNote(

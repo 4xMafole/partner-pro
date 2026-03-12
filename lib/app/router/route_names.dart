@@ -30,6 +30,7 @@ abstract final class RouteNames {
   static const agentProfile = '/agent/profile';
 
   // ── Standalone ──
+  static const search = '/search';
   static const propertyDetails = '/property/:id';
   static const offerDetails = '/offer/:id';
   static const editProfile = '/profile/edit';

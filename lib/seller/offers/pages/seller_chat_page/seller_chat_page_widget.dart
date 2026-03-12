@@ -244,7 +244,7 @@ class _SellerChatPageWidgetState extends State<SellerChatPageWidget> {
                           Builder(
                             builder: (context) {
                               if (_model.chatTextFieldTextController.text !=
-                                      '') {
+                                  '') {
                                 return Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 8.0, 0.0),

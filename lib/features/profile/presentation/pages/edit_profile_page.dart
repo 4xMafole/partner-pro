@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 import '../../../../app/di/injection.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -29,6 +30,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController _mlsController;
   late final TextEditingController _brokerageController;
 
+  final phoneFormatter = MaskTextInputFormatter(
+      mask: '(###) ###-####', filter: {"#": RegExp(r'[0-9]')});
+
   bool _isUploadingImage = false;
   String? _localImagePath;
 
@@ -45,11 +49,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final user = authState is AuthAuthenticated ? authState.user : null;
     final agentProfile = context.read<AgentBloc>().state.agentProfile;
 
-    _firstNameController = TextEditingController(text: user?.firstName ?? agentProfile?['first_name'] ?? '');
-    _lastNameController = TextEditingController(text: user?.lastName ?? agentProfile?['last_name'] ?? '');
-    _phoneController = TextEditingController(text: user?.phoneNumber ?? agentProfile?['phone_number'] ?? '');
-    _mlsController = TextEditingController(text: agentProfile?['mls_id'] as String? ?? '');
-    _brokerageController = TextEditingController(text: agentProfile?['brokerage_name'] as String? ?? '');
+    _firstNameController = TextEditingController(
+        text: user?.firstName ?? agentProfile?['first_name'] ?? '');
+    _lastNameController = TextEditingController(
+        text: user?.lastName ?? agentProfile?['last_name'] ?? '');
+    _phoneController = TextEditingController(
+        text: user?.phoneNumber ?? agentProfile?['phone_number'] ?? '');
+    _mlsController =
+        TextEditingController(text: agentProfile?['mls_id'] as String? ?? '');
+    _brokerageController = TextEditingController(
+        text: agentProfile?['brokerage_name'] as String? ?? '');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null && agentProfile == null) {
@@ -74,10 +83,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (user == null) return;
 
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 80);
+    final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80);
     if (picked == null) return;
 
-    setState(() { _isUploadingImage = true; _localImagePath = picked.path; });
+    setState(() {
+      _isUploadingImage = true;
+      _localImagePath = picked.path;
+    });
 
     try {
       final bytes = await picked.readAsBytes();
@@ -85,15 +101,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final uploaded = await fileService.uploadFile(
         userId: user.uid,
         directory: 'profile',
-        fileName: 'avatar_${DateTime.now().millisecondsSinceEpoch}.${picked.path.split('.').last}',
+        fileName:
+            'avatar_${DateTime.now().millisecondsSinceEpoch}.${picked.path.split('.').last}',
         bytes: bytes,
       );
 
       context.read<AgentBloc>().add(UpdateAgentProfile(
-        userData: {'photo_url': uploaded.downloadUrl},
-      ));
+            userData: {'photo_url': uploaded.downloadUrl},
+          ));
     } catch (e) {
-      if (mounted) context.showSnackBar('Failed to upload image', isError: true);
+      if (mounted)
+        context.showSnackBar('Failed to upload image', isError: true);
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
     }
@@ -126,7 +144,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
               return TextButton(
                 onPressed: state.isLoading ? null : _saveProfile,
                 child: state.isLoading
-                    ? SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2))
+                    ? SizedBox(
+                        width: 16.w,
+                        height: 16.w,
+                        child: const CircularProgressIndicator(strokeWidth: 2))
                     : const Text('Save'),
               );
             },
@@ -176,11 +197,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         children: [
                           BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, authState) {
-                              final user = authState is AuthAuthenticated ? authState.user : null;
+                              final user = authState is AuthAuthenticated
+                                  ? authState.user
+                                  : null;
                               if (_localImagePath != null) {
                                 return CircleAvatar(
                                   radius: 48.r,
-                                  backgroundImage: FileImage(File(_localImagePath!)),
+                                  backgroundImage:
+                                      FileImage(File(_localImagePath!)),
                                 );
                               }
                               return AppAvatar(
@@ -198,36 +222,44 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border:
+                                    Border.all(color: Colors.white, width: 2),
                               ),
                               child: _isUploadingImage
-                                  ? SizedBox(width: 16.sp, height: 16.sp, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                  : Icon(LucideIcons.camera, size: 16.sp, color: Colors.white),
+                                  ? SizedBox(
+                                      width: 16.sp,
+                                      height: 16.sp,
+                                      child: const CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white))
+                                  : Icon(LucideIcons.camera,
+                                      size: 16.sp, color: Colors.white),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-
                   SizedBox(height: 32.h),
-
                   AppTextField(
                     controller: _firstNameController,
                     label: 'First Name',
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
                   ),
                   SizedBox(height: 16.h),
                   AppTextField(
                     controller: _lastNameController,
                     label: 'Last Name',
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
                   ),
                   SizedBox(height: 16.h),
                   AppTextField(
                     controller: _phoneController,
                     label: 'Phone Number',
+                    hint: '(555) 555-5555',
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [phoneFormatter],
                   ),
                   if (_isAgent) ...[
                     SizedBox(height: 16.h),
