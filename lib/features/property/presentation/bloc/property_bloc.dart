@@ -507,7 +507,8 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
       'user_id': event.userId,
       'property_id': event.propertyId,
       'date': event.date,
-      'time': event.time
+      'time': event.time,
+      'status': 'pending',
     });
     r.fold(
         (f) => emit(state.copyWith(error: f.message)),

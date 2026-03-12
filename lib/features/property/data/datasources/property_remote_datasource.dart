@@ -403,6 +403,7 @@ class PropertyRemoteDataSource {
     final docRef =
         await _firestore.collection(AppConstants.showingsCollection).add({
       ...showingData,
+      'status': showingData['status'] ?? 'pending',
       'created_at': FieldValue.serverTimestamp(),
     });
     final snap = await docRef.get();

@@ -14,6 +14,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final currentUser =
+        authState is AuthAuthenticated ? authState.user : null;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
@@ -78,6 +81,44 @@ class SettingsPage extends StatelessWidget {
               ),
             ],
           ),
+          if (currentUser?.role == 'agent') ...[  
+            SizedBox(height: 16.h),
+            _SettingsSection(
+              title: 'Agent Workflow',
+              children: [
+                _SettingsSwitchTile(
+                  icon: LucideIcons.moon,
+                  title: 'Holiday Mode',
+                  subtitle:
+                      'Offers will queue and notify you on return. Perfect for vacations.',
+                  value: currentUser?.isOutOfOffice ?? false,
+                  onChanged: (val) {
+                    if (currentUser == null) return;
+                    context.read<AuthBloc>().add(
+                          AuthEvent.updateProfile(
+                            currentUser.copyWith(isOutOfOffice: val),
+                          ),
+                        );
+                  },
+                ),
+                _SettingsSwitchTile(
+                  icon: LucideIcons.zap,
+                  title: 'Auto-Approve Showings',
+                  subtitle:
+                      'Skip manual review and instantly confirm showing requests.',
+                  value: currentUser?.autoApproveShowings ?? false,
+                  onChanged: (val) {
+                    if (currentUser == null) return;
+                    context.read<AuthBloc>().add(
+                          AuthEvent.updateProfile(
+                            currentUser.copyWith(autoApproveShowings: val),
+                          ),
+                        );
+                  },
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 32.h),
           SizedBox(
             width: double.infinity,
@@ -150,6 +191,36 @@ class _SettingsTile extends StatelessWidget {
       trailing: Icon(LucideIcons.chevronRight,
           size: 18.sp, color: AppColors.textTertiary),
       onTap: onTap,
+    );
+  }
+}
+
+class _SettingsSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _SettingsSwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      secondary: Icon(icon, size: 20.sp, color: AppColors.textSecondary),
+      title: Text(title, style: AppTypography.titleMedium),
+      subtitle: Text(
+        subtitle,
+        style:
+            AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+      ),
+      value: value,
+      onChanged: onChanged,
     );
   }
 }

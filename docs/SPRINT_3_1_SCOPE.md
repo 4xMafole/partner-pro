@@ -22,7 +22,7 @@ Allow agents to step away without blocking their buyers' offers.
 Build the structural foundation for requesting and approving property tours.
 - [ ] Define the `showings` Firestore collection schema (Status: `pending`, `agent_approved`, `dispatched`, `completed`, `canceled`).
 - [ ] Add an `autoApproveShowings` toggle inside the Buyer-Agent relationship tracking.
-- [ ] Create the Buyer "Request Showing" bottom sheet / UI flow.
+- [x] Create the Buyer "Request Showing" bottom sheet / UI flow. *(Confirmed via Phase 2 `ScheduleTourSheet` that triggers `CreateShowing` BLoC)*
 - [ ] Build the Agent "Approve Showing" confirmation UI (applicable if `autoApproveShowings` is false).
 
 ### 3) Stripe Re-Integration Foundation

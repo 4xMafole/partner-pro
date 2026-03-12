@@ -39,6 +39,9 @@ class UserModel with _$UserModel {
     MlsType? mlsType,
     String? crmEmail,
     CrmType? crmType,
+    // Agent workflow settings (Sprint 3.1)
+    @Default(false) bool isOutOfOffice,
+    @Default(false) bool autoApproveShowings,
   }) = _UserModel;
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);

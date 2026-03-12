@@ -8,6 +8,7 @@ import '../../data/models/offer_notification_model.dart';
 import '../../data/models/offer_revision_model.dart';
 import '../../data/repositories/offer_notification_repository.dart';
 import '../../data/repositories/offer_repository.dart';
+import '../../../auth/data/repositories/auth_repository.dart';
 import '../../../notifications/data/services/notification_service.dart';
 
 abstract class OfferEvent extends Equatable {
@@ -255,9 +256,10 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
   final OfferRepository _repository;
   final OfferNotificationRepository _notificationRepository;
   final NotificationService _notificationService;
+  final AuthRepository _authRepository;
 
-  OfferBloc(
-      this._repository, this._notificationRepository, this._notificationService)
+  OfferBloc(this._repository, this._notificationRepository,
+      this._notificationService, this._authRepository)
       : super(const OfferState()) {
     on<LoadUserOffers>(_onLoadUser);
     on<LoadAgentOffers>(_onLoadAgent);
@@ -337,10 +339,25 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
 
     if (agentId.isNotEmpty) {
       try {
+        // Sprint 3.1: Check agent out-of-office status to customise notification
+        String notifTitle = 'New Offer Submitted';
+        String notifBody =
+            'A new offer has been submitted for $propertyTitle.';
+        final agentResult = await _authRepository.getUserProfile(agentId);
+        agentResult.fold(
+          (_) {},
+          (agentProfile) {
+            if (agentProfile.isOutOfOffice) {
+              notifTitle = '[Away] New Offer Submitted';
+              notifBody =
+                  'An offer for $propertyTitle arrived while you are away. Review it on your return.';
+            }
+          },
+        );
         await _notificationService.createNotification(
           userId: agentId,
-          title: 'New Offer Submitted',
-          body: 'A new offer has been submitted for $propertyTitle.',
+          title: notifTitle,
+          body: notifBody,
           type: 'offer',
           data: {'offerId': offerId},
         );
