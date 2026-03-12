@@ -11,12 +11,14 @@ class MemberContact {
   final String name;
   final String email;
   final String? photoUrl;
+  final bool isSuggested;
 
   const MemberContact({
     required this.id,
     required this.name,
     required this.email,
     this.photoUrl,
+    this.isSuggested = false,
   });
 }
 
@@ -40,6 +42,7 @@ class MemberSuggestionSheet extends StatefulWidget {
 class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
   final _searchCtrl = TextEditingController();
   List<MemberContact> _filtered = [];
+  bool _showOnlyAvailable = false;
 
   @override
   void initState() {
@@ -57,9 +60,18 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
     final lower = query.toLowerCase();
     setState(() {
       _filtered = widget.contacts.where((c) {
-        return c.name.toLowerCase().contains(lower) ||
+        final matchesSearch = c.name.toLowerCase().contains(lower) ||
             c.email.toLowerCase().contains(lower);
+        final matchesFilter = !_showOnlyAvailable || !c.isSuggested;
+        return matchesSearch && matchesFilter;
       }).toList();
+    });
+  }
+
+  void _toggleFilter() {
+    setState(() {
+      _showOnlyAvailable = !_showOnlyAvailable;
+      _onSearch(_searchCtrl.text);
     });
   }
 
@@ -74,7 +86,6 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               margin: EdgeInsets.only(top: 12.h),
@@ -101,12 +112,55 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 16.h),
-                AppTextField(
-                  controller: _searchCtrl,
-                  hint: 'Search contacts...',
-                  prefixIcon: Icons.search,
-                  onChanged: _onSearch,
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppTextField(
+                        controller: _searchCtrl,
+                        hint: 'Search clients...',
+                        prefixIcon: Icons.search,
+                        onChanged: _onSearch,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    GestureDetector(
+                      onTap: _toggleFilter,
+                      child: Container(
+                        padding: EdgeInsets.all(12.r),
+                        decoration: BoxDecoration(
+                          color: _showOnlyAvailable
+                              ? AppColors.primary.withValues(alpha: 0.1)
+                              : AppColors.divider,
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: _showOnlyAvailable
+                                ? AppColors.primary
+                                : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.filter_list,
+                          color: _showOnlyAvailable
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                if (_showOnlyAvailable)
+                  Padding(
+                    padding: EdgeInsets.only(top: 8.h),
+                    child: Text(
+                      'Showing available clients only',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.primary,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -115,7 +169,7 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
             child: _filtered.isEmpty
                 ? Center(
                     child: Text(
-                      'No contacts found',
+                      'No clients found',
                       style: AppTypography.bodyMedium
                           .copyWith(color: AppColors.textTertiary),
                     ),
@@ -129,6 +183,7 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
                       final contact = _filtered[i];
                       return ListTile(
                         contentPadding: EdgeInsets.symmetric(vertical: 4.h),
+                        enabled: !contact.isSuggested,
                         leading: CircleAvatar(
                           radius: 22.r,
                           backgroundColor:
@@ -148,17 +203,29 @@ class _MemberSuggestionSheetState extends State<MemberSuggestionSheet> {
                         ),
                         title:
                             Text(contact.name, style: AppTypography.bodyMedium),
-                        subtitle: Text(
-                          contact.email,
-                          style: AppTypography.bodySmall
-                              .copyWith(color: AppColors.textSecondary),
+                        trailing: Icon(
+                          contact.isSuggested ? Icons.check_circle : Icons.send,
+                          color: contact.isSuggested
+                              ? AppColors.success
+                              : AppColors.primary,
+                          size: 20,
                         ),
-                        trailing: const Icon(Icons.send,
-                            color: AppColors.primary, size: 20),
-                        onTap: () {
-                          widget.onSelected(contact);
-                          Navigator.of(context).pop(contact);
-                        },
+                        subtitle: Text(
+                          contact.isSuggested
+                              ? 'Already suggested'
+                              : contact.email,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: contact.isSuggested
+                                ? AppColors.success
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        onTap: contact.isSuggested
+                            ? null
+                            : () {
+                                widget.onSelected(contact);
+                                Navigator.of(context).pop(contact);
+                              },
                       );
                     },
                   ),

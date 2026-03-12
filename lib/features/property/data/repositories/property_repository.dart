@@ -654,6 +654,34 @@ class PropertyRepository {
     };
   }
 
+  // -- Recently Viewed --
+
+  Future<Either<Failure, void>> recordPropertyView({
+    required String userId,
+    required String propertyId,
+    required String requesterId,
+  }) async {
+    try {
+      await _remote.recordPropertyView(
+          userId: userId, propertyId: propertyId, requesterId: requesterId);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<Map<String, dynamic>>>> getRecentlyViewed({
+    required String userId,
+    required String requesterId,
+  }) async {
+    try {
+      return Right(await _remote.getRecentlyViewed(
+          userId: userId, requesterId: requesterId));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
   String _buildSearchCacheKey({
     String? zipCode,
     String? city,

@@ -18,8 +18,11 @@ class RoleSelectionPage extends StatelessWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          if (state.user.role == 'agent') { context.go(RouteNames.agentDashboard); }
-          else { context.go(RouteNames.buyerDashboard); }
+          if (state.user.role == 'agent') {
+            context.go(RouteNames.agentDashboard);
+          } else {
+            context.go(RouteNames.buyerDashboard);
+          }
         }
       },
       child: Scaffold(
@@ -33,7 +36,8 @@ class RoleSelectionPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 40.h),
-                      Text('Choose\nYour Role', style: AppTypography.displayLarge)
+                      Text('Choose\nYour Role',
+                              style: AppTypography.displayLarge)
                           .animate()
                           .fadeIn(duration: 500.ms)
                           .slideX(begin: -0.1),
@@ -50,9 +54,17 @@ class RoleSelectionPage extends StatelessWidget {
                               description:
                                   'Search properties, save favorites, make offers, and manage your home buying journey.',
                               gradient: AppColors.primaryGradient,
-                              onTap: () => context
-                                  .read<AuthBloc>()
-                                  .add(const AuthUpdateRole(role: 'buyer')))
+                              onTap: () {
+                                final state = context.read<AuthBloc>().state;
+                                if (state is AuthAuthenticated) {
+                                  context
+                                      .read<AuthBloc>()
+                                      .add(const AuthUpdateRole(role: 'buyer'));
+                                } else {
+                                  context.push(
+                                      '${RouteNames.register}?role=buyer');
+                                }
+                              })
                           .animate()
                           .fadeIn(delay: 300.ms, duration: 500.ms)
                           .slideY(begin: 0.15),
@@ -66,16 +78,20 @@ class RoleSelectionPage extends StatelessWidget {
                                 AppColors.secondary,
                                 AppColors.secondaryDark
                               ]),
-                              onTap: () => context
-                                  .read<AuthBloc>()
-                                  .add(const AuthUpdateRole(role: 'agent')))
+                              onTap: () {
+                                final state = context.read<AuthBloc>().state;
+                                if (state is AuthAuthenticated) {
+                                  context
+                                      .read<AuthBloc>()
+                                      .add(const AuthUpdateRole(role: 'agent'));
+                                } else {
+                                  context.push(
+                                      '${RouteNames.register}?role=agent');
+                                }
+                              })
                           .animate()
                           .fadeIn(delay: 500.ms, duration: 500.ms)
                           .slideY(begin: 0.15),
-                      SizedBox(height: 24.h),
-                      Center(
-                          child: Text('You can change this later in settings',
-                              style: AppTypography.caption)),
                       SizedBox(height: 24.h),
                     ]),
               ),
@@ -92,23 +108,49 @@ class _RoleCard extends StatelessWidget {
   final String title, description;
   final Gradient gradient;
   final VoidCallback onTap;
-  const _RoleCard({required this.icon, required this.title, required this.description, required this.gradient, required this.onTap});
+  const _RoleCard(
+      {required this.icon,
+      required this.title,
+      required this.description,
+      required this.gradient,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap, borderRadius: BorderRadius.circular(20.r),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
         padding: EdgeInsets.all(24.w),
-        decoration: BoxDecoration(gradient: gradient, borderRadius: BorderRadius.circular(20.r), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))]),
+        decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8))
+            ]),
         child: Row(children: [
-          Container(padding: EdgeInsets.all(16.w), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16.r)), child: Icon(icon, size: 32.sp, color: Colors.white)),
+          Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16.r)),
+              child: Icon(icon, size: 32.sp, color: Colors.white)),
           SizedBox(width: 20.w),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: AppTypography.headlineMedium.copyWith(color: Colors.white)),
-            SizedBox(height: 4.h),
-            Text(description, style: AppTypography.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.85))),
-          ])),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(title,
+                    style: AppTypography.headlineMedium
+                        .copyWith(color: Colors.white)),
+                SizedBox(height: 4.h),
+                Text(description,
+                    style: AppTypography.bodySmall
+                        .copyWith(color: Colors.white.withValues(alpha: 0.85))),
+              ])),
           Icon(LucideIcons.chevronRight, color: Colors.white, size: 24.sp),
         ]),
       ),

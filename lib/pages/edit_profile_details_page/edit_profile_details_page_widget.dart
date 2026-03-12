@@ -264,8 +264,9 @@ class _EditProfileDetailsPageWidgetState
                                       }
                                     }
 
-                                    if (_model.uploadedFileUrl_uploadDataUserPhoto !=
-                                            '') {
+                                    if (_model
+                                            .uploadedFileUrl_uploadDataUserPhoto !=
+                                        '') {
                                       await currentUserReference!
                                           .update(createUsersRecordData(
                                         photoUrl: _model
@@ -287,8 +288,9 @@ class _EditProfileDetailsPageWidgetState
                                         () {
                                           if (currentUserPhoto != '') {
                                             return currentUserPhoto;
-                                          } else if (_model.uploadedFileUrl_uploadDataUserPhoto !=
-                                                  '') {
+                                          } else if (_model
+                                                  .uploadedFileUrl_uploadDataUserPhoto !=
+                                              '') {
                                             return _model
                                                 .uploadedFileUrl_uploadDataUserPhoto;
                                           } else {
@@ -1800,11 +1802,12 @@ class _EditProfileDetailsPageWidgetState
                                     .update(createUsersRecordData(
                                   displayName:
                                       _model.userNameTextController.text,
-                                  photoUrl: _model.uploadedFileUrl_uploadDataUserPhoto !=
+                                  photoUrl:
+                                      _model.uploadedFileUrl_uploadDataUserPhoto !=
                                               ''
-                                      ? _model
-                                          .uploadedFileUrl_uploadDataUserPhoto
-                                      : currentUserPhoto,
+                                          ? _model
+                                              .uploadedFileUrl_uploadDataUserPhoto
+                                          : currentUserPhoto,
                                   phoneNumber: _model.phoneTextController.text,
                                   state: _model.stateTextController.text,
                                   zipCode: _model.zipTextController.text,

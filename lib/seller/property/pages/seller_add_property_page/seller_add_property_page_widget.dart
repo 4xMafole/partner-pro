@@ -83,8 +83,8 @@ class _SellerAddPropertyPageWidgetState
       }
     });
 
-    _model.descTextFieldTextController ??= TextEditingController(
-        text: widget.editProperty?.description);
+    _model.descTextFieldTextController ??=
+        TextEditingController(text: widget.editProperty?.description);
     _model.descTextFieldFocusNode ??= FocusNode();
 
     _model.priceTextFieldTextController ??= TextEditingController(
@@ -494,8 +494,8 @@ class _SellerAddPropertyPageWidgetState
                                           initialValue: widget.editProperty !=
                                                   null
                                               ? functions
-                                                  .parseSquareFootage(widget
-                                                      .editProperty!.sqft)
+                                                  .parseSquareFootage(
+                                                      widget.editProperty!.sqft)
                                                   .toString()
                                               : null,
                                         ),

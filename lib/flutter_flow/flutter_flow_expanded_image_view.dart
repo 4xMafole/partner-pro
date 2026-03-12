@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class FlutterFlowExpandedImageView extends StatelessWidget {
-  const FlutterFlowExpandedImageView({super.key, 
+  const FlutterFlowExpandedImageView({
+    super.key,
     required this.image,
     this.allowRotation = false,
     this.useHeroAnimation = true,

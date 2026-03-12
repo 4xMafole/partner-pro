@@ -62,8 +62,8 @@ List<MemberStruct> mergeContactsWithInvitations(
           // Contact has an invitation - add the status from Firebase
           String? statusStr = invitation.invitations.status;
           // Capitalize first letter: "pending" -> "Pending"
-          String capitalized = statusStr[0].toUpperCase() +
-              statusStr.substring(1).toLowerCase();
+          String capitalized =
+              statusStr[0].toUpperCase() + statusStr.substring(1).toLowerCase();
           status = statusStringToEnum(capitalized);
         }
 
@@ -81,7 +81,7 @@ List<MemberStruct> mergeContactsWithInvitations(
         continue;
       }
     }
-    } else if (selectedTab == "My Contacts") {
+  } else if (selectedTab == "My Contacts") {
     // Show only contacts from Firebase that are NOT in the API (manually added)
     Set<String> addedEmails = {}; // Track added emails to prevent duplicates
 

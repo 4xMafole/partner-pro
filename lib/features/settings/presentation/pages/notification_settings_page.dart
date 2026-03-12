@@ -9,8 +9,10 @@ class NotificationSettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Notification Settings')),
       body: const AppEmptyState(
-        icon: LucideIcons.bellRing, title: 'Notification Preferences',
-        subtitle: 'Configure push notifications, email alerts, and SMS preferences.',
+        icon: LucideIcons.bellRing,
+        title: 'Notification Preferences',
+        subtitle:
+            'Configure push notifications, email alerts, and SMS preferences.',
       ),
     );
   }

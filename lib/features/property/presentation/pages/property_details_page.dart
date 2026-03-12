@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../app_components/custom_dialog/custom_dialog_widget.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../agent/presentation/widgets/member_suggestion_sheet.dart';
+import '../../../agent/presentation/bloc/agent_bloc.dart';
 import '../../../offer/presentation/bloc/offer_bloc.dart';
 import '../../../offer/data/models/offer_model.dart';
 import '../../../offer/presentation/widgets/offer_process_sheet.dart';
@@ -46,6 +51,12 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     }
   }
 
+  bool get _isAgentUser {
+    final authState = context.read<AuthBloc>().state;
+    return authState is AuthAuthenticated &&
+        authState.user.role?.toLowerCase() == 'agent';
+  }
+
   void _loadPropertyOffers() {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
@@ -68,10 +79,33 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             .any((f) => f['property_id'] == widget.propertyId);
       });
       _loadPropertyOffers();
+
+      if (_isAgentUser) {
+        final authState = context.read<AuthBloc>().state;
+        if (authState is AuthAuthenticated) {
+          context.read<AgentBloc>().add(
+                LoadClients(
+                  agentId: authState.user.uid,
+                  requesterId: authState.user.uid,
+                ),
+              );
+        }
+      }
+
+      // Record recently viewed
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        context.read<PropertyBloc>().add(RecordPropertyView(
+              userId: authState.user.uid,
+              propertyId: widget.propertyId,
+              requesterId: authState.user.uid,
+            ));
+      }
     });
   }
 
   void _toggleFavorite() {
+    if (_isAgentUser) return;
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
     final uid = authState.user.uid;
@@ -92,6 +126,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   }
 
   void _scheduleTour() {
+    if (_isAgentUser) return;
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
     final uid = authState.user.uid;
@@ -165,7 +200,139 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     );
   }
 
+  Future<void> _suggestProperty() async {
+    if (!_isAgentUser) return;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final p = _property;
+    if (p == null) return;
+
+    final clients = context.read<AgentBloc>().state.clients;
+    final suggestionDocId = '${widget.propertyId}_${authState.user.uid}';
+
+    final contactFutures = <Future<MemberContact>>[];
+    for (final client in clients) {
+      final id = (client['clientID'] ?? client['id'] ?? client['uid'] ?? '')
+          .toString()
+          .trim();
+      if (id.isEmpty) continue;
+
+      final displayName =
+          (client['displayName'] ?? client['display_name'] ?? client['name'])
+                  ?.toString()
+                  .trim() ??
+              '';
+      final firstName =
+          (client['first_name'] ?? client['firstName'] ?? '').toString();
+      final lastName =
+          (client['last_name'] ?? client['lastName'] ?? '').toString();
+      final fullName = '$firstName $lastName'.trim();
+      final resolvedName = displayName.isNotEmpty
+          ? displayName
+          : (fullName.isNotEmpty ? fullName : 'Client');
+      final email = (client['email'] ?? '').toString();
+      final photoUrl =
+          (client['photoUrl'] ?? client['photo_url'] ?? client['photoURL'])
+              ?.toString();
+
+      contactFutures.add(FirebaseFirestore.instance
+          .collection('users')
+          .doc(id)
+          .collection('suggestions')
+          .doc(suggestionDocId)
+          .get()
+          .then((doc) => MemberContact(
+                id: id,
+                name: resolvedName,
+                email: email,
+                photoUrl: photoUrl,
+                isSuggested: doc.exists,
+              ))
+          .catchError((_) => MemberContact(
+                id: id,
+                name: resolvedName,
+                email: email,
+                photoUrl: photoUrl,
+                isSuggested: false,
+              )));
+    }
+
+    final contacts = await Future.wait(contactFutures);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      showDragHandle: false,
+      builder: (_) => MemberSuggestionSheet(
+        contacts: contacts,
+        propertyAddress: _buildAddress(p),
+        onSelected: (contact) async {
+          try {
+            final docRef = FirebaseFirestore.instance
+                .collection('users')
+                .doc(contact.id)
+                .collection('suggestions')
+                .doc(suggestionDocId);
+
+            // Use create semantics: fails if doc already exists
+            try {
+              await docRef.set({
+                'client_id': contact.id,
+                'property_id': widget.propertyId,
+                'property_address': _buildAddress(p),
+                'agent_id': authState.user.uid,
+                'agent_name': (authState.user.displayName ?? '').isNotEmpty
+                    ? authState.user.displayName
+                    : authState.user.email,
+                'status': 'active',
+                'created_at': FieldValue.serverTimestamp(),
+                'updated_at': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: false));
+            } on FirebaseException catch (e) {
+              if (e.code == 'already-exists' || e.code == 'permission-denied') {
+                if (!mounted) return;
+                context.showSnackBar(
+                  'Already suggested to ${contact.name}',
+                  isError: true,
+                );
+                return;
+              }
+              rethrow;
+            }
+
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(contact.id)
+                .collection('notifications')
+                .add({
+              'recipientUserId': contact.id,
+              'title': 'Property Suggested for You',
+              'message':
+                  '${(authState.user.displayName ?? '').isNotEmpty ? authState.user.displayName : 'Your agent'} suggested a property you might like.',
+              'type': 'property_suggestion',
+              'metadata': {
+                'propertyId': widget.propertyId,
+                'agentId': authState.user.uid,
+              },
+              'offerId': widget.propertyId,
+              'isRead': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+
+            if (!mounted) return;
+            context.showSnackBar('Suggested to ${contact.name}');
+          } catch (_) {
+            if (!mounted) return;
+            context.showSnackBar('Could not send suggestion', isError: true);
+          }
+        },
+      ),
+    );
+  }
+
   void _makeOffer() {
+    if (_isAgentUser) return;
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
     final uid = authState.user.uid;
@@ -343,34 +510,36 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     padding:
                         EdgeInsets.only(right: 12.w, top: 8.h, bottom: 8.h),
                     child: Row(children: [
-                      GestureDetector(
-                        onTap: _toggleFavorite,
-                        child: Container(
-                          width: 44.w,
-                          height: 44.w,
-                          decoration: BoxDecoration(
-                            color: _isFavorite
-                                ? AppColors.error.withValues(alpha: 0.9)
-                                : Colors.black.withValues(alpha: 0.4),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Icon(
-                            _isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: Colors.white,
-                            size: 22.sp,
+                      if (!_isAgentUser) ...[
+                        GestureDetector(
+                          onTap: _toggleFavorite,
+                          child: Container(
+                            width: 44.w,
+                            height: 44.w,
+                            decoration: BoxDecoration(
+                              color: _isFavorite
+                                  ? AppColors.error.withValues(alpha: 0.9)
+                                  : Colors.black.withValues(alpha: 0.4),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ],
+                            ),
+                            child: Icon(
+                              _isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: Colors.white,
+                              size: 22.sp,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10.w),
+                        SizedBox(width: 10.w),
+                      ],
                       GestureDetector(
                         onTap: () {
                           if (p != null) {
@@ -517,9 +686,8 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                           final propertyOffers = offerState.offers
                               .where((o) => o.propertyId == widget.propertyId)
                               .toList()
-                            ..sort((a, b) =>
-                                (b.createdTime ?? DateTime(1970)).compareTo(
-                                    a.createdTime ?? DateTime(1970)));
+                            ..sort((a, b) => (b.createdTime ?? DateTime(1970))
+                                .compareTo(a.createdTime ?? DateTime(1970)));
 
                           final pendingCount = propertyOffers.where((o) {
                             final status = o.status;
@@ -684,36 +852,70 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             ],
           ),
           bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _scheduleTour,
-                      icon: const Icon(LucideIcons.calendar),
-                      label: const Text('Schedule Tour'),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(
-                          color: AppColors.primary,
+            child: BlocBuilder<OfferBloc, OfferState>(
+              builder: (context, offerState) {
+                final authState = context.read<AuthBloc>().state;
+                final currentUserId =
+                    authState is AuthAuthenticated ? authState.user.uid : '';
+                final hasBuyerOffer = !_isAgentUser &&
+                    currentUserId.isNotEmpty &&
+                    offerState.offers.any((o) {
+                      if (o.propertyId != widget.propertyId) return false;
+                      return o.buyerId == currentUserId ||
+                          o.buyer.id == currentUserId;
+                    });
+
+                if (hasBuyerOffer) {
+                  return const SizedBox.shrink();
+                }
+
+                return Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: _isAgentUser
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _suggestProperty,
+                            icon: const Icon(LucideIcons.send),
+                            label: const Text('Suggest'),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              side: const BorderSide(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _scheduleTour,
+                                icon: const Icon(LucideIcons.calendar),
+                                label: const Text('Schedule Tour'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                                  side: const BorderSide(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _makeOffer,
+                                icon: const Icon(LucideIcons.fileText),
+                                label: const Text('Make Offer'),
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _makeOffer,
-                      icon: const Icon(LucideIcons.fileText),
-                      label: const Text('Make Offer'),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         );
@@ -1028,7 +1230,63 @@ class _PropertyOfferSection extends StatelessWidget {
           ),
           SizedBox(height: 14.h),
           if (isLoading)
-            const Center(child: CircularProgressIndicator())
+            Column(
+              children: List.generate(
+                3,
+                (_) => Container(
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border:
+                        Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 16.h,
+                              width: 100.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.divider,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            )
+                                .animate()
+                                .fade(duration: 900.ms, begin: 0.45, end: 0.95),
+                            SizedBox(height: 6.h),
+                            Container(
+                              height: 12.h,
+                              width: 70.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.divider,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            )
+                                .animate()
+                                .fade(duration: 900.ms, begin: 0.45, end: 0.95),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 24.h,
+                        width: 72.w,
+                        decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                      )
+                          .animate()
+                          .fade(duration: 900.ms, begin: 0.45, end: 0.95),
+                    ],
+                  ),
+                ),
+              ),
+            )
           else if (offers.isEmpty)
             Text(
               'No offers have been submitted for this property yet.',

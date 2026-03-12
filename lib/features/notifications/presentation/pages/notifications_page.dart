@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/enums/app_enums.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../data/models/notification_model.dart';
 import '../bloc/notification_bloc.dart';
 
 class NotificationsPage extends StatelessWidget {
@@ -30,7 +33,7 @@ class NotificationsPage extends StatelessWidget {
                   if (authState is AuthAuthenticated) {
                     context
                         .read<NotificationBloc>()
-                        .add(MarkAllAsRead(authState.user.uid ?? ''));
+                        .add(MarkAllAsRead(authState.user.uid));
                   }
                 },
                 child: const Text('Mark All Read'),
@@ -42,7 +45,7 @@ class NotificationsPage extends StatelessWidget {
       body: BlocBuilder<NotificationBloc, NotificationState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildShimmerList();
           }
           if (state.notifications.isEmpty) {
             return const AppEmptyState(
@@ -57,7 +60,12 @@ class NotificationsPage extends StatelessWidget {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final notif = state.notifications[index];
-              final isUnread = !(notif.isRead ?? false);
+              final isUnread = !notif.isRead;
+              final descLines = notif.description.split('\n');
+              final mainDesc = descLines.first;
+              final contextLine =
+                  descLines.length > 1 ? descLines.sublist(1).join(' · ') : '';
+
               return Dismissible(
                 key: ValueKey(notif.id),
                 direction: DismissDirection.endToStart,
@@ -68,9 +76,11 @@ class NotificationsPage extends StatelessWidget {
                   child: const Icon(LucideIcons.trash2, color: Colors.white),
                 ),
                 onDismissed: (_) {
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is! AuthAuthenticated) return;
                   context
                       .read<NotificationBloc>()
-                      .add(DeleteNotification(notif.id));
+                      .add(DeleteNotification(authState.user.uid, notif.id));
                 },
                 child: ListTile(
                   tileColor: isUnread
@@ -88,7 +98,7 @@ class NotificationsPage extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    notif.title ?? '',
+                    notif.title,
                     style: AppTypography.bodyMedium.copyWith(
                       fontWeight:
                           isUnread ? FontWeight.w600 : FontWeight.normal,
@@ -97,16 +107,27 @@ class NotificationsPage extends StatelessWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(notif.description,
-                          style: AppTypography.bodySmall
-                              .copyWith(color: AppColors.textSecondary),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
+                      if (mainDesc.isNotEmpty)
+                        Text(mainDesc,
+                            style: AppTypography.bodySmall
+                                .copyWith(color: AppColors.textSecondary),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      if (contextLine.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(top: 2.h),
+                          child: Text(contextLine,
+                              style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
                       if (notif.createdAt != null)
                         Padding(
                           padding: EdgeInsets.only(top: 4.h),
                           child: Text(
-                            timeago.format(notif.createdAt!),
+                            notif.createdAt!.timeAgo,
                             style: AppTypography.labelSmall
                                 .copyWith(color: AppColors.textTertiary),
                           ),
@@ -124,18 +145,15 @@ class NotificationsPage extends StatelessWidget {
                         )
                       : null,
                   onTap: () {
-                    // Mark as read
-                    if (isUnread) {
+                    final authState = context.read<AuthBloc>().state;
+                    if (isUnread && authState is AuthAuthenticated) {
                       context
                           .read<NotificationBloc>()
-                          .add(MarkAsRead(notif.id));
+                          .add(MarkAsRead(authState.user.uid, notif.id));
                     }
-                    // Navigate to offer details if this notification has an offerId
-                    final offerId = notif.offerId;
-                    if (offerId != null && offerId.isNotEmpty) {
-                      context.push(
-                        RouteNames.offerDetails.replaceFirst(':id', offerId),
-                      );
+                    final targetPath = _resolveTargetPath(notif);
+                    if (targetPath != null && targetPath.isNotEmpty) {
+                      context.push(targetPath);
                     }
                   },
                 ),
@@ -144,6 +162,15 @@ class NotificationsPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildShimmerList() {
+    return ListView.separated(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      itemCount: 8,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, __) => _NotificationShimmerTile(),
     );
   }
 
@@ -160,5 +187,84 @@ class NotificationsPage extends StatelessWidget {
       default:
         return LucideIcons.bell;
     }
+  }
+
+  String? _resolveTargetPath(NotificationModel notif) {
+    final metadata = (notif.metadata as Map<String, dynamic>?) ?? {};
+    final propertyId = (metadata['propertyId'] ?? metadata['property_id'] ?? '')
+        .toString()
+        .trim();
+    final offerId =
+        (metadata['offerId'] ?? metadata['offer_id'] ?? notif.offerId ?? '')
+            .toString()
+            .trim();
+    final type = notif.type;
+
+    if (type == SellerNotification.property ||
+        type == SellerNotification.propertySuggestion) {
+      if (propertyId.isNotEmpty) {
+        return RouteNames.propertyDetails.replaceFirst(':id', propertyId);
+      }
+      if (offerId.isNotEmpty) {
+        return RouteNames.propertyDetails.replaceFirst(':id', offerId);
+      }
+      return null;
+    }
+
+    if (offerId.isNotEmpty) {
+      return RouteNames.offerDetails.replaceFirst(':id', offerId);
+    }
+    return null;
+  }
+}
+
+class _NotificationShimmerTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 40.w,
+        height: 40.w,
+        decoration: BoxDecoration(
+          color: AppColors.shimmerBase,
+          shape: BoxShape.circle,
+        ),
+      ),
+      title: Container(
+        height: 14.h,
+        width: 140.w,
+        decoration: BoxDecoration(
+          color: AppColors.shimmerBase,
+          borderRadius: BorderRadius.circular(4.r),
+        ),
+      ),
+      subtitle: Padding(
+        padding: EdgeInsets.only(top: 8.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 12.h,
+              width: 220.w,
+              decoration: BoxDecoration(
+                color: AppColors.shimmerBase,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Container(
+              height: 10.h,
+              width: 60.w,
+              decoration: BoxDecoration(
+                color: AppColors.shimmerBase,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+          ],
+        ),
+      ),
+    )
+        .animate(onPlay: (c) => c.repeat())
+        .shimmer(duration: 1200.ms, color: AppColors.shimmerHighlight);
   }
 }

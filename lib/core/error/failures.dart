@@ -28,7 +28,8 @@ class NetworkFailure extends Failure {
 }
 
 class FirestoreFailure extends Failure {
-  const FirestoreFailure({super.message = 'Database error occurred', super.code});
+  const FirestoreFailure(
+      {super.message = 'Database error occurred', super.code});
 }
 
 class StorageFailure extends Failure {

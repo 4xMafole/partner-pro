@@ -17,6 +17,8 @@ abstract final class AppConstants {
   static const String supportCollection = 'support';
   static const String showingsCollection = 'showings';
   static const String customersCollection = 'customers';
+  static const String recentlyViewedCollection = 'recently_viewed';
+  static const String activitiesCollection = 'activities';
 
   // Storage paths
   static const String profileImagesPath = 'users/profile_images';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,7 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        final uid = authState.user.uid ?? '';
+        final uid = authState.user.uid;
         context.read<OfferBloc>().add(LoadAgentOffers(requesterId: uid));
       }
     });
@@ -50,13 +51,61 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
     return n.toString();
   }
 
+  Widget _buildOfferSkeleton() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 16.h,
+              width: 120.w,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ).animate().fade(duration: 900.ms, begin: 0.45, end: 0.95),
+            SizedBox(height: 12.h),
+            Container(
+              height: 14.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ).animate().fade(duration: 900.ms, begin: 0.45, end: 0.95),
+            SizedBox(height: 8.h),
+            Container(
+              height: 12.h,
+              width: 200.w,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ).animate().fade(duration: 900.ms, begin: 0.45, end: 0.95),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ListView _buildOfferSkeletonList() {
+    return ListView.separated(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      itemCount: 5,
+      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+      itemBuilder: (_, __) => _buildOfferSkeleton(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Offers')),
       body: BlocBuilder<OfferBloc, OfferState>(builder: (context, state) {
         if (state.isLoading && state.offers.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return _buildOfferSkeletonList();
         }
         if (state.error != null && state.offers.isEmpty) {
           return AppEmptyState(
@@ -75,7 +124,7 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
           onRefresh: () async {
             final a = context.read<AuthBloc>().state;
             if (a is AuthAuthenticated) {
-              final uid = a.user.uid ?? '';
+              final uid = a.user.uid;
               context.read<OfferBloc>().add(LoadAgentOffers(requesterId: uid));
             }
           },

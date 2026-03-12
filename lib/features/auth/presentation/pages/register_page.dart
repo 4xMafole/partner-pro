@@ -14,7 +14,8 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../bloc/auth_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final String? role;
+  const RegisterPage({super.key, this.role});
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
@@ -157,9 +158,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             ? null
                             : () {
                                 setState(() => _loadingSource = 'google');
-                                context
-                                    .read<AuthBloc>()
-                                    .add(const AuthSignInWithGoogle());
+                                context.read<AuthBloc>().add(
+                                    AuthSignInWithGoogle(role: widget.role));
                               },
                         icon: isGoogleLoading
                             ? SizedBox(
@@ -180,9 +180,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               ? null
                               : () {
                                   setState(() => _loadingSource = 'apple');
-                                  context
-                                      .read<AuthBloc>()
-                                      .add(const AuthSignInWithApple());
+                                  context.read<AuthBloc>().add(
+                                      AuthSignInWithApple(role: widget.role));
                                 },
                           icon: isAppleLoading
                               ? SizedBox(
@@ -235,7 +234,8 @@ class _RegisterPageState extends State<RegisterPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim()));
+          lastName: _lastNameController.text.trim(),
+          role: widget.role));
     }
   }
 }

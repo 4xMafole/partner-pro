@@ -328,9 +328,9 @@ class _MemberActivityWidgetState extends State<MemberActivityWidget> {
                                                       'Keydf7_${offerItemItem.offerData.id}',
                                                     ),
                                                     status: offerItemItem
-                                                                    .offerData
-                                                                    .status !=
-                                                                ''
+                                                                .offerData
+                                                                .status !=
+                                                            ''
                                                         ? functions
                                                             .statusStringToEnum(
                                                                 offerItemItem

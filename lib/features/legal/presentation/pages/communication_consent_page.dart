@@ -6,7 +6,8 @@ import '../../../../core/widgets/app_widgets.dart';
 class CommunicationConsentPage extends StatefulWidget {
   const CommunicationConsentPage({super.key});
   @override
-  State<CommunicationConsentPage> createState() => _CommunicationConsentPageState();
+  State<CommunicationConsentPage> createState() =>
+      _CommunicationConsentPageState();
 }
 
 class _CommunicationConsentPageState extends State<CommunicationConsentPage> {
@@ -24,23 +25,27 @@ class _CommunicationConsentPageState extends State<CommunicationConsentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Communication Preferences', style: theme.textTheme.headlineSmall),
+            Text('Communication Preferences',
+                style: theme.textTheme.headlineSmall),
             SizedBox(height: 8.h),
             Text(
               'Choose how you\'d like us to communicate with you.',
-              style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.textSecondary),
             ),
             SizedBox(height: 24.h),
             SwitchListTile(
               title: const Text('SMS Messages'),
-              subtitle: const Text('Receive text messages for offers and updates'),
+              subtitle:
+                  const Text('Receive text messages for offers and updates'),
               value: _smsConsent,
               onChanged: (v) => setState(() => _smsConsent = v),
               activeColor: AppColors.primary,
             ),
             SwitchListTile(
               title: const Text('Email Updates'),
-              subtitle: const Text('Receive email notifications and newsletters'),
+              subtitle:
+                  const Text('Receive email notifications and newsletters'),
               value: _emailConsent,
               onChanged: (v) => setState(() => _emailConsent = v),
               activeColor: AppColors.primary,

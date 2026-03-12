@@ -95,8 +95,8 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                   if (!widget.hasUrl) {
                                     return Image.memory(
                                       functions
-                                              .base64ToImage(widget.property
-                                                  ?.images.firstOrNull)
+                                              .base64ToImage(widget
+                                                  .property?.images.firstOrNull)
                                               ?.bytes ??
                                           Uint8List.fromList([]),
                                       width: double.infinity,
@@ -105,8 +105,8 @@ class _SellerPropCompItemWidgetState extends State<SellerPropCompItemWidget> {
                                     );
                                   } else {
                                     return Image.network(
-                                      functions.stringToImagePath(widget
-                                          .property?.images.firstOrNull)!,
+                                      functions.stringToImagePath(
+                                          widget.property?.images.firstOrNull)!,
                                       width: double.infinity,
                                       height: double.infinity,
                                       fit: BoxFit.cover,

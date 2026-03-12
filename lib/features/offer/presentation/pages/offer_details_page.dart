@@ -152,8 +152,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
   bool _canEdit(OfferModel offer, BuildContext context) {
     final status = offer.status?.name.toLowerCase() ?? 'draft';
     final role = _currentUserRole(context);
-    return (status == 'draft' || status == 'pending') &&
-        (role == 'buyer' || role == 'agent');
+    return (status == 'draft' || status == 'pending') && role == 'buyer';
   }
 
   bool _hasBottomActions(BuildContext context, String statusStr) {
@@ -169,8 +168,9 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     final prop = offer.property;
     final loc = prop.location;
 
-    // Parse street address back into components
-    final addressParts = loc.address.split(' ');
+    // Prefer the first street line before any city/state suffix.
+    final streetLine = loc.address.split(',').first.trim();
+    final addressParts = streetLine.split(RegExp(r'\s+'));
     String streetNumber = '';
     String streetName = '';
     if (addressParts.isNotEmpty) {
@@ -179,7 +179,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
         streetNumber = first;
         streetName = addressParts.skip(1).join(' ');
       } else {
-        streetName = loc.address;
+        streetName = streetLine;
       }
     }
 
@@ -619,7 +619,19 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
     final role = _currentUserRole(context);
     final isAgent = role == 'agent';
     final isBuyer = role == 'buyer';
-    final isSubmitting = context.read<OfferBloc>().state.isSubmitting;
+    final offerState = context.watch<OfferBloc>().state;
+    final isAccepting = offerState.isSubmitting &&
+        offerState.submittingOfferId == offer.id &&
+        offerState.submissionAction == 'accept';
+    final isDeclining = offerState.isSubmitting &&
+        offerState.submittingOfferId == offer.id &&
+        offerState.submissionAction == 'decline';
+    final isWithdrawing = offerState.isSubmitting &&
+        offerState.submittingOfferId == offer.id &&
+        offerState.submissionAction == 'withdraw';
+    final isRequestingRevision = offerState.isSubmitting &&
+        offerState.submittingOfferId == offer.id &&
+        offerState.submissionAction == 'request_revision';
 
     return Container(
       decoration: BoxDecoration(
@@ -641,7 +653,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                         label: 'Accept',
                         icon: LucideIcons.checkCircle,
                         color: AppColors.success,
-                        isLoading: isSubmitting,
+                        isLoading: isAccepting,
                         onPressed: () => _confirmAction(
                           context,
                           title: 'Accept Offer',
@@ -666,7 +678,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                         icon: LucideIcons.xCircle,
                         isOutlined: true,
                         color: AppColors.error,
-                        isLoading: isSubmitting,
+                        isLoading: isDeclining,
                         onPressed: () => _confirmAction(
                           context,
                           title: 'Decline Offer',
@@ -693,6 +705,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                     icon: LucideIcons.messageSquare,
                     isOutlined: true,
                     color: AppColors.primary,
+                    isLoading: isRequestingRevision,
                     onPressed: () => _showRevisionRequestDialog(context, offer),
                   ),
                 ),
@@ -707,7 +720,7 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
                     icon: LucideIcons.undo2,
                     isOutlined: true,
                     color: AppColors.error,
-                    isLoading: isSubmitting,
+                    isLoading: isWithdrawing,
                     onPressed: () => _confirmAction(
                       context,
                       title: 'Withdraw Offer',

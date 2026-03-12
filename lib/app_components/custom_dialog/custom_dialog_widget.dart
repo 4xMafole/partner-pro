@@ -16,8 +16,7 @@ class CustomDialogWidget extends StatefulWidget {
     required this.description,
     this.buttonLabel,
     Color? iconBackgroundColor,
-  }) : iconBackgroundColor =
-            iconBackgroundColor ?? const Color(0xFFEE8B60);
+  }) : iconBackgroundColor = iconBackgroundColor ?? const Color(0xFFEE8B60);
 
   final Future Function()? onDone;
   final Widget? icon;

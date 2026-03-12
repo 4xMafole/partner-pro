@@ -201,17 +201,178 @@ class UserAccountRemoteDataSource {
     if (clientIds.isEmpty) return [];
 
     final activities = <Map<String, dynamic>>[];
+
+    String? toIsoString(dynamic value) {
+      if (value is Timestamp) return value.toDate().toIso8601String();
+      if (value is DateTime) return value.toIso8601String();
+      if (value is String && value.isNotEmpty) return value;
+      return null;
+    }
+
     for (var i = 0; i < clientIds.length; i += 30) {
       final end = (i + 30 > clientIds.length) ? clientIds.length : i + 30;
       final batch = clientIds.sublist(i, end);
+
       final snap = await _firestore
-          .collection('activities')
+          .collection(AppConstants.activitiesCollection)
           .where('user_id', whereIn: batch)
-          .orderBy('created_at', descending: true)
-          .limit(50)
           .get();
-      activities.addAll(snap.docs.map((doc) => {...doc.data(), 'id': doc.id}));
+
+      activities.addAll(snap.docs.map((doc) {
+        final data = doc.data();
+        return {
+          ...data,
+          'id': doc.id,
+          'activityType': data['activityType'] ?? 'activity',
+          'activityLabel': data['activityLabel'] ?? 'Activity',
+          'created_at': toIsoString(data['created_at']),
+        };
+      }));
     }
+
+    activities.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
     return activities;
+  }
+
+  /// Fetch a single client's property intelligence datasets.
+  Future<Map<String, List<Map<String, dynamic>>>>
+      getClientPropertyIntelligence({
+    required String clientId,
+    required String agentId,
+  }) async {
+    String? toIsoString(dynamic value) {
+      if (value is Timestamp) return value.toDate().toIso8601String();
+      if (value is DateTime) return value.toIso8601String();
+      if (value is String && value.isNotEmpty) return value;
+      return null;
+    }
+
+    Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> safeDocs(
+        Future<QuerySnapshot<Map<String, dynamic>>> query) async {
+      try {
+        return (await query).docs;
+      } catch (_) {
+        return const [];
+      }
+    }
+
+    final suggestionDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+    suggestionDocs.addAll(await safeDocs(_firestore
+        .collection('property_suggestions')
+        .where('client_id', isEqualTo: clientId)
+        .where('agent_id', isEqualTo: agentId)
+        .where('status', isEqualTo: 'active')
+        .get()));
+
+    final favoriteDocs = await safeDocs(
+      _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(clientId)
+          .collection(AppConstants.favoritesCollection)
+          .get(),
+    );
+
+    final savedSearchDocs = await safeDocs(
+      _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(clientId)
+          .collection(AppConstants.savedSearchesCollection)
+          .get(),
+    );
+
+    final viewedDocs = await safeDocs(
+      _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(clientId)
+          .collection(AppConstants.recentlyViewedCollection)
+          .get(),
+    );
+
+    final suggestions = suggestionDocs
+        .map((d) {
+          final data = d.data();
+          return {
+            ...data,
+            'id': d.id,
+            'created_at': toIsoString(data['created_at']),
+            'property_id':
+                (data['property_id'] ?? data['propertyId'] ?? '').toString(),
+            'propertyAddress': (data['property_address'] ??
+                    data['propertyAddress'] ??
+                    data['address'] ??
+                    '')
+                .toString(),
+          };
+        })
+        .where((d) => d['property_id'].toString().isNotEmpty)
+        .toList();
+
+    final favorites = favoriteDocs
+        .map((d) {
+          final data = d.data();
+          return {
+            ...data,
+            'id': d.id,
+            'property_id':
+                (data['property_id'] ?? data['propertyId'] ?? '').toString(),
+            'propertyAddress': (data['propertyAddress'] ??
+                    data['property_address'] ??
+                    data['address'] ??
+                    '')
+                .toString(),
+            'created_at': toIsoString(data['updated_at'] ?? data['created_at']),
+          };
+        })
+        .where((d) =>
+            d['status'] != false && d['property_id'].toString().isNotEmpty)
+        .toList();
+
+    final savedSearches = savedSearchDocs
+        .map((d) {
+          final data = d.data();
+          return {
+            ...data,
+            'id': d.id,
+            'created_at': toIsoString(data['created_at'] ?? data['updated_at']),
+          };
+        })
+        .where((d) => d['search'] != null)
+        .toList();
+
+    final recentlyViewed = viewedDocs
+        .map((d) {
+          final data = d.data();
+          return {
+            ...data,
+            'id': d.id,
+            'property_id':
+                (data['property_id'] ?? data['propertyId'] ?? '').toString(),
+            'propertyAddress': (data['propertyAddress'] ??
+                    data['property_address'] ??
+                    data['address'] ??
+                    '')
+                .toString(),
+            'viewed_at': toIsoString(data['viewed_at'] ?? data['created_at']),
+          };
+        })
+        .where((d) => d['property_id'].toString().isNotEmpty)
+        .toList();
+
+    suggestions.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
+    favorites.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
+    savedSearches.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
+    recentlyViewed.sort((a, b) => (b['viewed_at']?.toString() ?? '')
+        .compareTo(a['viewed_at']?.toString() ?? ''));
+
+    return {
+      'suggestedProperties': suggestions,
+      'favoriteProperties': favorites,
+      'savedSearches': savedSearches,
+      'recentlyViewedProperties': recentlyViewed,
+    };
   }
 }

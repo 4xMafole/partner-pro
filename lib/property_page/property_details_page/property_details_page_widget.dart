@@ -624,8 +624,7 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                       ),
                                       Text(
                                         valueOrDefault<String>(
-                                          _model.property?.bathrooms
-                                              .toString(),
+                                          _model.property?.bathrooms.toString(),
                                           'N/A',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -1443,14 +1442,14 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                     AddressDataClassStruct(
                                       streetName:
                                           _model.property?.address.streetName,
-                                      streetNumber: _model
-                                          .property?.address.streetNumber,
+                                      streetNumber:
+                                          _model.property?.address.streetNumber,
                                       streetDirection: _model
                                           .property?.address.streetDirection,
                                       streetType:
                                           _model.property?.address.streetType,
-                                      neighborhood: _model
-                                          .property?.address.neighborhood,
+                                      neighborhood:
+                                          _model.property?.address.neighborhood,
                                       city: _model.property?.address.city,
                                       state: _model.property?.address.state,
                                       zip: _model.property?.address.zip,
@@ -2054,10 +2053,8 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                                 _model.property!
                                                                     .address,
                                                                 ''),
-                                                        line2: _model
-                                                            .property
-                                                            ?.media
-                                                            .firstOrNull,
+                                                        line2: _model.property
+                                                            ?.media.firstOrNull,
                                                         city: _model.property
                                                             ?.address.city,
                                                         state: _model.property
@@ -2213,8 +2210,8 @@ class _PropertyDetailsPageWidgetState extends State<PropertyDetailsPageWidget> {
                                                             ''),
                                                     line2: _model.property
                                                         ?.media.firstOrNull,
-                                                    city: _model.property
-                                                        ?.address.city,
+                                                    city: _model
+                                                        .property?.address.city,
                                                     state: _model.property
                                                         ?.address.state,
                                                     zip: _model

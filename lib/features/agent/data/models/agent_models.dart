@@ -16,7 +16,8 @@ class InvitationModel with _$InvitationModel {
     @Default('') String status,
     DateTime? createdAt,
   }) = _InvitationModel;
-  factory InvitationModel.fromJson(Map<String, dynamic> json) => _$InvitationModelFromJson(json);
+  factory InvitationModel.fromJson(Map<String, dynamic> json) =>
+      _$InvitationModelFromJson(json);
 }
 
 @freezed
@@ -27,7 +28,8 @@ class RelationshipModel with _$RelationshipModel {
     @Default('') String type,
     DateTime? createdAt,
   }) = _RelationshipModel;
-  factory RelationshipModel.fromJson(Map<String, dynamic> json) => _$RelationshipModelFromJson(json);
+  factory RelationshipModel.fromJson(Map<String, dynamic> json) =>
+      _$RelationshipModelFromJson(json);
 }
 
 @freezed
@@ -41,7 +43,8 @@ class ActivityItemModel with _$ActivityItemModel {
     Map<String, dynamic>? searchData,
     Map<String, dynamic>? offerData,
   }) = _ActivityItemModel;
-  factory ActivityItemModel.fromJson(Map<String, dynamic> json) => _$ActivityItemModelFromJson(json);
+  factory ActivityItemModel.fromJson(Map<String, dynamic> json) =>
+      _$ActivityItemModelFromJson(json);
 }
 
 @freezed
@@ -66,5 +69,6 @@ class ShowingModel with _$ShowingModel {
     @Default(false) bool isRescheduled,
     @Default('') String id,
   }) = _ShowingModel;
-  factory ShowingModel.fromJson(Map<String, dynamic> json) => _$ShowingModelFromJson(json);
+  factory ShowingModel.fromJson(Map<String, dynamic> json) =>
+      _$ShowingModelFromJson(json);
 }

@@ -484,8 +484,7 @@ class _SellerPropertyDetailsWidgetState
                                       model: _model.saleLabelModel,
                                       updateCallback: () => safeSetState(() {}),
                                       child: SaleLabelWidget(
-                                        isActiveSale:
-                                            widget.property?.isActive,
+                                        isActiveSale: widget.property?.isActive,
                                       ),
                                     ),
                                     if ((widget.property?.yardSignStatus !=
@@ -597,8 +596,8 @@ class _SellerPropertyDetailsWidgetState
                                           Expanded(
                                             child: Text(
                                               valueOrDefault<String>(
-                                                widget.property?.location
-                                                    .address,
+                                                widget
+                                                    .property?.location.address,
                                                 'Location',
                                               ),
                                               style:

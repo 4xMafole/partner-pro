@@ -16,6 +16,7 @@ abstract class AuthRemoteDataSource {
   Future<fb.UserCredential> signInWithApple();
   Future<void> signOut();
   Future<void> sendPasswordResetEmail(String email);
+  Future<void> changePassword(String currentPassword, String newPassword);
 
   Future<UserModel?> getUserProfile(String uid);
   Future<void> createUserProfile(UserModel user);
@@ -36,7 +37,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   fb.User? get currentUser => _auth.currentUser;
 
   @override
-  Future<fb.UserCredential> signInWithEmail(String email, String password) async {
+  Future<fb.UserCredential> signInWithEmail(
+      String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(
         email: email,
@@ -48,7 +50,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<fb.UserCredential> registerWithEmail(String email, String password) async {
+  Future<fb.UserCredential> registerWithEmail(
+      String email, String password) async {
     try {
       return await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -63,7 +66,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<fb.UserCredential> signInWithGoogle() async {
     try {
       final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) throw AuthException(message: 'Google sign-in cancelled');
+      if (googleUser == null)
+        throw AuthException(message: 'Google sign-in cancelled');
 
       final googleAuth = await googleUser.authentication;
       final credential = fb.GoogleAuthProvider.credential(
@@ -99,6 +103,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
+    } on fb.FirebaseAuthException catch (e) {
+      throw AuthException(message: _mapFirebaseAuthError(e.code));
+    }
+  }
+
+  @override
+  Future<void> changePassword(
+      String currentPassword, String newPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw AuthException(message: 'User is not logged in');
+      }
+      final email = user.email;
+      if (email == null || email.isEmpty) {
+        throw AuthException(message: 'Account does not use email and password');
+      }
+
+      final cred = fb.EmailAuthProvider.credential(
+          email: email, password: currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
     } on fb.FirebaseAuthException catch (e) {
       throw AuthException(message: _mapFirebaseAuthError(e.code));
     }

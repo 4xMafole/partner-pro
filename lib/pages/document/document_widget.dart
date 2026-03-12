@@ -83,8 +83,7 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                           PdfReaderWidget.routeName,
                           queryParameters: {
                             'url': serializeParam(
-                              functions
-                                  .cleanUrl(widget.document!.documentFile),
+                              functions.cleanUrl(widget.document!.documentFile),
                               ParamType.String,
                             ),
                           }.withoutNulls,
@@ -106,8 +105,8 @@ class _DocumentWidgetState extends State<DocumentWidget> {
                           ),
                         ),
                         child: FlutterFlowPdfViewer(
-                          networkPath: functions
-                              .cleanUrl(widget.document!.documentFile),
+                          networkPath:
+                              functions.cleanUrl(widget.document!.documentFile),
                           horizontalScroll: false,
                         ),
                       ),

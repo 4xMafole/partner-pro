@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../core/enums/app_enums.dart';
+
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
@@ -24,8 +26,19 @@ class UserModel with _$UserModel {
     @Default('not_set') String approvalStatus,
     @Default(false) bool hasAcceptedSms,
     @Default(false) bool isNewUser,
+    @Default(false) bool onboardingCompleted,
     UserIdCard? idCard,
     String? signature,
+    // Agent-specific fields
+    String? agentLicense,
+    String? brokerageName,
+    String? brokerageAddress,
+    String? brokeragePhone,
+    String? brokerageLicense,
+    String? mlsEmail,
+    MlsType? mlsType,
+    String? crmEmail,
+    CrmType? crmType,
   }) = _UserModel;
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);

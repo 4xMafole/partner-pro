@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -113,6 +114,7 @@ class AppTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final int? maxLines;
   final bool enabled;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppTextField({
     super.key,
@@ -127,6 +129,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.maxLines = 1,
     this.enabled = true,
+    this.inputFormatters,
   });
 
   @override
@@ -139,6 +142,7 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       maxLines: maxLines,
       enabled: enabled,
+      inputFormatters: inputFormatters,
       style: AppTypography.bodyMedium,
       decoration: InputDecoration(
         labelText: label,
@@ -190,12 +194,15 @@ class AppEmptyState extends StatelessWidget {
                 .fadeIn(duration: 400.ms)
                 .scale(begin: const Offset(0.8, 0.8)),
             SizedBox(height: 20.h),
-            Text(title, style: AppTypography.headlineSmall, textAlign: TextAlign.center),
+            Text(title,
+                style: AppTypography.headlineSmall,
+                textAlign: TextAlign.center),
             if (subtitle != null) ...[
               SizedBox(height: 8.h),
               Text(
                 subtitle!,
-                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                style: AppTypography.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -264,7 +271,8 @@ class AppAvatar extends StatelessWidget {
       child: imageUrl == null
           ? Text(
               name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: AppTypography.titleMedium.copyWith(color: AppColors.primary),
+              style:
+                  AppTypography.titleMedium.copyWith(color: AppColors.primary),
             )
           : null,
     );

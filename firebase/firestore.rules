@@ -16,13 +16,41 @@ service cloud.firestore {
 
     function isAgent() {
       return isSignedIn() &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.user_type == 'agent';
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent';
+    }
+
+    function matchesRequester(data) {
+      return isSignedIn() &&
+             (
+               !(data.requesterId is string) ||
+               data.requesterId == '' ||
+               data.requesterId == request.auth.uid
+             );
+    }
+
+    function isOfferMirrorParticipant(data, userId) {
+      return isSignedIn() &&
+             (
+               userId == data.buyer_id ||
+               userId == data.buyerId ||
+               userId == data.agent_id ||
+               userId == data.agentId ||
+               userId == data.seller_id ||
+               userId == data.sellerId ||
+               (data.parties.buyer.id is string && userId == data.parties.buyer.id) ||
+               (data.parties.agent.id is string && userId == data.parties.agent.id) ||
+               (data.parties.seller.id is string && userId == data.parties.seller.id) ||
+               (data.parties.secondBuyer.id is string && userId == data.parties.secondBuyer.id) ||
+               (data.parties.second_buyer.id is string && userId == data.parties.second_buyer.id)
+             ) &&
+             isOfferParticipant(data);
     }
 
     function isOfferParticipant(data) {
       return data.buyer_id == request.auth.uid ||
              data.buyerId == request.auth.uid ||
              data.created_by == request.auth.uid ||
+             data.createdBy == request.auth.uid ||
              data.buyer_agent_id == request.auth.uid ||
              data.buyerAgentId == request.auth.uid ||
              data.agent_id == request.auth.uid ||
@@ -30,7 +58,8 @@ service cloud.firestore {
              data.seller_id == request.auth.uid ||
              data.sellerId == request.auth.uid ||
              data.seller_agent_id == request.auth.uid ||
-             data.sellerAgentId == request.auth.uid;
+             data.sellerAgentId == request.auth.uid ||
+             data.updated_by == request.auth.uid;
     }
 
     match /users/{userId} {
@@ -41,11 +70,29 @@ service cloud.firestore {
     }
 
     match /users/{userId}/favorites/{document} {
-      allow create, read, update, delete: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+      allow read: if isOwner(userId) || isAgent();
+    }
+
+    match /users/{userId}/saved_searches/{document} {
+      allow create, update, delete: if isOwner(userId);
+      allow read: if isOwner(userId) || isAgent();
+    }
+
+    match /users/{userId}/recently_viewed/{document} {
+      allow create, update: if isOwner(userId);
+      allow read: if isOwner(userId) || isAgent();
+      allow delete: if false;
     }
 
     match /users/{userId}/offer/{document} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create, update, delete: if isOfferMirrorParticipant(
+                                         request.method == 'delete'
+                                             ? resource.data
+                                             : request.resource.data,
+                                         userId,
+                                       );
     }
 
     match /users/{userId}/notifications/{notificationId} {
@@ -54,29 +101,31 @@ service cloud.firestore {
     }
 
     match /users/{userId}/suggestions/{document} {
-      allow create, read, update, delete: if isOwner(userId);
+      allow create: if (isOwner(userId) ||
+                        (isSignedIn() &&
+                         request.resource.data.agent_id == request.auth.uid &&
+                         request.resource.data.client_id == userId)) &&
+                       !exists(/databases/$(database)/documents/users/$(userId)/suggestions/$(document));
+      allow read: if isOwner(userId) || isSignedIn();
+      allow update, delete: if isOwner(userId);
     }
 
     match /users/{userId}/showami/{document} {
       allow create, read, update, delete: if isOwner(userId);
     }
 
-    match /favorites/{document} {
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-      allow read: if isSignedIn();
-      allow update, delete: if isResourceOwner();
-    }
+
 
     match /{path=**}/favorites/{document} {
-      allow read: if isResourceOwner();
-    }
-
-    match /{path=**}/suggestions/{document} {
-      allow read: if isResourceOwner();
+      allow read: if isResourceOwner() || isAgent();
     }
 
     match /{path=**}/showami/{document} {
       allow read: if isResourceOwner();
+    }
+
+    match /{path=**}/saved_searches/{document} {
+      allow read: if isResourceOwner() || isAgent();
     }
 
     match /properties/{document} {
@@ -95,17 +144,40 @@ service cloud.firestore {
     match /invitations/{document} {
       allow create: if isSignedIn();
       allow read: if isSignedIn() &&
-                     (resource.data.sender_id == request.auth.uid ||
-                      resource.data.recipient_id == request.auth.uid);
-      allow update: if isSignedIn() && resource.data.recipient_id == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.sender_id == request.auth.uid;
+                     (
+                       resource.data.sender_id == request.auth.uid ||
+                       resource.data.recipient_id == request.auth.uid ||
+                       resource.data.inviterUid == request.auth.uid ||
+                       resource.data.inviteeUid == request.auth.uid ||
+                       (resource.data.inviteeEmail is string &&
+                        request.auth.token.email is string &&
+                        resource.data.inviteeEmail == request.auth.token.email)
+                     );
+      allow update: if isSignedIn() &&
+                     (
+                       resource.data.recipient_id == request.auth.uid ||
+                       resource.data.inviteeUid == request.auth.uid ||
+                       (resource.data.inviteeEmail is string &&
+                        request.auth.token.email is string &&
+                        resource.data.inviteeEmail == request.auth.token.email)
+                     );
+      allow delete: if isSignedIn() &&
+                     (
+                       resource.data.sender_id == request.auth.uid ||
+                       resource.data.inviterUid == request.auth.uid
+                     );
     }
 
     match /relationships/{document} {
       allow create: if isSignedIn();
-      allow read, update, delete: if isSignedIn() &&
-                                     (resource.data.buyer_id == request.auth.uid ||
-                                      resource.data.agent_id == request.auth.uid);
+      allow read, update, delete: if isSignedIn();
+    }
+    match /client_notes/{document} {
+      allow create: if isSignedIn() && request.resource.data.agentId == request.auth.uid;
+      allow read: if isSignedIn() &&
+                    (resource.data.agentId == request.auth.uid ||
+                     resource.data.clientId == request.auth.uid);
+      allow update, delete: if isSignedIn() && resource.data.agentId == request.auth.uid;
     }
 
     match /support/{document} {
@@ -114,9 +186,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /saved_searches/{document} {
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-      allow read, update, delete: if isResourceOwner();
+    match /property_suggestions/{document} {
+      allow create: if isSignedIn() &&
+                       request.resource.data.agent_id == request.auth.uid;
+      allow read: if isSignedIn() &&
+                    (
+                      resource.data.client_id == request.auth.uid ||
+                      resource.data.agent_id == request.auth.uid
+                    );
+      allow update, delete: if isSignedIn() &&
+                              (
+                                resource.data.client_id == request.auth.uid ||
+                                resource.data.agent_id == request.auth.uid
+                              );
     }
 
     match /showings/{document} {
@@ -133,7 +215,8 @@ service cloud.firestore {
                        (request.resource.data.buyer_id == request.auth.uid ||
                         request.resource.data.buyerId == request.auth.uid ||
                         request.resource.data.created_by == request.auth.uid);
-      allow read, update: if isSignedIn() && isOfferParticipant(resource.data);
+      allow get, update: if isSignedIn() && isOfferParticipant(resource.data);
+      allow list: if false;
       allow delete: if false;
 
       match /revisions/{revisionId} {
@@ -173,20 +256,43 @@ service cloud.firestore {
 
     // Firestore-triggered email queue
     match /mail/{emailId} {
-      allow create: if isSignedIn();
+      allow create: if matchesRequester(request.resource.data);
       allow read, update, delete: if false;
     }
 
     // Firestore-triggered SMS queue
     match /sms_messages/{smsId} {
-      allow create: if isSignedIn();
+      allow create: if matchesRequester(request.resource.data);
       allow read, update, delete: if false;
     }
 
     // Integration telemetry sink (optional diagnostics)
     match /integration_logs/{logId} {
-      allow create: if isSignedIn();
+      allow create: if matchesRequester(request.resource.data);
       allow read, update, delete: if false;
+    }
+
+    match /email_logs/{document} {
+      allow create: if matchesRequester(request.resource.data);
+      allow read, update, delete: if false;
+    }
+
+    match /sms_logs/{document} {
+      allow create: if matchesRequester(request.resource.data);
+      allow read, update, delete: if false;
+    }
+
+    match /offer_notifications/{document} {
+      allow create, read, update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    match /activities/{document} {
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow read: if isSignedIn() &&
+                    (resource.data.user_id == request.auth.uid || isAgent());
+      allow update: if false;
+      allow delete: if false;
     }
 
     match /{document=**} {

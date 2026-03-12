@@ -591,8 +591,7 @@ class _VerificationSheetWidgetState extends State<VerificationSheetWidget> {
                                 ),
                                 Builder(
                                   builder: (context) {
-                                    if ((currentUserDocument
-                                                    ?.userIDCard.back !=
+                                    if ((currentUserDocument?.userIDCard.back !=
                                                 null &&
                                             currentUserDocument
                                                     ?.userIDCard.back !=

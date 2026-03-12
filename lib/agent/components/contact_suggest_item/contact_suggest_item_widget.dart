@@ -12,8 +12,7 @@ class ContactSuggestItemWidget extends StatefulWidget {
     required this.member,
     this.onSuggest,
     Color? suggestionIconColor,
-  }) : suggestionIconColor =
-            suggestionIconColor ?? const Color(0xFF57636C);
+  }) : suggestionIconColor = suggestionIconColor ?? const Color(0xFF57636C);
 
   final MemberSuggestionStruct? member;
   final Future Function()? onSuggest;
@@ -74,8 +73,7 @@ class _ContactSuggestItemWidgetState extends State<ContactSuggestItemWidget>
                 borderRadius: BorderRadius.circular(40.0),
                 child: Image.network(
                   valueOrDefault<String>(
-                    functions
-                        .stringToImagePath(widget.member?.member.photoUrl),
+                    functions.stringToImagePath(widget.member?.member.photoUrl),
                     'https://placehold.co/800@2x.png?text=U',
                   ),
                   width: 60.0,

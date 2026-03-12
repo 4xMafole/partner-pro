@@ -308,8 +308,8 @@ class _FundsProofSheetWidgetState extends State<FundsProofSheetWidget> {
                                             documentName:
                                                 _model.proofFunds?.fileName,
                                             documentType: 'pdf',
-                                            sellerId: widget.property?.sellerId
-                                                .firstOrNull,
+                                            sellerId: widget
+                                                .property?.sellerId.firstOrNull,
                                             documentSize:
                                                 _model.proofFunds?.fileSize,
                                           );

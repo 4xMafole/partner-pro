@@ -1671,9 +1671,8 @@ class _OfferDetailsPageWidgetState extends State<OfferDetailsPageWidget> {
                                           isRead: false,
                                         ));
                                     if (_model.clientDoc12q!.hasAcceptedSMS) {
-                                      _model.creationAgentToBuyer =
-                                          actions
-                                              .generateOfferEmailNotification(
+                                      _model.creationAgentToBuyer = actions
+                                          .generateOfferEmailNotification(
                                         EmailType.creationAgentToBuyer,
                                         widget.newOffer!.toMap(),
                                         null,
