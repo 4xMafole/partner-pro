@@ -112,7 +112,36 @@ class FirestoreDataSource {
       'agentName': agentName,
       'buyerName': buyerName,
       'status': 'active',
+      'autoApproveShowings': false,
       'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Get active relationship record for an agent/client pair.
+  Future<Map<String, dynamic>?> getRelationship({
+    required String agentId,
+    required String buyerId,
+  }) async {
+    final snap = await _firestore
+        .collection('relationships')
+        .where('agentId', isEqualTo: agentId)
+        .where('buyerId', isEqualTo: buyerId)
+        .where('status', isEqualTo: 'active')
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    final doc = snap.docs.first;
+    return {...doc.data(), 'id': doc.id};
+  }
+
+  /// Update relationship-level workflow preferences.
+  Future<void> updateRelationshipPreferences({
+    required String relationshipId,
+    required Map<String, dynamic> updates,
+  }) async {
+    await _firestore.collection('relationships').doc(relationshipId).update({
+      ...updates,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 

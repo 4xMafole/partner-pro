@@ -15,8 +15,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    final currentUser =
-        authState is AuthAuthenticated ? authState.user : null;
+    final currentUser = authState is AuthAuthenticated ? authState.user : null;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
@@ -81,7 +80,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ],
           ),
-          if (currentUser?.role == 'agent') ...[  
+          if (currentUser?.role == 'agent') ...[
             SizedBox(height: 16.h),
             _SettingsSection(
               title: 'Agent Workflow',
@@ -216,8 +215,7 @@ class _SettingsSwitchTile extends StatelessWidget {
       title: Text(title, style: AppTypography.titleMedium),
       subtitle: Text(
         subtitle,
-        style:
-            AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
       ),
       value: value,
       onChanged: onChanged,

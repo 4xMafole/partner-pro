@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../backend/schema/enums/enums.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/validators/offer_status_transition.dart';
@@ -154,6 +155,20 @@ class OfferRepository {
       final agentId = _s(serializedOfferData['agentId']) ??
           _s(_asMap(_asMap(serializedOfferData['parties'])['agent'])['id']);
 
+      var isAgentOutOfOffice = false;
+      if (agentId != null && agentId.isNotEmpty) {
+        final agentUser = await _remote.getUserByUid(uid: agentId);
+        isAgentOutOfOffice = agentUser?['isOutOfOffice'] == true;
+      }
+
+      if (isAgentOutOfOffice) {
+        serializedOfferData['agentReviewBypassed'] = true;
+        serializedOfferData['agentReviewRequired'] = false;
+        serializedOfferData['workflowStage'] = 'seller_tc_review';
+        serializedOfferData['tcHandoffStatus'] = 'queued';
+        serializedOfferData['oooBypassedAt'] = DateTime.now().toIso8601String();
+      }
+
       // Buyer-direct offers must remain attached to an assigned agent.
       if (buyerId == requesterId && (agentId == null || agentId.isEmpty)) {
         return const Left(ValidationFailure(
@@ -164,6 +179,15 @@ class OfferRepository {
 
       final result = await _remote.createOffer(
           offerData: serializedOfferData, requesterId: requesterId);
+
+      if (isAgentOutOfOffice) {
+        await _queueTransactionFromOffer(
+          offer: result,
+          handoffStatus: 'queued',
+          transactionStatus: 'under_contract',
+          source: 'ooo_bypass_on_submit',
+        );
+      }
 
       await _createNotificationsForChange(
         offerBefore: null,
@@ -215,7 +239,7 @@ class OfferRepository {
         if (oldStatus != null && newStatus != null && oldStatus != newStatus) {
           // Extract the 'id' from a party value that may be a Map, a model
           // object with an `id` property, or null.
-          String? _partyId(dynamic val) {
+          String? partyId(dynamic val) {
             if (val == null) return null;
             if (val is Map) return val['id'] as String?;
             // BuyerModel / freezed objects expose an `id` getter
@@ -233,19 +257,19 @@ class OfferRepository {
               parties is Map<String, dynamic> ? parties : <String, dynamic>{};
 
           // Normalise IDs: strip Firestore path prefix (e.g. "/users/uid" → "uid")
-          String? _normaliseId(String? raw) {
+            String? normaliseId(String? raw) {
             if (raw == null || raw.isEmpty) return null;
             return raw.contains('/') ? raw.split('/').last : raw;
           }
 
-          final buyerId = _normaliseId(_partyId(partiesMap['buyer']) ??
-                  _partyId(serializedOfferData['buyer'])) ??
-              _normaliseId(serializedOfferData['buyerId'] as String?);
-          final sellerId = _normaliseId(_partyId(partiesMap['seller']) ??
-                  _partyId(serializedOfferData['seller'])) ??
-              _normaliseId(serializedOfferData['sellerId'] as String?);
-          final agentId = _normaliseId(_partyId(partiesMap['agent']) ??
-              _partyId(serializedOfferData['agent']));
+            final buyerId = normaliseId(partyId(partiesMap['buyer']) ??
+                partyId(serializedOfferData['buyer'])) ??
+              normaliseId(serializedOfferData['buyerId'] as String?);
+            final sellerId = normaliseId(partyId(partiesMap['seller']) ??
+                partyId(serializedOfferData['seller'])) ??
+              normaliseId(serializedOfferData['sellerId'] as String?);
+            final agentId = normaliseId(partyId(partiesMap['agent']) ??
+              partyId(serializedOfferData['agent']));
 
           // Validate the transition
           final validation = OfferStatusTransition.validateTransition(
@@ -273,6 +297,17 @@ class OfferRepository {
         offerData: serializedOfferData,
         requesterId: requesterId,
       );
+
+      final oldStatus = _parseStatus(oldOfferState?['status']);
+      final newStatus = _parseStatus(result['status']);
+      if (oldStatus != Status.Accepted && newStatus == Status.Accepted) {
+        await _queueTransactionFromOffer(
+          offer: result,
+          handoffStatus: 'ready_for_tc',
+          transactionStatus: 'under_contract',
+          source: 'offer_accepted',
+        );
+      }
 
       // Create revision record if tracking is enabled and we have old state
       if (trackRevision && oldOfferState != null && oldOfferState.isNotEmpty) {
@@ -1006,5 +1041,63 @@ class OfferRepository {
       }
     }
     return ids;
+  }
+
+  Future<void> _queueTransactionFromOffer({
+    required Map<String, dynamic> offer,
+    required String handoffStatus,
+    required String transactionStatus,
+    required String source,
+  }) async {
+    final offerId =
+        _s(offer['id']) ?? _s(offer['offerID']) ?? _s(offer['offerId']) ?? '';
+    if (offerId.isEmpty) return;
+
+    final property = _asMap(offer['property']);
+    final parties = _asMap(offer['parties']);
+    final pricing = _asMap(offer['pricing']);
+
+    final propertyId = _s(offer['propertyId']) ??
+        _s(offer['property_id']) ??
+        _s(property['id']) ??
+        '';
+    final finalPrice = _i(offer['finalPrice'] ??
+        offer['final_price'] ??
+        pricing['finalPrice'] ??
+        pricing['final_price'] ??
+        offer['purchasePrice'] ??
+        offer['purchase_price'] ??
+        pricing['purchasePrice'] ??
+        pricing['purchase_price']);
+    final buyerId = _s(offer['buyerId']) ??
+        _s(offer['buyer_id']) ??
+        _s(_asMap(parties['buyer'])['id']) ??
+        '';
+    final sellerId = _s(offer['sellerId']) ??
+        _s(offer['seller_id']) ??
+        _s(_asMap(parties['seller'])['id']) ??
+        '';
+    final agentId = _s(offer['agentId']) ??
+        _s(offer['agent_id']) ??
+        _s(_asMap(parties['agent'])['id']) ??
+        '';
+
+    await FirebaseFirestore.instance
+        .collection(AppConstants.transactionsCollection)
+        .doc(offerId)
+        .set({
+      'offerId': offerId,
+      'propertyId': propertyId,
+      'buyerId': buyerId,
+      'sellerId': sellerId,
+      'agentId': agentId,
+      'finalPrice': finalPrice,
+      'status': transactionStatus,
+      'tcHandoffStatus': handoffStatus,
+      'source': source,
+      'offerSnapshot': offer,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 }

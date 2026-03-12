@@ -204,8 +204,9 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Quick Actions', style: AppTypography.headlineSmall),
               SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                spacing: 14.w,
+                runSpacing: 12.h,
                 children: [
                   DashboardQuickAction(
                     icon: LucideIcons.userPlus,
@@ -216,6 +217,11 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                     icon: LucideIcons.search,
                     label: 'Search Property',
                     onTap: () => context.go(RouteNames.agentSearch),
+                  ),
+                  DashboardQuickAction(
+                    icon: LucideIcons.calendarCheck,
+                    label: 'Showing Requests',
+                    onTap: () => context.push(RouteNames.scheduledShowings),
                   ),
                   DashboardQuickAction(
                     icon: LucideIcons.crown,

@@ -34,7 +34,7 @@ class ShowingPaymentService {
     _initialized = true;
   }
 
-  /// Charges the buyer $50 for a Showami-dispatched showing appointment.
+  /// Charges the listing agent $50 for a Showami-dispatched showing appointment.
   ///
   /// Calls the `createShowingPaymentIntent` Cloud Function (server-side) to
   /// obtain a client secret, then presents the native Stripe payment sheet.
@@ -42,14 +42,13 @@ class ShowingPaymentService {
   /// Returns `true` on successful payment, `false` if the user cancels.
   /// Throws on hard errors (network failure, declined card, etc.).
   Future<bool> chargeShowingFee({
-    required String buyerId,
+    required String agentId,
     required String showingId,
   }) async {
     // 1. Obtain a PaymentIntent client secret from the server.
-    final callable =
-        _functions.httpsCallable('createShowingPaymentIntent');
+    final callable = _functions.httpsCallable('createShowingPaymentIntent');
     final result = await callable.call<Map<String, dynamic>>({
-      'buyerId': buyerId,
+      'agentId': agentId,
       'showingId': showingId,
       'amountCents': 5000, // $50.00
       'currency': 'usd',
@@ -57,7 +56,8 @@ class ShowingPaymentService {
 
     final clientSecret = result.data['clientSecret'] as String?;
     if (clientSecret == null || clientSecret.isEmpty) {
-      throw Exception('No client secret returned from payment intent creation.');
+      throw Exception(
+          'No client secret returned from payment intent creation.');
     }
 
     // 2. Initialise the payment sheet.

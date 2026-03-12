@@ -185,6 +185,13 @@ class LoadShowings extends PropertyEvent {
   List<Object?> get props => [userId, requesterId];
 }
 
+class LoadAgentShowings extends PropertyEvent {
+  final String agentId, requesterId;
+  const LoadAgentShowings({required this.agentId, required this.requesterId});
+  @override
+  List<Object?> get props => [agentId, requesterId];
+}
+
 class CreateShowing extends PropertyEvent {
   final String userId, propertyId, date, time, requesterId;
   const CreateShowing(
@@ -202,6 +209,19 @@ class CancelShowing extends PropertyEvent {
   const CancelShowing({required this.showingId, required this.requesterId});
   @override
   List<Object?> get props => [showingId, requesterId];
+}
+
+class UpdateShowingStatus extends PropertyEvent {
+  final String showingId, status, requesterId;
+  final String? notes;
+  const UpdateShowingStatus({
+    required this.showingId,
+    required this.status,
+    required this.requesterId,
+    this.notes,
+  });
+  @override
+  List<Object?> get props => [showingId, status, requesterId, notes];
 }
 
 class RecordPropertyView extends PropertyEvent {
@@ -302,8 +322,10 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     on<DeleteSavedSearch>(_onDeleteSavedSearch);
     on<ToggleSavedSearchAlert>(_onToggleSavedSearchAlert);
     on<LoadShowings>(_onLoadShowings);
+    on<LoadAgentShowings>(_onLoadAgentShowings);
     on<CreateShowing>(_onCreateShowing);
     on<CancelShowing>(_onCancelShowing);
+    on<UpdateShowingStatus>(_onUpdateShowingStatus);
     on<RecordPropertyView>(_onRecordPropertyView);
     on<LoadRecentlyViewed>(_onLoadRecentlyViewed);
   }
@@ -500,6 +522,14 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         (sh) => emit(state.copyWith(showings: sh)));
   }
 
+  Future<void> _onLoadAgentShowings(
+      LoadAgentShowings event, Emitter<PropertyState> emit) async {
+    final r = await _repository.getAgentShowings(
+        agentId: event.agentId, requesterId: event.requesterId);
+    r.fold((f) => emit(state.copyWith(error: f.message)),
+        (sh) => emit(state.copyWith(showings: sh)));
+  }
+
   Future<void> _onCreateShowing(
       CreateShowing event, Emitter<PropertyState> emit) async {
     final r = await _repository
@@ -524,6 +554,28 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
       final u =
           state.showings.where((s) => s['id'] != event.showingId).toList();
       emit(state.copyWith(showings: u));
+    });
+  }
+
+  Future<void> _onUpdateShowingStatus(
+      UpdateShowingStatus event, Emitter<PropertyState> emit) async {
+    final r = await _repository.updateShowingStatus(
+      showingId: event.showingId,
+      status: event.status,
+      requesterId: event.requesterId,
+      notes: event.notes,
+    );
+    r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
+      final updated = state.showings.map((s) {
+        if ((s['id'] ?? '').toString() != event.showingId) return s;
+        return {
+          ...s,
+          'status': event.status,
+          'updated_by': event.requesterId,
+          'updated_at': DateTime.now().toIso8601String(),
+        };
+      }).toList();
+      emit(state.copyWith(showings: updated));
     });
   }
 

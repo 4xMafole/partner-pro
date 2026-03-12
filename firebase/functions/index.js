@@ -1,5 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const axios = require("axios").default;
+const Stripe = require("stripe");
 admin.initializeApp();
 
 const kFcmTokensCollection = "fcm_tokens";
@@ -11,6 +13,40 @@ const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
   memory: "2GB",
 };
+
+const stripeSecret =
+  (functions.config().stripe && functions.config().stripe.secret) || "";
+const stripe = stripeSecret
+  ? new Stripe(stripeSecret, { apiVersion: "2020-08-27" })
+  : null;
+
+function getShowingProvider() {
+  const showamiCfg = functions.config().showami || {};
+  const webhook = showamiCfg.dispatch_webhook || "";
+
+  return {
+    async dispatchShowing({ showingId, payload }) {
+      if (!webhook) {
+        return {
+          provider: "showami_stub",
+          providerDispatchId: `stub_${showingId}`,
+          providerStatus: "queued_no_webhook",
+        };
+      }
+
+      const response = await axios.post(webhook, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return {
+        provider: "showami",
+        providerDispatchId:
+          response.data?.dispatchId || response.data?.id || showingId,
+        providerStatus: "dispatched",
+      };
+    },
+  };
+}
 
 exports.addFcmToken = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -229,7 +265,142 @@ function getCharForIndex(charIdx) {
     return String.fromCharCode("a".charCodeAt(0) + charIdx - 36);
   }
 }
-// NOTE: Stripe payment functions removed — app now uses RevenueCat for subscriptions/payments.
+exports.createShowingPaymentIntent = functions.https.onCall(
+  async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication is required.",
+      );
+    }
+    if (!stripe) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Stripe is not configured. Set functions config: stripe.secret",
+      );
+    }
+
+    const showingId = (data.showingId || "").toString();
+    const agentId = (data.agentId || "").toString();
+    const amountCents = Number(data.amountCents || 5000);
+    const currency = (data.currency || "usd").toString().toLowerCase();
+
+    if (!showingId || !agentId || !Number.isFinite(amountCents)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "showingId, agentId, and amountCents are required.",
+      );
+    }
+
+    const customerRef = firestore.collection("customers").doc(agentId);
+    const customerSnap = await customerRef.get();
+    const customerData = customerSnap.exists ? customerSnap.data() || {} : {};
+    let stripeCustomerId = customerData.stripeCustomerId || customerData.customer_id || "";
+
+    if (!stripeCustomerId) {
+      const userSnap = await firestore.collection("users").doc(agentId).get();
+      const userData = userSnap.exists ? userSnap.data() || {} : {};
+      const customer = await stripe.customers.create({
+        email: userData.email || undefined,
+        name: userData.displayName || userData.firstName || undefined,
+        metadata: { uid: agentId },
+      });
+      stripeCustomerId = customer.id;
+      await customerRef.set(
+        {
+          stripeCustomerId,
+          uid: agentId,
+          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountCents,
+      currency,
+      customer: stripeCustomerId,
+      capture_method: "manual",
+      metadata: {
+        showingId,
+        agentId,
+        flow: "showing_fee_authorization",
+      },
+    });
+
+    await firestore.collection("showings").doc(showingId).set(
+      {
+        payment_intent_id: paymentIntent.id,
+        payment_status: "authorization_requested",
+        payment_amount_cents: amountCents,
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return {
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      customerId: stripeCustomerId,
+    };
+  },
+);
+
+exports.onShowingApprovedDispatch = functions.firestore
+  .document("showings/{showingId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+
+    if ((before.status || "") === (after.status || "")) {
+      return null;
+    }
+
+    if ((after.status || "") !== "agent_approved") {
+      return null;
+    }
+
+    // Enforce policy: authorization before dispatch.
+    const paymentStatus = (after.payment_status || "").toString();
+    if (!["authorized", "captured"].includes(paymentStatus)) {
+      await change.after.ref.set(
+        {
+          provider_status: "awaiting_payment_authorization",
+          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return null;
+    }
+
+    const provider = getShowingProvider();
+    const dispatchResult = await provider.dispatchShowing({
+      showingId: context.params.showingId,
+      payload: {
+        showingId: context.params.showingId,
+        propertyId: after.property_id || "",
+        buyerId: after.user_id || "",
+        agentId: after.agent_id || "",
+        date: after.date || "",
+        time: after.time || "",
+      },
+    });
+
+    await change.after.ref.set(
+      {
+        status: "dispatched",
+        provider: dispatchResult.provider,
+        provider_dispatch_id: dispatchResult.providerDispatchId,
+        provider_status: dispatchResult.providerStatus,
+        dispatched_at: admin.firestore.FieldValue.serverTimestamp(),
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return null;
+  });
+
 exports.onUserDeleted = functions.auth.user().onDelete(async (user) => {
   let firestore = admin.firestore();
   let userRef = firestore.doc("users/" + user.uid);

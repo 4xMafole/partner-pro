@@ -192,6 +192,31 @@ class AgentRepository {
           {required String userId, required bool isAgent}) =>
       _firestore.watchRelationships(userId: userId, isAgent: isAgent);
 
+  Future<Either<Failure, Map<String, dynamic>?>> getRelationship({
+    required String agentId,
+    required String buyerId,
+  }) async {
+    try {
+      return Right(
+          await _firestore.getRelationship(agentId: agentId, buyerId: buyerId));
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> updateRelationshipPreferences({
+    required String relationshipId,
+    required Map<String, dynamic> updates,
+  }) async {
+    try {
+      await _firestore.updateRelationshipPreferences(
+          relationshipId: relationshipId, updates: updates);
+      return const Right(null);
+    } catch (e) {
+      return Left(FirestoreFailure(message: e.toString()));
+    }
+  }
+
   // -- Buyer-side Invitations --
 
   Future<Either<Failure, List<Map<String, dynamic>>>> getBuyerInvitations(

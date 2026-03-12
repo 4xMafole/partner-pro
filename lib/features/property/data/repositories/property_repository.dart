@@ -392,6 +392,21 @@ class PropertyRepository {
     }
   }
 
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAgentShowings({
+    required String agentId,
+    required String requesterId,
+  }) async {
+    try {
+      final data = await _remote.getAgentShowings(
+          agentId: agentId, requesterId: requesterId);
+      return Right(data);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
   Future<Either<Failure, Map<String, dynamic>>> createShowing({
     required String requesterId,
     required Map<String, dynamic> showingData,
@@ -414,6 +429,27 @@ class PropertyRepository {
     try {
       await _remote.cancelShowing(
           showingId: showingId, requesterId: requesterId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, void>> updateShowingStatus({
+    required String showingId,
+    required String status,
+    required String requesterId,
+    String? notes,
+  }) async {
+    try {
+      await _remote.updateShowingStatus(
+        showingId: showingId,
+        status: status,
+        requesterId: requesterId,
+        notes: notes,
+      );
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));

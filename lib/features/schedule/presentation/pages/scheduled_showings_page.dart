@@ -17,17 +17,27 @@ class ScheduledShowingsPage extends StatefulWidget {
 }
 
 class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
+  void _loadShowingsForRole() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final uid = authState.user.uid;
+    final role = (authState.user.role ?? '').toLowerCase();
+    if (role == 'agent') {
+      context
+          .read<PropertyBloc>()
+          .add(LoadAgentShowings(agentId: uid, requesterId: uid));
+    } else {
+      context
+          .read<PropertyBloc>()
+          .add(LoadShowings(userId: uid, requesterId: uid));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthAuthenticated) {
-        final uid = authState.user.uid ?? '';
-        context
-            .read<PropertyBloc>()
-            .add(LoadShowings(userId: uid, requesterId: uid));
-      }
+      _loadShowingsForRole();
     });
   }
 
@@ -37,6 +47,12 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
       appBar: AppBar(title: const Text('Scheduled Showings')),
       body: BlocBuilder<PropertyBloc, PropertyState>(
         builder: (context, state) {
+          final authState = context.read<AuthBloc>().state;
+          final isAgent = authState is AuthAuthenticated &&
+              (authState.user.role ?? '').toLowerCase() == 'agent';
+          final requesterId =
+              authState is AuthAuthenticated ? authState.user.uid : '';
+
           if (state.isLoading && state.showings.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -59,7 +75,11 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
               final propertyId = showing['property_id'] as String? ?? '';
               final address =
                   showing['address'] as String? ?? 'Property $propertyId';
-              final status = showing['status'] as String? ?? 'scheduled';
+                final status = showing['status'] as String? ?? 'pending';
+                final canAgentApprove =
+                  isAgent && status.toLowerCase() == 'pending';
+                final canBuyerCancel =
+                  !isAgent && status.toLowerCase() != 'canceled';
 
               return Card(
                 margin: EdgeInsets.only(bottom: 12.h),
@@ -94,24 +114,67 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
                     style: AppTypography.bodySmall
                         .copyWith(color: AppColors.textSecondary),
                   ),
-                  trailing: status.toLowerCase() == 'scheduled'
-                      ? IconButton(
-                          icon: Icon(LucideIcons.x,
-                              size: 18.sp, color: AppColors.error),
-                          onPressed: () {
-                            final showingId = showing['id'] as String? ?? '';
-                            final authState = context.read<AuthBloc>().state;
-                            if (authState is AuthAuthenticated &&
-                                showingId.isNotEmpty) {
-                              context.read<PropertyBloc>().add(
-                                    CancelShowing(
-                                        showingId: showingId,
-                                        requesterId: authState.user.uid ?? ''),
-                                  );
-                            }
-                          },
+                  trailing: canAgentApprove
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: 'Approve showing',
+                              icon: Icon(LucideIcons.check,
+                                  size: 18.sp, color: AppColors.success),
+                              onPressed: () {
+                                final showingId =
+                                    showing['id'] as String? ?? '';
+                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
+                                  context.read<PropertyBloc>().add(
+                                        UpdateShowingStatus(
+                                          showingId: showingId,
+                                          status: 'agent_approved',
+                                          requesterId: requesterId,
+                                        ),
+                                      );
+                                }
+                              },
+                            ),
+                            IconButton(
+                              tooltip: 'Decline showing',
+                              icon: Icon(LucideIcons.x,
+                                  size: 18.sp, color: AppColors.error),
+                              onPressed: () {
+                                final showingId =
+                                    showing['id'] as String? ?? '';
+                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
+                                  context.read<PropertyBloc>().add(
+                                        UpdateShowingStatus(
+                                          showingId: showingId,
+                                          status: 'canceled',
+                                          requesterId: requesterId,
+                                          notes: 'Declined by listing agent',
+                                        ),
+                                      );
+                                }
+                              },
+                            ),
+                          ],
                         )
-                      : null,
+                      : canBuyerCancel
+                          ? IconButton(
+                              tooltip: 'Cancel showing',
+                              icon: Icon(LucideIcons.x,
+                                  size: 18.sp, color: AppColors.error),
+                              onPressed: () {
+                                final showingId =
+                                    showing['id'] as String? ?? '';
+                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
+                                  context.read<PropertyBloc>().add(
+                                        CancelShowing(
+                                            showingId: showingId,
+                                            requesterId: requesterId),
+                                      );
+                                }
+                              },
+                            )
+                          : null,
                 ),
               );
             },

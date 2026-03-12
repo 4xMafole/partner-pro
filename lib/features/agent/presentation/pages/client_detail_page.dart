@@ -342,6 +342,9 @@ class _ClientDetailPageState extends State<ClientDetailPage> {
           final visibleActivities =
               _isActivityExpanded ? activities : activities.take(4).toList();
           final notes = state.clientNotes;
+          final relationship = state.relationship ?? const <String, dynamic>{};
+          final relationshipId = (relationship['id'] ?? '').toString();
+          final autoApproveShowings = relationship['autoApproveShowings'] == true;
           final suggested = state.suggestedProperties.take(8).toList();
           final favorites = state.favoriteProperties.take(8).toList();
           final savedSearches = state.savedSearches.take(8).toList();
@@ -478,6 +481,43 @@ class _ClientDetailPageState extends State<ClientDetailPage> {
                 items: recentViewed,
                 badge: 'Viewed',
                 emptyText: 'No recent views yet.',
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: SwitchListTile.adaptive(
+                      secondary:
+                          Icon(LucideIcons.zap, color: AppColors.primary),
+                      title: const Text('Auto-Approve Showings'),
+                      subtitle: Text(
+                        'Relationship-level: immediately approve this client\'s showing requests.',
+                        style: AppTypography.bodySmall
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
+                      value: autoApproveShowings,
+                      onChanged: relationshipId.isEmpty
+                          ? null
+                          : (enabled) {
+                              final authState = context.read<AuthBloc>().state;
+                              if (authState is! AuthAuthenticated) return;
+                              context.read<AgentBloc>().add(
+                                    UpdateClientShowingAutoApprove(
+                                      agentId: authState.user.uid,
+                                      clientId: widget.clientId,
+                                      relationshipId: relationshipId,
+                                      enabled: enabled,
+                                    ),
+                                  );
+                            },
+                    ),
+                  ),
+                ),
               ),
               SliverToBoxAdapter(
                 child: Padding(

@@ -341,8 +341,7 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
       try {
         // Sprint 3.1: Check agent out-of-office status to customise notification
         String notifTitle = 'New Offer Submitted';
-        String notifBody =
-            'A new offer has been submitted for $propertyTitle.';
+        String notifBody = 'A new offer has been submitted for $propertyTitle.';
         final agentResult = await _authRepository.getUserProfile(agentId);
         agentResult.fold(
           (_) {},
@@ -350,7 +349,7 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
             if (agentProfile.isOutOfOffice) {
               notifTitle = '[Away] New Offer Submitted';
               notifBody =
-                  'An offer for $propertyTitle arrived while you are away. Review it on your return.';
+                  'An offer for $propertyTitle arrived while you are away and was auto-forwarded to seller/TC review queue.';
             }
           },
         );

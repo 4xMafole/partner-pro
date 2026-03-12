@@ -155,10 +155,23 @@ class AddClientNote extends AgentEvent {
   List<Object?> get props => [agentId, clientId, note];
 }
 
+class UpdateClientShowingAutoApprove extends AgentEvent {
+  final String agentId, clientId, relationshipId;
+  final bool enabled;
+  const UpdateClientShowingAutoApprove({
+    required this.agentId,
+    required this.clientId,
+    required this.relationshipId,
+    required this.enabled,
+  });
+  @override
+  List<Object?> get props => [agentId, clientId, relationshipId, enabled];
+}
+
 class AgentState extends Equatable {
   final bool isLoading, isSending;
   final String? error, successMessage;
-  final Map<String, dynamic>? agentProfile, clientDetail;
+  final Map<String, dynamic>? agentProfile, clientDetail, relationship;
   final List<Map<String, dynamic>> clients,
       activities,
       invitations,
@@ -178,6 +191,7 @@ class AgentState extends Equatable {
       this.successMessage,
       this.agentProfile,
       this.clientDetail,
+      this.relationship,
       this.clients = const [],
       this.activities = const [],
       this.invitations = const [],
@@ -197,6 +211,7 @@ class AgentState extends Equatable {
       String? successMessage,
       Map<String, dynamic>? agentProfile,
       Map<String, dynamic>? clientDetail,
+      Map<String, dynamic>? relationship,
       List<Map<String, dynamic>>? clients,
       List<Map<String, dynamic>>? activities,
       List<Map<String, dynamic>>? invitations,
@@ -215,6 +230,7 @@ class AgentState extends Equatable {
         successMessage: successMessage,
         agentProfile: agentProfile ?? this.agentProfile,
         clientDetail: clientDetail ?? this.clientDetail,
+        relationship: relationship ?? this.relationship,
         clients: clients ?? this.clients,
         activities: activities ?? this.activities,
         invitations: invitations ?? this.invitations,
@@ -237,6 +253,7 @@ class AgentState extends Equatable {
         successMessage,
         agentProfile,
         clientDetail,
+        relationship,
         clients,
         activities,
         invitations,
@@ -271,6 +288,7 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
     on<AddClientNote>(_onAddClientNote);
     on<UpdateClientNote>(_onUpdateClientNote);
     on<DeleteClientNote>(_onDeleteClientNote);
+    on<UpdateClientShowingAutoApprove>(_onUpdateClientShowingAutoApprove);
   }
 
   Future<void> _onLoadProfile(
@@ -435,6 +453,8 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
         agentId: e.agentId, requesterId: e.requesterId);
     final intelligenceResult = await _repository.getClientPropertyIntelligence(
         clientId: e.clientId, agentId: e.agentId);
+    final relationshipResult =
+      await _repository.getRelationship(agentId: e.agentId, buyerId: e.clientId);
 
     profileResult.fold(
       (f) => emit(state.copyWith(isLoading: false, error: f.message)),
@@ -445,11 +465,14 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
             activitiesResult.fold((_) => <Map<String, dynamic>>[], (a) => a);
         final intelligence = intelligenceResult.fold(
             (_) => <String, List<Map<String, dynamic>>>{}, (i) => i);
+        final relationship =
+          relationshipResult.fold((_) => <String, dynamic>{}, (r) => r ?? {});
         final clientActivities =
             allActivities.where((a) => a['user_id'] == e.clientId).toList();
         emit(state.copyWith(
             isLoading: false,
             clientDetail: profile,
+          relationship: relationship,
             clientNotes: notes,
             clientActivities: clientActivities,
             suggestedProperties:
@@ -500,6 +523,27 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
       (f) => emit(state.copyWith(isSending: false, error: f.message)),
       (_) {
         emit(state.copyWith(isSending: false, successMessage: 'Note deleted'));
+        add(LoadClientDetail(
+            agentId: e.agentId, clientId: e.clientId, requesterId: e.agentId));
+      },
+    );
+  }
+
+  Future<void> _onUpdateClientShowingAutoApprove(
+      UpdateClientShowingAutoApprove e, Emitter<AgentState> emit) async {
+    emit(state.copyWith(isSending: true, error: null));
+    final r = await _repository.updateRelationshipPreferences(
+      relationshipId: e.relationshipId,
+      updates: {'autoApproveShowings': e.enabled},
+    );
+    r.fold(
+      (f) => emit(state.copyWith(isSending: false, error: f.message)),
+      (_) {
+        emit(state.copyWith(
+          isSending: false,
+          successMessage:
+              e.enabled ? 'Auto-approve enabled' : 'Auto-approve disabled',
+        ));
         add(LoadClientDetail(
             agentId: e.agentId, clientId: e.clientId, requesterId: e.agentId));
       },

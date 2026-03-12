@@ -346,6 +346,19 @@ class PropertyRemoteDataSource {
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
+  /// Gets showing requests assigned to an agent.
+  Future<List<Map<String, dynamic>>> getAgentShowings({
+    required String agentId,
+    required String requesterId,
+  }) async {
+    final snap = await _firestore
+        .collection(AppConstants.showingsCollection)
+        .where('agent_id', isEqualTo: agentId)
+        .orderBy('created_at', descending: true)
+        .get();
+    return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
+
   /// Creates a new showing request.
   Future<Map<String, dynamic>> createShowing({
     required String requesterId,
@@ -365,6 +378,24 @@ class PropertyRemoteDataSource {
 
     final now = DateTime.now();
     const showingWindowMinutes = 60;
+
+    final relationshipSnap = await _firestore
+      .collection(AppConstants.relationshipsCollection)
+      .where('buyerId', isEqualTo: userId)
+      .where('status', isEqualTo: 'active')
+      .limit(1)
+      .get();
+    final relationshipDoc =
+      relationshipSnap.docs.isNotEmpty ? relationshipSnap.docs.first : null;
+    final relationship = relationshipDoc?.data() ?? <String, dynamic>{};
+    final relationshipId = relationshipDoc?.id;
+    final agentId = (relationship['agentId'] ??
+        relationship['agentUid'] ??
+        (relationship['relationship'] as Map<String, dynamic>?)?['agentId'] ??
+        (relationship['relationship'] as Map<String, dynamic>?)?['agentUid'] ??
+        '')
+      .toString();
+    final autoApprove = relationship['autoApproveShowings'] == true;
 
     final existingSnap = await _firestore
         .collection(AppConstants.showingsCollection)
@@ -403,7 +434,14 @@ class PropertyRemoteDataSource {
     final docRef =
         await _firestore.collection(AppConstants.showingsCollection).add({
       ...showingData,
-      'status': showingData['status'] ?? 'pending',
+      'agent_id': agentId,
+      'relationship_id': relationshipId,
+      'approval_mode': autoApprove ? 'relationship_auto_approve' : 'agent_manual',
+      'status': showingData['status'] ?? (autoApprove ? 'agent_approved' : 'pending'),
+      'payment_status': autoApprove ? 'requires_authorization' : 'awaiting_approval',
+      'provider_status': autoApprove ? 'queued_dispatch' : 'awaiting_approval',
+      if (autoApprove) 'approved_at': FieldValue.serverTimestamp(),
+      if (autoApprove) 'approved_by': 'system:auto_approve',
       'created_at': FieldValue.serverTimestamp(),
     });
     final snap = await docRef.get();
@@ -418,7 +456,62 @@ class PropertyRemoteDataSource {
     await _firestore
         .collection(AppConstants.showingsCollection)
         .doc(showingId)
-        .delete();
+        .update({
+      'status': 'canceled',
+      'provider_status': 'canceled',
+      'canceled_at': FieldValue.serverTimestamp(),
+      'canceled_by': requesterId,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Approves/declines/dispatches/completes a showing using the defined schema.
+  Future<void> updateShowingStatus({
+    required String showingId,
+    required String status,
+    required String requesterId,
+    String? notes,
+  }) async {
+    const allowedStatuses = {
+      'pending',
+      'agent_approved',
+      'dispatched',
+      'completed',
+      'canceled',
+    };
+
+    if (!allowedStatuses.contains(status)) {
+      throw ServerException(message: 'Unsupported showing status: $status');
+    }
+
+    final updates = <String, dynamic>{
+      'status': status,
+      'updated_by': requesterId,
+      'updated_at': FieldValue.serverTimestamp(),
+      if (notes != null && notes.trim().isNotEmpty) 'status_notes': notes.trim(),
+    };
+
+    if (status == 'agent_approved') {
+      updates['approved_at'] = FieldValue.serverTimestamp();
+      updates['approved_by'] = requesterId;
+      updates['payment_status'] = 'requires_authorization';
+      updates['provider_status'] = 'queued_dispatch';
+    } else if (status == 'dispatched') {
+      updates['provider_status'] = 'dispatched';
+    } else if (status == 'completed') {
+      updates['provider_status'] = 'completed';
+      updates['payment_status'] = 'captured';
+    } else if (status == 'canceled') {
+      updates['provider_status'] = 'canceled';
+      updates['payment_status'] = 'voided';
+      updates['canceled_at'] = FieldValue.serverTimestamp();
+      updates['canceled_by'] = requesterId;
+    }
+
+    await _firestore
+        .collection(AppConstants.showingsCollection)
+        .doc(showingId)
+        .update(updates);
   }
 
   DateTime? _parseShowingDateTime(dynamic dateValue, dynamic timeValue) {
