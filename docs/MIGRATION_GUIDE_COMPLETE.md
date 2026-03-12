@@ -35,6 +35,13 @@ order: 10
 
 **Phase 2 Progress:** 3 of 4 sprints complete (2.1, 2.3, and 2.4 closed; 2.2 pending)
 
+## 📊 Sprint Status Overview (Phase 3 - Complete Migration & Polish)
+
+| Sprint | Focus | Status | Date | Details |
+|--------|-------|--------|------|---------|
+| **3.1** | Showings, TC Handoff & Settings | ⏳ In Progress | — | Showami architecture, Agent OOO bypass, TC pipeline |
+| **3.2** | UI/UX & Backend Hardening | ⏳ Upcoming | — | Firestore indexes, security rules, global UI polish |
+
 ---
 
 ## 📋 Quick Navigation
@@ -1050,7 +1057,7 @@ WEEK 21-22 (Phase 4: Production Ready)
 │                                                 │
 │ Phase 1: ✅ COMPLETE (95% on time)            │
 │ Phase 2: 🟡 IN PROGRESS (103% of effort)      │
-│ Phase 3: ⏳ PLANNED (starts Week 13)           │
+│ Phase 3: 🟢 IN PROGRESS (started Mar 12)     │
 │ Phase 4: ⏳ PLANNED (starts Week 21)           │
 │                                                 │
 │ Cost:              $240K / $420K budget (57%)  │
