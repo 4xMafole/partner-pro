@@ -138,65 +138,117 @@ class _AgentOffersPageState extends State<AgentOffersPage> {
               final address = offer.property.title.isNotEmpty
                   ? offer.property.title
                   : 'Property ${offer.propertyId}';
-              return Card(
+              final location = [
+                offer.property.location.city,
+                offer.property.location.state,
+                offer.property.location.zipCode,
+              ].where((e) => e.trim().isNotEmpty).join(', ');
+              return Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: const [],
+                  ),
                   child: InkWell(
-                onTap: () => context.push(
-                    RouteNames.offerDetails.replaceFirst(':id', offer.id)),
-                borderRadius: BorderRadius.circular(12.r),
-                child: Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Expanded(
-                                child: Text(address,
-                                    style: AppTypography.titleMedium,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis)),
-                            Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10.w, vertical: 4.h),
-                                decoration: BoxDecoration(
-                                    color: _statusColor(statusStr)
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12.r)),
-                                child: Text(statusStr.toUpperCase(),
-                                    style: AppTypography.labelSmall.copyWith(
-                                        color: _statusColor(statusStr),
-                                        fontWeight: FontWeight.w600))),
-                          ]),
-                          SizedBox(height: 8.h),
-                          Row(children: [
-                            Icon(LucideIcons.user,
-                                size: 14.sp, color: AppColors.textSecondary),
-                            SizedBox(width: 4.w),
-                            Text(
-                                offer.buyer.name.isNotEmpty
-                                    ? offer.buyer.name
-                                    : 'Buyer',
-                                style: AppTypography.bodySmall
-                                    .copyWith(color: AppColors.textSecondary)),
-                            SizedBox(width: 16.w),
-                            Icon(LucideIcons.dollarSign,
-                                size: 14.sp, color: AppColors.textSecondary),
-                            SizedBox(width: 4.w),
-                            Text('\$${_formatNumber(offer.purchasePrice)}',
-                                style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600)),
-                            if (offer.counteredCount > 0) ...[
-                              SizedBox(width: 16.w),
-                              Icon(LucideIcons.repeat,
-                                  size: 14.sp, color: AppColors.tertiary),
-                              SizedBox(width: 4.w),
-                              Text('${offer.counteredCount} counter(s)',
+                    onTap: () => context.push(
+                        RouteNames.offerDetails.replaceFirst(':id', offer.id)),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                    child: Text(address,
+                                        style: AppTypography.titleMedium,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis)),
+                                Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w, vertical: 4.h),
+                                    decoration: BoxDecoration(
+                                        color: _statusColor(statusStr)
+                                            .withValues(alpha: 0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(12.r)),
+                                    child: Text(statusStr.toUpperCase(),
+                                        style: AppTypography.labelSmall
+                                            .copyWith(
+                                                color: _statusColor(statusStr),
+                                                fontWeight: FontWeight.w600))),
+                              ]),
+                              if (location.isNotEmpty) ...[
+                                SizedBox(height: 6.h),
+                                Text(
+                                  location,
                                   style: AppTypography.bodySmall
-                                      .copyWith(color: AppColors.tertiary))
-                            ],
-                          ]),
-                        ])),
-              ));
+                                      .copyWith(color: AppColors.textSecondary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              SizedBox(height: 8.h),
+                              Wrap(
+                                spacing: 12.w,
+                                runSpacing: 6.h,
+                                children: [
+                                  Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.user,
+                                            size: 14.sp,
+                                            color: AppColors.textSecondary),
+                                        SizedBox(width: 4.w),
+                                        Text(
+                                          offer.buyer.name.isNotEmpty
+                                              ? offer.buyer.name
+                                              : 'Buyer',
+                                          style: AppTypography.bodySmall
+                                              .copyWith(
+                                                  color:
+                                                      AppColors.textSecondary),
+                                        ),
+                                      ]),
+                                  Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.dollarSign,
+                                            size: 14.sp,
+                                            color: AppColors.textSecondary),
+                                        SizedBox(width: 4.w),
+                                        Text(
+                                            '\$${_formatNumber(offer.purchasePrice)}',
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                                    color: AppColors.primary,
+                                                    fontWeight:
+                                                        FontWeight.w700)),
+                                      ]),
+                                  if (offer.counteredCount > 0)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 8.w, vertical: 3.h),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.tertiary
+                                            .withValues(alpha: 0.12),
+                                        borderRadius:
+                                            BorderRadius.circular(999.r),
+                                      ),
+                                      child: Text(
+                                        '${offer.counteredCount} counters',
+                                        style:
+                                            AppTypography.labelSmall.copyWith(
+                                          color: AppColors.tertiary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ])),
+                  ));
             },
           ),
         );

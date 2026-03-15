@@ -66,8 +66,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<fb.UserCredential> signInWithGoogle() async {
     try {
       final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null)
+      if (googleUser == null) {
         throw AuthException(message: 'Google sign-in cancelled');
+      }
 
       final googleAuth = await googleUser.authentication;
       final credential = fb.GoogleAuthProvider.credential(

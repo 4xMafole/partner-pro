@@ -1,6 +1,7 @@
 /// Unit tests for AuthRemoteDataSource
 ///
 /// Tests the data source layer for Firebase authentication.
+library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;

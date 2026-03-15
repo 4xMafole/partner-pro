@@ -3,7 +3,7 @@
 /// Provides mock classes for testing Firestore functionality
 /// without requiring actual Firestore connections.
 /// Uses Fake pattern to avoid nested when() issues with mocktail.
-library mock_firestore;
+library;
 
 import 'dart:async';
 

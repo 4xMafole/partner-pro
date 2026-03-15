@@ -439,7 +439,7 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                   itemCount: rv.length > 10 ? 10 : rv.length,
                   itemBuilder: (context, index) {
                     final item = rv[index];
-                    final propId = item['property_id'] as String? ?? '';
+                    final propId = item.propertyId;
                     final property = _findPropertyById(allProperties, propId);
 
                     return DashboardPropertyCard(
@@ -449,7 +449,7 @@ class _BuyerDashboardPageState extends State<BuyerDashboardPage> {
                       badgeLabel: 'Moments',
                       badgeIcon: LucideIcons.eye,
                       badgeColor: AppColors.primary,
-                      metaText: timeAgoFromDynamic(item['viewed_at']),
+                      metaText: timeAgoFromDynamic(item.viewedAt),
                       onTap: propId.isEmpty
                           ? null
                           : () => context.push(RouteNames.propertyDetails

@@ -193,85 +193,91 @@ class _OfferProcessSheetState extends State<OfferProcessSheet> {
     final loanAmount = _purchasePrice - _downPaymentAmount;
     final existingOffer = widget.existingOffer;
     final sellerId = existingOffer?.sellerId ?? _newOfferSellerId;
-    return {
-      if (widget.existingOffer != null) 'id': widget.existingOffer!.id,
-      'status': existingOffer?.status?.name ?? 'pending',
-      'propertyId': widget.property.id,
-      if (sellerId != null && sellerId.isNotEmpty) 'sellerId': sellerId,
-      'buyerId': existingOffer?.buyerId ?? widget.requesterId,
-      if (existingOffer != null && existingOffer.chatId.isNotEmpty)
-        'chatId': existingOffer.chatId,
-      'property': {
-        'id': widget.property.id,
-        'propertyName': widget.property.propertyName,
-        'listPrice': widget.property.listPrice,
-        'address': {
-          'streetNumber': widget.property.address.streetNumber,
-          'streetName': widget.property.address.streetName,
-          'city': widget.property.address.city,
-          'state': widget.property.address.state,
-          'zip': widget.property.address.zip,
-        },
-      },
-      'parties': {
-        'buyer': {
-          'id': existingOffer?.buyer.id ?? widget.requesterId,
-          'name': '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}',
-          'phoneNumber': _phoneCtrl.text.trim(),
-          'email': _emailCtrl.text.trim(),
-        },
-        if (_hasSecondBuyer)
-          'secondBuyer': {
-            'id': existingOffer?.secondBuyer.id ?? '',
-            'name':
-                '${_secondFirstNameCtrl.text.trim()} ${_secondLastNameCtrl.text.trim()}',
-            'phoneNumber': _secondPhoneCtrl.text.trim(),
-            'email': _secondEmailCtrl.text.trim(),
-          },
-        if (sellerId != null && sellerId.isNotEmpty)
-          'seller': {
-            'id': sellerId,
-            'name': existingOffer?.seller.name ?? '',
-            'phoneNumber': existingOffer?.seller.phoneNumber ?? '',
-            'email': existingOffer?.seller.email ?? '',
-          },
-        if (existingOffer != null)
-          'agent': {
-            'id': existingOffer.agent.id,
-            'name': existingOffer.agent.name,
-            'phoneNumber': existingOffer.agent.phoneNumber,
-            'email': existingOffer.agent.email,
-          },
-      },
-      'pricing': {
-        'listPrice': widget.property.listPrice,
-        'purchasePrice': _purchasePrice.toInt(),
-      },
-      'financials': {
-        'loanType': _loanType,
-        'downPaymentAmount': _downPaymentAmount.toInt(),
-        'loanAmount': loanAmount.toInt(),
-        'creditRequest': _creditRequest.toInt(),
-        'depositType': _depositType,
-        'depositAmount': _depositAmount.toInt(),
-        'additionalEarnest': _additionalEarnest.toInt(),
-        'optionFee': _optionFee.toInt(),
-        'coverageAmount': _coverageAmount.toInt(),
-      },
-      'conditions': {
-        'propertyCondition': _propertyCondition,
-        'preApproval': _preApproval,
-        'survey': _survey,
-      },
-      'closingDate': _closingDate?.toIso8601String() ?? '',
-      'closingDays': int.tryParse(_closingDaysCtrl.text) ?? 30,
-      'titleCompany': {
-        if (existingOffer != null) 'id': existingOffer.titleCompany.id,
-        'companyName': _titleCompanyCtrl.text.trim(),
-        'choice': _titleChoice,
-      },
-      if (existingOffer != null) 'addendums': existingOffer.addendums,
-    };
+
+    final model = NewOfferModel(
+      id: existingOffer?.id ?? '',
+      status: existingOffer?.status?.name ?? 'pending',
+      property: PropertyDataClass(
+        id: widget.property.id,
+        propertyName: widget.property.propertyName,
+        listPrice: widget.property.listPrice,
+        address: widget.property.address,
+      ),
+      parties: PartiesModel(
+        buyer: BuyerModel(
+          id: existingOffer?.buyer.id ?? widget.requesterId,
+          name: '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}',
+          phoneNumber: _phoneCtrl.text.trim(),
+          email: _emailCtrl.text.trim(),
+        ),
+        secondBuyer: _hasSecondBuyer
+            ? BuyerModel(
+                id: existingOffer?.secondBuyer.id ?? '',
+                name:
+                    '${_secondFirstNameCtrl.text.trim()} ${_secondLastNameCtrl.text.trim()}',
+                phoneNumber: _secondPhoneCtrl.text.trim(),
+                email: _secondEmailCtrl.text.trim(),
+              )
+            : const BuyerModel(),
+        seller: sellerId != null && sellerId.isNotEmpty
+            ? SellerModel(
+                name: existingOffer?.seller.name ?? '',
+                phoneNumber: existingOffer?.seller.phoneNumber ?? '',
+                email: existingOffer?.seller.email ?? '',
+              )
+            : const SellerModel(),
+        agent: existingOffer != null
+            ? BuyerModel(
+                id: existingOffer.agent.id,
+                name: existingOffer.agent.name,
+                phoneNumber: existingOffer.agent.phoneNumber,
+                email: existingOffer.agent.email,
+              )
+            : const BuyerModel(),
+      ),
+      pricing: PricingModel(
+        listPrice: widget.property.listPrice,
+        purchasePrice: _purchasePrice.toInt(),
+      ),
+      financials: FinancialsModel(
+        loanType: _loanType,
+        downPaymentAmount: _downPaymentAmount.toInt(),
+        loanAmount: loanAmount.toInt(),
+        creditRequest: _creditRequest.toInt(),
+        depositType: _depositType,
+        depositAmount: _depositAmount.toInt(),
+        additionalEarnest: _additionalEarnest.toInt(),
+        optionFee: _optionFee.toInt(),
+        coverageAmount: _coverageAmount.toInt(),
+      ),
+      conditions: ConditionsModel(
+        propertyCondition: _propertyCondition,
+        preApproval: _preApproval,
+        survey: _survey,
+      ),
+      closingDate: _closingDate?.toIso8601String() ?? '',
+      titleCompany: TitleCompanyModel(
+        id: existingOffer?.titleCompany.id ?? '',
+        companyName: _titleCompanyCtrl.text.trim(),
+        choice: _titleChoice,
+      ),
+      addendums: existingOffer?.addendums ?? [],
+    );
+
+    final json = model.toJson();
+    json['propertyId'] = widget.property.id;
+    json['closingDays'] = int.tryParse(_closingDaysCtrl.text) ?? 30;
+    if (sellerId != null && sellerId.isNotEmpty) json['sellerId'] = sellerId;
+    if (existingOffer?.buyerId != null) {
+      json['buyerId'] = existingOffer!.buyerId;
+    } else {
+      json['buyerId'] = widget.requesterId;
+    }
+    if (existingOffer?.chatId != null && existingOffer!.chatId.isNotEmpty) {
+      json['chatId'] = existingOffer.chatId;
+    }
+
+    return json;
   }
 
   void _onNext() {

@@ -1,6 +1,8 @@
 /// Unit tests for AgentBloc — Sprint 2.4 features
 ///
 /// Tests buyer invitation, client detail, and client notes flows.
+library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -200,6 +202,9 @@ void main() {
     blocTest<AgentBloc, AgentState>(
       'emits [loading, loaded] with client detail, notes, and filtered activities',
       build: () {
+        when(() => mockRepository.getRelationship(
+                agentId: any(named: 'agentId'), buyerId: any(named: 'buyerId')))
+            .thenAnswer((_) async => const Right({}));
         when(() => mockRepository.fetchUserAccount(id: clientId))
             .thenAnswer((_) async => Right(clientProfile));
         when(() => mockRepository.getClientNotes(
@@ -225,6 +230,7 @@ void main() {
         AgentState(
           isLoading: false,
           clientDetail: clientProfile,
+          relationship: const {},
           clientNotes: clientNotes,
           clientActivities: [allActivities[0]], // Only client1's activities
         ),
@@ -234,6 +240,9 @@ void main() {
     blocTest<AgentBloc, AgentState>(
       'emits [loading, error] when profile fetch fails',
       build: () {
+        when(() => mockRepository.getRelationship(
+                agentId: any(named: 'agentId'), buyerId: any(named: 'buyerId')))
+            .thenAnswer((_) async => const Right({}));
         when(() => mockRepository.fetchUserAccount(id: clientId)).thenAnswer(
             (_) async => const Left(ServerFailure(message: 'Not found')));
         when(() => mockRepository.getClientNotes(
@@ -279,6 +288,10 @@ void main() {
               note: note,
             )).thenAnswer((_) async => const Right(null));
         // After adding note, bloc dispatches LoadClientDetail
+
+        when(() => mockRepository.getRelationship(
+                agentId: any(named: 'agentId'), buyerId: any(named: 'buyerId')))
+            .thenAnswer((_) async => const Right({}));
         when(() => mockRepository.fetchUserAccount(id: clientId))
             .thenAnswer((_) async => Right({'uid': clientId}));
         when(() => mockRepository.getClientNotes(
@@ -309,6 +322,7 @@ void main() {
         AgentState(
           isLoading: false,
           clientDetail: {'uid': clientId},
+          relationship: const {},
           clientNotes: [
             {'note': note, 'createdAt': '2024-01-02'}
           ],

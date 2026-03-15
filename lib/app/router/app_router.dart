@@ -28,7 +28,6 @@ import '../../features/agent/presentation/pages/agent_invite_page.dart';
 import '../../features/property/presentation/pages/property_details_page.dart';
 import '../../features/offer/presentation/pages/offer_details_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/settings/presentation/pages/security_page.dart';
 import '../../features/settings/presentation/pages/notification_settings_page.dart';

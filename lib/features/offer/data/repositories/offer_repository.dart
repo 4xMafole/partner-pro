@@ -61,49 +61,172 @@ class OfferRepository {
     return '$firstName $lastName'.trim();
   }
 
+  Map<String, dynamic> _contactFromUser(
+    String id,
+    Map<String, dynamic>? user,
+    Map<String, dynamic> fallback,
+  ) {
+    return {
+      'id': id,
+      'name': (user == null ? null : _userDisplayName(user)) ??
+          _s(fallback['name']) ??
+          '',
+      'phoneNumber': (user == null
+              ? null
+              : (_s(user['phone_number']) ?? _s(user['phoneNumber']))) ??
+          (_s(fallback['phone_number']) ?? _s(fallback['phoneNumber'])) ??
+          '',
+      'email': (user == null ? null : _s(user['email'])) ??
+          _s(fallback['email']) ??
+          '',
+    };
+  }
+
+  Map<String, dynamic> _canonicalizeOfferWriteData(Map<String, dynamic> input) {
+    final data = _toJsonMap(input);
+    final parties = _asMap(data['parties']);
+    final buyer = _asMap(parties['buyer']);
+    final seller = _asMap(parties['seller']);
+    final agent = _asMap(parties['agent']);
+    final secondBuyer = _asMap(parties['secondBuyer']).isNotEmpty
+        ? _asMap(parties['secondBuyer'])
+        : _asMap(parties['second_buyer']);
+
+    final buyerId =
+        _s(data['buyer_id']) ?? _s(data['buyerId']) ?? _s(buyer['id']) ?? '';
+    final sellerId =
+        _s(data['seller_id']) ?? _s(data['sellerId']) ?? _s(seller['id']) ?? '';
+    final agentId =
+        _s(data['agent_id']) ?? _s(data['agentId']) ?? _s(agent['id']) ?? '';
+    final propertyId = _s(data['property_id']) ?? _s(data['propertyId']) ?? '';
+
+    data['buyer_id'] = buyerId;
+    data['seller_id'] = sellerId;
+    data['agent_id'] = agentId;
+    data['property_id'] = propertyId;
+    data['status'] = (_s(data['status']) ?? 'draft').toLowerCase();
+
+    data['parties'] = {
+      'buyer': {
+        'id': buyerId,
+        'name': _s(buyer['name']) ?? '',
+        'phoneNumber':
+            _s(buyer['phoneNumber']) ?? _s(buyer['phone_number']) ?? '',
+        'email': _s(buyer['email']) ?? '',
+      },
+      'seller': {
+        'id': sellerId,
+        'name': _s(seller['name']) ?? '',
+        'phoneNumber':
+            _s(seller['phoneNumber']) ?? _s(seller['phone_number']) ?? '',
+        'email': _s(seller['email']) ?? '',
+      },
+      'agent': {
+        'id': agentId,
+        'name': _s(agent['name']) ?? '',
+        'phoneNumber':
+            _s(agent['phoneNumber']) ?? _s(agent['phone_number']) ?? '',
+        'email': _s(agent['email']) ?? '',
+      },
+      if (secondBuyer.isNotEmpty)
+        'second_buyer': {
+          'id': _s(secondBuyer['id']) ?? '',
+          'name': _s(secondBuyer['name']) ?? '',
+          'phoneNumber': _s(secondBuyer['phoneNumber']) ??
+              _s(secondBuyer['phone_number']) ??
+              '',
+          'email': _s(secondBuyer['email']) ?? '',
+        },
+    };
+
+    data.remove('buyerId');
+    data.remove('sellerId');
+    data.remove('agentId');
+    data.remove('propertyId');
+
+    return data;
+  }
+
   Future<Map<String, dynamic>> _enrichCreateOfferData(
     Map<String, dynamic> offerData,
     String requesterId,
   ) async {
-    final enriched = _toJsonMap(offerData);
+    final enriched = _canonicalizeOfferWriteData(offerData);
     final parties = _asMap(enriched['parties']);
     final buyer = _asMap(parties['buyer']);
     final agent = _asMap(parties['agent']);
+    final seller = _asMap(parties['seller']);
 
-    final buyerId = _s(enriched['buyerId']) ?? _s(buyer['id']) ?? requesterId;
-    final currentAgentId =
-        _s(enriched['agentId']) ?? _s(enriched['agent_id']) ?? _s(agent['id']);
+    final buyerId = _s(enriched['buyer_id']) ?? _s(buyer['id']) ?? requesterId;
+    final currentAgentId = _s(enriched['agent_id']) ?? _s(agent['id']);
 
-    if (currentAgentId == null || currentAgentId.isEmpty) {
+    // Resolve agentId — look it up from relationship when missing.
+    String? resolvedAgentId = currentAgentId;
+    if (resolvedAgentId == null || resolvedAgentId.isEmpty) {
       final relationship =
           await _remote.getRelationshipForSubjectUid(subjectUid: buyerId);
       final relationshipData = _asMap(relationship?['relationship']);
-      final resolvedAgentId = _s(relationship?['agentId']) ??
+      resolvedAgentId = _s(relationship?['agentId']) ??
           _s(relationship?['agentUid']) ??
           _s(relationshipData['agentUid']) ??
           _s(relationshipData['agentId']);
-
-      if (resolvedAgentId != null && resolvedAgentId.isNotEmpty) {
-        final agentUser = await _remote.getUserByUid(uid: resolvedAgentId);
-        final updatedParties = Map<String, dynamic>.from(parties)
-          ..['agent'] = {
-            'id': resolvedAgentId,
-            'name': agentUser == null ? '' : _userDisplayName(agentUser),
-            'phoneNumber': agentUser == null
-                ? ''
-                : (_s(agentUser['phone_number']) ??
-                    _s(agentUser['phoneNumber']) ??
-                    ''),
-            'email': agentUser == null ? '' : (_s(agentUser['email']) ?? ''),
-          };
-
-        enriched['parties'] = updatedParties;
-        enriched['agentId'] = resolvedAgentId;
-        enriched['agent_id'] = resolvedAgentId;
-      }
     }
 
-    return enriched;
+    // Always hydrate property data so cards show the real address/title.
+    final propertyId = _s(enriched['property_id']) ?? '';
+    Map<String, dynamic>? propertyDoc;
+    if (propertyId.isNotEmpty) {
+      try {
+        propertyDoc = await _remote.getPropertyById(propertyId: propertyId);
+        if (propertyDoc != null) {
+          final existingProp =
+              _asMap(enriched['property'] ?? <String, dynamic>{});
+          enriched['property'] = {
+            ...existingProp,
+            ...propertyDoc,
+            'id': propertyId,
+          };
+        }
+      } catch (_) {}
+    }
+
+    final propertyAgentId = _s(propertyDoc?['listing_agent_id']) ??
+        _s(propertyDoc?['listingAgentId']) ??
+        _s(propertyDoc?['agent_id']) ??
+        _s(propertyDoc?['agentId']);
+
+    final propertySellerId = _s(propertyDoc?['seller_id']) ??
+        _s(propertyDoc?['sellerId']) ??
+        _s(propertyDoc?['owner_id']) ??
+        _s(propertyDoc?['ownerId']) ??
+        _s(propertyDoc?['user_id']) ??
+        _s(propertyDoc?['userId']);
+
+    final resolvedSellerId = _s(enriched['seller_id']) ??
+        _s(seller['id']) ??
+        propertyAgentId ??
+        propertySellerId;
+
+    final updatedParties = Map<String, dynamic>.from(parties);
+    if (resolvedAgentId != null && resolvedAgentId.isNotEmpty) {
+      final agentUser = await _remote.getUserByUid(uid: resolvedAgentId);
+      updatedParties['agent'] =
+          _contactFromUser(resolvedAgentId, agentUser, agent);
+      enriched['agent_id'] = resolvedAgentId;
+
+      Map<String, dynamic>? sellerUser;
+      if (resolvedSellerId != null && resolvedSellerId.isNotEmpty) {
+        sellerUser = await _remote.getUserByUid(uid: resolvedSellerId);
+      }
+      updatedParties['seller'] =
+          _contactFromUser(resolvedSellerId ?? '', sellerUser, seller);
+      enriched['seller_id'] = resolvedSellerId;
+    }
+
+    updatedParties['buyer'] = _contactFromUser(buyerId, null, buyer);
+    enriched['parties'] = updatedParties;
+
+    return _canonicalizeOfferWriteData(enriched);
   }
 
   Future<Either<Failure, List<OfferModel>>> getUserOffers({
@@ -151,8 +274,8 @@ class OfferRepository {
     try {
       final serializedOfferData =
           await _enrichCreateOfferData(offerData, requesterId);
-      final buyerId = _s(serializedOfferData['buyerId']);
-      final agentId = _s(serializedOfferData['agentId']) ??
+      final buyerId = _s(serializedOfferData['buyer_id']);
+      final agentId = _s(serializedOfferData['agent_id']) ??
           _s(_asMap(_asMap(serializedOfferData['parties'])['agent'])['id']);
 
       var isAgentOutOfOffice = false;
@@ -167,6 +290,8 @@ class OfferRepository {
         serializedOfferData['workflowStage'] = 'seller_tc_review';
         serializedOfferData['tcHandoffStatus'] = 'queued';
         serializedOfferData['oooBypassedAt'] = DateTime.now().toIso8601String();
+        serializedOfferData['status'] =
+            'accepted'; // Auto-accept to bypass agent
       }
 
       // Buyer-direct offers must remain attached to an assigned agent.
@@ -214,7 +339,8 @@ class OfferRepository {
     bool trackRevision = true,
   }) async {
     try {
-      final serializedOfferData = _toJsonMap(offerData);
+      final serializedOfferData =
+          _canonicalizeOfferWriteData(_toJsonMap(offerData));
       final offerId = serializedOfferData['offerID'] as String? ??
           serializedOfferData['id'] as String? ??
           '';
@@ -257,18 +383,18 @@ class OfferRepository {
               parties is Map<String, dynamic> ? parties : <String, dynamic>{};
 
           // Normalise IDs: strip Firestore path prefix (e.g. "/users/uid" → "uid")
-            String? normaliseId(String? raw) {
+          String? normaliseId(String? raw) {
             if (raw == null || raw.isEmpty) return null;
             return raw.contains('/') ? raw.split('/').last : raw;
           }
 
-            final buyerId = normaliseId(partyId(partiesMap['buyer']) ??
-                partyId(serializedOfferData['buyer'])) ??
+          final buyerId = normaliseId(partyId(partiesMap['buyer']) ??
+                  partyId(serializedOfferData['buyer'])) ??
               normaliseId(serializedOfferData['buyerId'] as String?);
-            final sellerId = normaliseId(partyId(partiesMap['seller']) ??
-                partyId(serializedOfferData['seller'])) ??
+          final sellerId = normaliseId(partyId(partiesMap['seller']) ??
+                  partyId(serializedOfferData['seller'])) ??
               normaliseId(serializedOfferData['sellerId'] as String?);
-            final agentId = normaliseId(partyId(partiesMap['agent']) ??
+          final agentId = normaliseId(partyId(partiesMap['agent']) ??
               partyId(serializedOfferData['agent']));
 
           // Validate the transition
@@ -335,6 +461,122 @@ class OfferRepository {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, Map<String, dynamic>>> updateOfferStatus({
+    required String offerId,
+    required String status,
+    required String requesterId,
+    String requestorName = '',
+    String requestorRole = '',
+    String changeNotes = '',
+    bool trackRevision = true,
+  }) async {
+    try {
+      if (offerId.isEmpty) {
+        return const Left(
+            ValidationFailure(message: 'Offer ID cannot be empty'));
+      }
+
+      Map<String, dynamic>? oldOfferState;
+      if (trackRevision) {
+        try {
+          oldOfferState = await _remote.getOfferById(offerId: offerId) ??
+              <String, dynamic>{};
+        } catch (e) {
+          trackRevision = false;
+        }
+      }
+
+      // Validate status transitions if status is being changed
+      if (oldOfferState != null && oldOfferState.isNotEmpty) {
+        final oldStatus = _parseStatus(oldOfferState['status']);
+        final newStatus = _parseStatus(status);
+
+        if (oldStatus != null && newStatus != null && oldStatus != newStatus) {
+          String? partyId(dynamic val) {
+            if (val == null) return null;
+            if (val is Map) return val['id'] as String?;
+            try {
+              return (val as dynamic).id as String?;
+            } catch (_) {
+              return null;
+            }
+          }
+
+          final parties = oldOfferState['parties'];
+          final partiesMap = parties is Map ? parties : <String, dynamic>{};
+
+          String? normaliseId(String? raw) {
+            if (raw == null || raw.isEmpty) return null;
+            return raw.contains('/') ? raw.split('/').last : raw;
+          }
+
+          final buyerId = normaliseId(partyId(partiesMap['buyer'])) ??
+              normaliseId(oldOfferState['buyer_id'] as String?);
+          final sellerId = normaliseId(partyId(partiesMap['seller'])) ??
+              normaliseId(oldOfferState['seller_id'] as String?);
+          final agentId = normaliseId(partyId(partiesMap['agent'])) ??
+              normaliseId(oldOfferState['agent_id'] as String?);
+
+          final validation = OfferStatusTransition.validateTransition(
+            currentStatus: oldStatus,
+            newStatus: newStatus,
+            userId: requesterId,
+            sellerId: sellerId,
+            buyerId: buyerId,
+            agentId: agentId,
+            offerData: oldOfferState,
+          );
+
+          if (validation.isLeft()) {
+            return validation.fold((failure) => Left(failure),
+                (status) => Right(<String, dynamic>{}));
+          }
+        }
+      }
+
+      final result = await _remote.updateOfferStatus(
+        offerId: offerId,
+        status: status,
+        requesterId: requesterId,
+      );
+
+      final oldStatus = _parseStatus(oldOfferState?['status']);
+      final newStatus = _parseStatus(result['status']);
+      if (oldStatus != Status.Accepted && newStatus == Status.Accepted) {
+        await _queueTransactionFromOffer(
+          offer: result,
+          handoffStatus: 'ready_for_tc',
+          transactionStatus: 'under_contract',
+          source: 'offer_accepted',
+        );
+      }
+
+      if (trackRevision && oldOfferState != null && oldOfferState.isNotEmpty) {
+        await _revisionRepo.createRevisionFromComparison(
+          offerId: offerId,
+          oldOffer: oldOfferState,
+          newOffer: result,
+          userId: requesterId,
+          userName: requestorName.isEmpty ? 'User $requesterId' : requestorName,
+          userRole: requestorRole.isEmpty ? 'unknown' : requestorRole,
+          changeNotes: changeNotes,
+        );
+      }
+
+      await _createNotificationsForChange(
+        offerBefore: oldOfferState,
+        offerAfter: result,
+        actorUserId: requesterId,
+        actorName: requestorName.isEmpty ? 'User $requesterId' : requestorName,
+        revisionCreated: trackRevision,
+      );
+
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.statusCode));
     }
   }
 
@@ -521,12 +763,22 @@ class OfferRepository {
     final secondBuyer = _asMap(parties['secondBuyer']).isNotEmpty
         ? _asMap(parties['secondBuyer'])
         : _asMap(raw['secondBuyer']);
+    final createdTimeSource = raw['createdTime'] ??
+        raw['created_at'] ??
+        raw['createdAt'] ??
+        raw['submitted_at'] ??
+        raw['submittedAt'] ??
+        raw['submitted_on'] ??
+        raw['submittedOn'] ??
+        raw['dateSubmitted'] ??
+        raw['createdDate'] ??
+        raw['updated_at'] ??
+        raw['updatedAt'];
 
     final normalized = <String, dynamic>{
       'id': _s(raw['id']) ?? _s(raw['offerID']) ?? '',
       'status': (_s(raw['status']) ?? 'draft').toLowerCase(),
-      'createdTime':
-          _dt(raw['createdTime'] ?? raw['created_at'])?.toIso8601String(),
+      'createdTime': _dt(createdTimeSource)?.toIso8601String(),
       'closingDate':
           _dt(raw['closingDate'] ?? raw['closing_date'])?.toIso8601String(),
       'closingDays': _i(raw['closingDays'] ?? raw['closing_days']),
@@ -736,8 +988,24 @@ class OfferRepository {
   DateTime? _dt(dynamic v) {
     if (v == null) return null;
     if (v is DateTime) return v;
-    if (v is String) return DateTime.tryParse(v);
+    if (v is String) {
+      final parsed = DateTime.tryParse(v);
+      if (parsed != null) return parsed;
+
+      // Handle Timestamp(seconds=..., nanoseconds=...) string format.
+      final secondsMatch = RegExp(r'seconds=(\d+)').firstMatch(v);
+      if (secondsMatch != null) {
+        final seconds = int.tryParse(secondsMatch.group(1) ?? '');
+        if (seconds != null) {
+          return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+        }
+      }
+      return null;
+    }
     if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+    if (v is num) {
+      return DateTime.fromMillisecondsSinceEpoch(v.toInt());
+    }
     if (v is Map) {
       final seconds = v['_seconds'];
       if (seconds is int) {

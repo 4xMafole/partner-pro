@@ -3,6 +3,7 @@
 /// Tests the login screen UI and user interactions.
 /// NOTE: These tests require Firebase initialization and are skipped in unit tests.
 /// Run as integration tests with Firebase emulator instead.
+library;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

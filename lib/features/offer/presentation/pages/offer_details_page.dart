@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -27,6 +29,11 @@ class OfferDetailsPage extends StatefulWidget {
 }
 
 class _OfferDetailsPageState extends State<OfferDetailsPage> {
+  bool _agentReviewBypassed = false;
+  String _workflowStage = '';
+  String _tcHandoffStatus = '';
+  String _oooBypassedAt = '';
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +55,25 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
         }
       }
       bloc.add(LoadOfferRevisions(offerId: widget.offerId, limit: 20));
+      _loadWorkflowMetadata();
     });
+  }
+
+  Future<void> _loadWorkflowMetadata() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection(AppConstants.offersCollection)
+          .doc(widget.offerId)
+          .get();
+      final data = snap.data() ?? <String, dynamic>{};
+      if (!mounted) return;
+      setState(() {
+        _agentReviewBypassed = data['agentReviewBypassed'] == true;
+        _workflowStage = (data['workflowStage'] ?? '').toString();
+        _tcHandoffStatus = (data['tcHandoffStatus'] ?? '').toString();
+        _oooBypassedAt = (data['oooBypassedAt'] ?? '').toString();
+      });
+    } catch (_) {}
   }
 
   OfferModel? get _offer {
@@ -298,6 +323,37 @@ class _OfferDetailsPageState extends State<OfferDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildStatusBanner(offer, statusStr),
+                if (_agentReviewBypassed ||
+                    _workflowStage.isNotEmpty ||
+                    _tcHandoffStatus.isNotEmpty) ...[
+                  SizedBox(height: 12.h),
+                  OfferDetailPanel(
+                    title: 'Workflow Metadata',
+                    subtitle: 'Out-of-office routing and TC handoff details',
+                    icon: LucideIcons.gitBranch,
+                    children: [
+                      OfferKeyValueRow(
+                        label: 'Agent Review Bypassed',
+                        value: _agentReviewBypassed ? 'Yes' : 'No',
+                      ),
+                      if (_workflowStage.isNotEmpty)
+                        OfferKeyValueRow(
+                          label: 'Workflow Stage',
+                          value: _workflowStage,
+                        ),
+                      if (_tcHandoffStatus.isNotEmpty)
+                        OfferKeyValueRow(
+                          label: 'TC Handoff Status',
+                          value: _tcHandoffStatus,
+                        ),
+                      if (_oooBypassedAt.isNotEmpty)
+                        OfferKeyValueRow(
+                          label: 'OOO Bypassed At',
+                          value: _oooBypassedAt,
+                        ),
+                    ],
+                  ),
+                ],
                 SizedBox(height: 12.h),
                 IntrinsicHeight(
                   child: Row(

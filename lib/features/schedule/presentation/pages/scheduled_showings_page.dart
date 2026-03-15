@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_widgets.dart';
@@ -17,6 +19,21 @@ class ScheduledShowingsPage extends StatefulWidget {
 }
 
 class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'agent_approved':
+      case 'completed':
+        return AppColors.success;
+      case 'pending':
+        return AppColors.tertiary;
+      case 'canceled':
+      case 'declined':
+        return AppColors.error;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
   void _loadShowingsForRole() {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
@@ -70,111 +87,178 @@ class _ScheduledShowingsPageState extends State<ScheduledShowingsPage> {
             itemCount: state.showings.length,
             itemBuilder: (_, index) {
               final showing = state.showings[index];
-              final date = showing['date'] as String? ?? '';
-              final time = showing['time'] as String? ?? '';
-              final propertyId = showing['property_id'] as String? ?? '';
-              final address =
-                  showing['address'] as String? ?? 'Property $propertyId';
-                final status = showing['status'] as String? ?? 'pending';
-                final canAgentApprove =
+              final date = showing.date;
+              final time = showing.time;
+              final timeZone = showing.timeZone;
+              final propertyId = showing.propertyId;
+              final title = showing.propertyTitle;
+              final address = showing.propertyAddress ??
+                  showing.address ??
+                  'Property $propertyId';
+              final status = showing.status;
+              final canAgentApprove =
                   isAgent && status.toLowerCase() == 'pending';
-                final canBuyerCancel =
+              final canBuyerCancel =
                   !isAgent && status.toLowerCase() != 'canceled';
+              final statusLabel = status.replaceAll('_', ' ').toUpperCase();
 
-              return Card(
-                margin: EdgeInsets.only(bottom: 12.h),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(12.w),
-                  leading: Container(
-                    width: 48.w,
-                    height: 48.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              final chipColor = _statusColor(status);
+              final showingId = showing.id;
+
+              return Container(
+                margin: EdgeInsets.only(bottom: 16.h),
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [], // Clean, no shadow
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Icon(LucideIcons.calendar,
-                            size: 18.sp, color: AppColors.primary),
-                        if (date.length >= 5)
-                          Text(
-                            date.substring(5),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontSize: 9.sp,
+                        Expanded(
+                          child: Text(
+                            (title != null && title.trim().isNotEmpty)
+                                ? title
+                                : address,
+                            style: AppTypography.titleMedium,
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: chipColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(999.r),
+                            border: Border.all(
+                              color: chipColor.withValues(alpha: 0.35),
                             ),
                           ),
+                          child: Text(
+                            statusLabel,
+                            style: AppTypography.labelSmall.copyWith(
+                              color: chipColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                  title: Text(address, style: AppTypography.titleMedium),
-                  subtitle: Text(
-                    '$date at $time . ${status.toUpperCase()}',
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
-                  ),
-                  trailing: canAgentApprove
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: 'Approve showing',
-                              icon: Icon(LucideIcons.check,
-                                  size: 18.sp, color: AppColors.success),
-                              onPressed: () {
-                                final showingId =
-                                    showing['id'] as String? ?? '';
-                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
-                                  context.read<PropertyBloc>().add(
-                                        UpdateShowingStatus(
-                                          showingId: showingId,
-                                          status: 'agent_approved',
-                                          requesterId: requesterId,
-                                        ),
-                                      );
-                                }
-                              },
+                    SizedBox(height: 8.h),
+                    Text(
+                      address,
+                      style: AppTypography.bodySmall
+                          .copyWith(color: AppColors.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 10.h),
+                    Row(
+                      children: [
+                        Icon(LucideIcons.calendarDays,
+                            size: 14.sp, color: AppColors.primary),
+                        SizedBox(width: 6.w),
+                        Text(
+                          '$date at $time ($timeZone)',
+                          style: AppTypography.labelMedium
+                              .copyWith(color: AppColors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+                    Divider(color: AppColors.border, height: 1),
+                    SizedBox(height: 12.h),
+                    if (canAgentApprove || canBuyerCancel) ...[
+                      Row(
+                        children: [
+                          if (canAgentApprove)
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed:
+                                    requesterId.isEmpty || showingId.isEmpty
+                                        ? null
+                                        : () {
+                                            context.read<PropertyBloc>().add(
+                                                  UpdateShowingStatus(
+                                                    showingId: showingId,
+                                                    status: 'agent_approved',
+                                                    requesterId: requesterId,
+                                                  ),
+                                                );
+                                          },
+                                icon: Icon(LucideIcons.check, size: 16.sp),
+                                label: const Text('Approve'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.success,
+                                  side: const BorderSide(
+                                      color: AppColors.success),
+                                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                                ),
+                              ),
                             ),
-                            IconButton(
-                              tooltip: 'Decline showing',
-                              icon: Icon(LucideIcons.x,
-                                  size: 18.sp, color: AppColors.error),
-                              onPressed: () {
-                                final showingId =
-                                    showing['id'] as String? ?? '';
-                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
-                                  context.read<PropertyBloc>().add(
-                                        UpdateShowingStatus(
-                                          showingId: showingId,
-                                          status: 'canceled',
-                                          requesterId: requesterId,
-                                          notes: 'Declined by listing agent',
-                                        ),
-                                      );
-                                }
-                              },
+                          if (canAgentApprove) SizedBox(width: 8.w),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed:
+                                  requesterId.isEmpty || showingId.isEmpty
+                                      ? null
+                                      : () {
+                                          if (canAgentApprove) {
+                                            context.read<PropertyBloc>().add(
+                                                  UpdateShowingStatus(
+                                                    showingId: showingId,
+                                                    status: 'canceled',
+                                                    requesterId: requesterId,
+                                                    notes:
+                                                        'Declined by listing agent',
+                                                  ),
+                                                );
+                                          } else if (canBuyerCancel) {
+                                            context.read<PropertyBloc>().add(
+                                                  CancelShowing(
+                                                    showingId: showingId,
+                                                    requesterId: requesterId,
+                                                  ),
+                                                );
+                                          }
+                                        },
+                              icon: Icon(LucideIcons.x, size: 16.sp),
+                              label:
+                                  Text(canAgentApprove ? 'Decline' : 'Cancel'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.error,
+                                side: const BorderSide(color: AppColors.error),
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                              ),
                             ),
-                          ],
-                        )
-                      : canBuyerCancel
-                          ? IconButton(
-                              tooltip: 'Cancel showing',
-                              icon: Icon(LucideIcons.x,
-                                  size: 18.sp, color: AppColors.error),
-                              onPressed: () {
-                                final showingId =
-                                    showing['id'] as String? ?? '';
-                                if (requesterId.isNotEmpty && showingId.isNotEmpty) {
-                                  context.read<PropertyBloc>().add(
-                                        CancelShowing(
-                                            showingId: showingId,
-                                            requesterId: requesterId),
-                                      );
-                                }
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: propertyId.isEmpty
+                            ? null
+                            : () {
+                                // Navigate to property details using go_router
+                                context.push(RouteNames.propertyDetails
+                                    .replaceFirst(':id', propertyId));
                               },
-                            )
-                          : null,
+                        icon: Icon(LucideIcons.home, size: 16.sp),
+                        label: const Text('View Property'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textPrimary,
+                          side: const BorderSide(color: AppColors.border),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },

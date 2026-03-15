@@ -2,7 +2,7 @@
 ///
 /// Provides mock HTTP responses for testing API functionality
 /// without requiring actual API connections.
-library mock_api;
+library;
 
 import 'dart:convert';
 

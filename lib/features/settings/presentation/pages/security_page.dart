@@ -126,8 +126,9 @@ class _SecurityPageState extends State<SecurityPage> {
                       label: 'Confirm New Password',
                       obscureText: true,
                       validator: (val) {
-                        if (val != _newPasswordController.text)
+                        if (val != _newPasswordController.text) {
                           return 'Passwords do not match';
+                        }
                         return null;
                       },
                     ),

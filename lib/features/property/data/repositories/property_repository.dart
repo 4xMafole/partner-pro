@@ -6,6 +6,10 @@ import '../../../../core/error/failures.dart';
 import '../../../notifications/data/services/notification_service.dart';
 import '../datasources/property_remote_datasource.dart';
 import '../models/property_model.dart';
+import '../models/favorite_model.dart';
+import '../models/recently_viewed_model.dart';
+import '../models/saved_search_model.dart';
+import '../models/showing_model.dart';
 
 @lazySingleton
 class PropertyRepository {
@@ -132,14 +136,14 @@ class PropertyRepository {
     }).toList();
   }
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getFavorites({
+  Future<Either<Failure, List<FavoriteModel>>> getFavorites({
     required String userId,
     required String requesterId,
   }) async {
     try {
       final data =
           await _remote.getFavorites(userId: userId, requesterId: requesterId);
-      return Right(data);
+      return Right(data.map((e) => FavoriteModel.fromJson(e)).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -179,14 +183,14 @@ class PropertyRepository {
     }
   }
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSavedSearches({
+  Future<Either<Failure, List<SavedSearchModel>>> getSavedSearches({
     required String userId,
     required String requesterId,
   }) async {
     try {
       final data = await _remote.getSavedSearches(
           userId: userId, requesterId: requesterId);
-      return Right(data);
+      return Right(data.map((e) => SavedSearchModel.fromJson(e)).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -377,14 +381,14 @@ class PropertyRepository {
     }
   }
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getShowings({
+  Future<Either<Failure, List<ShowingModel>>> getShowings({
     required String userId,
     required String requesterId,
   }) async {
     try {
       final data =
           await _remote.getShowings(userId: userId, requesterId: requesterId);
-      return Right(data);
+      return Right(data.map((e) => ShowingModel.fromJson(e)).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -392,14 +396,14 @@ class PropertyRepository {
     }
   }
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAgentShowings({
+  Future<Either<Failure, List<ShowingModel>>> getAgentShowings({
     required String agentId,
     required String requesterId,
   }) async {
     try {
       final data = await _remote.getAgentShowings(
           agentId: agentId, requesterId: requesterId);
-      return Right(data);
+      return Right(data.map((e) => ShowingModel.fromJson(e)).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, code: e.statusCode));
     } catch (e) {
@@ -706,13 +710,18 @@ class PropertyRepository {
     }
   }
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getRecentlyViewed({
+  Future<Either<Failure, List<RecentlyViewedModel>>> getRecentlyViewed({
     required String userId,
     required String requesterId,
   }) async {
     try {
-      return Right(await _remote.getRecentlyViewed(
-          userId: userId, requesterId: requesterId));
+      final views = await _remote.getRecentlyViewed(
+          userId: userId, requesterId: requesterId);
+      final mapped = views
+          .map(
+              (v) => RecentlyViewedModel.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+      return Right(mapped);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

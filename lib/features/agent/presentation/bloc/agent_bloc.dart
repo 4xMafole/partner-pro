@@ -453,8 +453,8 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
         agentId: e.agentId, requesterId: e.requesterId);
     final intelligenceResult = await _repository.getClientPropertyIntelligence(
         clientId: e.clientId, agentId: e.agentId);
-    final relationshipResult =
-      await _repository.getRelationship(agentId: e.agentId, buyerId: e.clientId);
+    final relationshipResult = await _repository.getRelationship(
+        agentId: e.agentId, buyerId: e.clientId);
 
     profileResult.fold(
       (f) => emit(state.copyWith(isLoading: false, error: f.message)),
@@ -466,13 +466,13 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
         final intelligence = intelligenceResult.fold(
             (_) => <String, List<Map<String, dynamic>>>{}, (i) => i);
         final relationship =
-          relationshipResult.fold((_) => <String, dynamic>{}, (r) => r ?? {});
+            relationshipResult.fold((_) => <String, dynamic>{}, (r) => r ?? {});
         final clientActivities =
             allActivities.where((a) => a['user_id'] == e.clientId).toList();
         emit(state.copyWith(
             isLoading: false,
             clientDetail: profile,
-          relationship: relationship,
+            relationship: relationship,
             clientNotes: notes,
             clientActivities: clientActivities,
             suggestedProperties:
@@ -531,6 +531,20 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
 
   Future<void> _onUpdateClientShowingAutoApprove(
       UpdateClientShowingAutoApprove e, Emitter<AgentState> emit) async {
+    // Optimistic update
+    if (state.relationship != null) {
+      final updatedRelationship =
+          Map<String, dynamic>.from(state.relationship!);
+      // Keep top-level value in sync because UI reads relationship['autoApproveShowings'].
+      updatedRelationship['autoApproveShowings'] = e.enabled;
+      final prefs = updatedRelationship['preferences'] != null
+          ? Map<String, dynamic>.from(updatedRelationship['preferences'] as Map)
+          : <String, dynamic>{};
+      prefs['autoApproveShowings'] = e.enabled;
+      updatedRelationship['preferences'] = prefs;
+      emit(state.copyWith(relationship: updatedRelationship));
+    }
+
     emit(state.copyWith(isSending: true, error: null));
     final r = await _repository.updateRelationshipPreferences(
       relationshipId: e.relationshipId,
@@ -544,8 +558,7 @@ class AgentBloc extends Bloc<AgentEvent, AgentState> {
           successMessage:
               e.enabled ? 'Auto-approve enabled' : 'Auto-approve disabled',
         ));
-        add(LoadClientDetail(
-            agentId: e.agentId, clientId: e.clientId, requesterId: e.agentId));
+        // We don't need to do a full LoadClientDetail here as we have already optimistically updated the relationship locally.
       },
     );
   }

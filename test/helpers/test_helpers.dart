@@ -1,7 +1,7 @@
 /// Test helpers and utilities for PartnerPro tests
 ///
 /// Provides common mocks, builders, and utilities used across test files.
-library test_helpers;
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

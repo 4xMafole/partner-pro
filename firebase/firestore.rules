@@ -59,7 +59,16 @@ service cloud.firestore {
              data.sellerId == request.auth.uid ||
              data.seller_agent_id == request.auth.uid ||
              data.sellerAgentId == request.auth.uid ||
-             data.updated_by == request.auth.uid;
+             data.updated_by == request.auth.uid ||
+             (data.parties is map && data.parties.buyer is map &&
+              data.parties.buyer.id is string &&
+              data.parties.buyer.id == request.auth.uid) ||
+             (data.parties is map && data.parties.agent is map &&
+              data.parties.agent.id is string &&
+              data.parties.agent.id == request.auth.uid) ||
+             (data.parties is map && data.parties.seller is map &&
+              data.parties.seller.id is string &&
+              data.parties.seller.id == request.auth.uid);
     }
 
     match /users/{userId} {
@@ -202,12 +211,44 @@ service cloud.firestore {
     }
 
     match /showings/{document} {
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() &&
+                       (
+                         request.resource.data.user_id == request.auth.uid ||
+                         request.resource.data.userId == request.auth.uid ||
+                         request.resource.data.buyer_id == request.auth.uid ||
+                         request.resource.data.buyerId == request.auth.uid
+                       );
+      allow read, update: if isSignedIn() &&
+                             (
+                               resource.data.user_id == request.auth.uid ||
+                               resource.data.userId == request.auth.uid ||
+                               resource.data.buyer_id == request.auth.uid ||
+                               resource.data.buyerId == request.auth.uid ||
+                               resource.data.agent_id == request.auth.uid ||
+                               resource.data.agentId == request.auth.uid ||
+                               resource.data.seller_id == request.auth.uid ||
+                               resource.data.sellerId == request.auth.uid
+                             );
+      allow delete: if false;
+    }
+
+    match /transactions/{document} {
+      // TC handoff documents: participants can create and read; no delete allowed.
+      allow create: if isSignedIn() &&
+                       (request.resource.data.buyer_id == request.auth.uid ||
+                        request.resource.data.buyerId == request.auth.uid ||
+                        request.resource.data.agent_id == request.auth.uid ||
+                        request.resource.data.agentId == request.auth.uid ||
+                        request.resource.data.seller_id == request.auth.uid ||
+                        request.resource.data.sellerId == request.auth.uid);
       allow read, update: if isSignedIn() &&
                              (resource.data.buyer_id == request.auth.uid ||
+                              resource.data.buyerId == request.auth.uid ||
                               resource.data.agent_id == request.auth.uid ||
-                              resource.data.seller_id == request.auth.uid);
-      allow delete: if isSignedIn() && resource.data.buyer_id == request.auth.uid;
+                              resource.data.agentId == request.auth.uid ||
+                              resource.data.seller_id == request.auth.uid ||
+                              resource.data.sellerId == request.auth.uid);
+      allow delete: if false;
     }
 
     match /offer/{offerId} {
@@ -216,7 +257,7 @@ service cloud.firestore {
                         request.resource.data.buyerId == request.auth.uid ||
                         request.resource.data.created_by == request.auth.uid);
       allow get, update: if isSignedIn() && isOfferParticipant(resource.data);
-      allow list: if false;
+      allow list: if isSignedIn() && isOfferParticipant(resource.data);
       allow delete: if false;
 
       match /revisions/{revisionId} {

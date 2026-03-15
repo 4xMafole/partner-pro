@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../property/data/models/saved_search_model.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
 
 /// Zillow-style Saved Searches bottom sheet.
@@ -15,7 +15,7 @@ import '../../../property/presentation/bloc/property_bloc.dart';
 /// Shows a list of the user's saved searches with delete actions
 /// and tap-to-apply functionality.
 class SavedSearchesSheet extends StatelessWidget {
-  final void Function(Map<String, dynamic> savedSearch)? onApply;
+  final void Function(SavedSearchModel savedSearch)? onApply;
 
   const SavedSearchesSheet({super.key, this.onApply});
 
@@ -118,24 +118,25 @@ class SavedSearchesSheet extends StatelessWidget {
 }
 
 class _SavedSearchTile extends StatelessWidget {
-  final Map<String, dynamic> search;
-  final void Function(Map<String, dynamic> savedSearch)? onApply;
+  final SavedSearchModel search;
+  final void Function(SavedSearchModel savedSearch)? onApply;
 
   const _SavedSearchTile({required this.search, this.onApply});
 
   @override
   Widget build(BuildContext context) {
-    final searchData = search['search'] as Map<String, dynamic>? ?? search;
+    final searchData = search.search;
     final property =
         searchData['property'] as Map<String, dynamic>? ?? searchData;
 
     // Build display label
     final inputField = (searchData['input_field'] ?? '').toString();
     final city = (property['city'] ?? searchData['city'] ?? '').toString();
+    final state = (property['state'] ?? searchData['state'] ?? '').toString();
     final label = inputField.isNotEmpty
         ? inputField
-        : city.isNotEmpty
-            ? city
+        : city.isNotEmpty || state.isNotEmpty
+            ? [city, state].where((v) => v.trim().isNotEmpty).join(', ')
             : 'All Areas';
 
     // Build filter summary chips
@@ -154,26 +155,33 @@ class _SavedSearchTile extends StatelessWidget {
     }
 
     final minBeds = property['min_beds'] ?? searchData['min_beds'];
-    if (minBeds != null && minBeds > 0) filterParts.add('${minBeds}+ bd');
+    final maxBeds = property['max_beds'] ?? searchData['max_beds'];
+    if (minBeds != null && minBeds > 0) filterParts.add('$minBeds+ bd');
+    if (maxBeds != null && maxBeds > 0) filterParts.add('up to $maxBeds bd');
 
     final minBaths = property['min_baths'] ?? searchData['min_baths'];
-    if (minBaths != null && minBaths > 0) filterParts.add('${minBaths}+ ba');
+    if (minBaths != null && minBaths > 0) filterParts.add('$minBaths+ ba');
 
-    final homeTypes = property['home_types'] ?? searchData['home_types'];
-    if (homeTypes is List && homeTypes.isNotEmpty) {
-      filterParts.add('${homeTypes.length} types');
+    final minSqft = property['min_sqft'] ?? searchData['min_sqft'];
+    final maxSqft = property['max_sqft'] ?? searchData['max_sqft'];
+    if (minSqft != null || maxSqft != null) {
+      final low = (minSqft ?? 0).toString();
+      final high = maxSqft?.toString() ?? 'Any';
+      filterParts.add('$low-$high sqft');
     }
 
-    final searchId = (search['id'] ?? '').toString();
+    final homeTypes = property['home_types'] ??
+        searchData['home_types'] ??
+        property['home_type'] ??
+        searchData['home_type'] ??
+        property['property_type'] ??
+        searchData['property_type'];
+    final homeTypesLabel = _homeTypesLabel(homeTypes);
+    if (homeTypesLabel.isNotEmpty) filterParts.add(homeTypesLabel);
 
-    // Created date
-    final createdAt = search['created_at'];
-    String dateLabel = '';
-    if (createdAt is Map && createdAt['_seconds'] != null) {
-      final dt = DateTime.fromMillisecondsSinceEpoch(
-          ((createdAt['_seconds'] as num) * 1000).toInt());
-      dateLabel = DateFormat.yMMMd().format(dt);
-    }
+    final searchId = search.id;
+
+    final dateLabel = '';
 
     return Card(
       elevation: 0,
@@ -295,5 +303,26 @@ class _SavedSearchTile extends StatelessWidget {
       return '${(n / 1000).toStringAsFixed(n % 1000 == 0 ? 0 : 1)}K';
     }
     return n.toString();
+  }
+
+  static String _homeTypesLabel(dynamic rawHomeTypes) {
+    if (rawHomeTypes == null) return '';
+
+    if (rawHomeTypes is String) {
+      final cleaned = rawHomeTypes.trim();
+      return cleaned;
+    }
+
+    if (rawHomeTypes is List) {
+      final values = rawHomeTypes
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (values.isEmpty) return '';
+      if (values.length <= 2) return values.join(', ');
+      return '${values.take(2).join(', ')} +${values.length - 2} more';
+    }
+
+    return rawHomeTypes.toString();
   }
 }

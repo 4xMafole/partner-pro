@@ -1,6 +1,7 @@
 /// Unit tests for AuthRepository
 ///
 /// Tests the repository layer for authentication functionality.
+library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:dartz/dartz.dart';

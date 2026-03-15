@@ -1,6 +1,7 @@
 /// Unit tests for AuthBloc
 ///
 /// Tests the BLoC layer for authentication state management.
+library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';

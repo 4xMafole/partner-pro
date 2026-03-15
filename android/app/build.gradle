@@ -81,6 +81,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        resources {
+            excludes += [
+                'ds-amex.pem',
+                'ds-cartesbancaires.pem',
+                'ds-discover.cer',
+                'ds-mastercard.crt',
+                'ds-test-ec.txt',
+                'ds-test-rsa.txt',
+                'ds-visa.crt',
+            ]
+        }
+    }
 }
 
 flutter {

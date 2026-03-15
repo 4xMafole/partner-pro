@@ -204,15 +204,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onUpdateProfile(
       AuthUpdateProfile event, Emitter<AuthState> emit) async {
-    emit(const AuthState.loading());
+    // Optimistic UI update to prevent full page reload
+    emit(AuthState.authenticated(user: event.updatedUser));
+
     final user = event.updatedUser;
     final data = user.toJson()
       ..remove('uid')
       ..remove('email');
+
     final result = await _repository.updateUserProfile(user.uid, data);
     result.fold(
       (f) => emit(AuthState.error(message: f.message)),
-      (_) => emit(AuthState.authenticated(user: user)),
+      (_) {}, // Status is already updated optimistically
     );
   }
 

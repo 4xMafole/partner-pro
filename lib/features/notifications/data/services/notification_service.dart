@@ -56,27 +56,33 @@ class NotificationService {
         .snapshots()
         .map((snap) => snap.docs.map((d) {
               final raw = d.data();
-              final rawType = raw['type'] as String? ?? 'offer';
+              final rawType = (raw['type'] ?? 'offer').toString().trim();
+              final rawTypeLower = rawType.toLowerCase();
               // Map known Firestore type strings to enum names.
               // Unknown types fall back to 'offer' to prevent crashes.
-              const _knownTypes = {
+              const knownTypes = {
                 'offer',
                 'property',
                 'propertySuggestion',
                 'appointment',
                 'transactionCoordinator',
                 'revisionCreated',
+                'showing',
               };
-              const _aliasMap = {
+              const aliasMap = {
+                'showami': 'showing',
+                'tour': 'showing',
+                'scheduled_tour': 'showing',
+                'showing_request': 'showing',
                 'property_suggestion': 'propertySuggestion',
                 'transaction_coordinator': 'transactionCoordinator',
                 'revision_created': 'revisionCreated',
                 'status_changed': 'offer',
                 'statusChanged': 'offer',
               };
-              final mappedType = _knownTypes.contains(rawType)
+              final mappedType = knownTypes.contains(rawType)
                   ? rawType
-                  : (_aliasMap[rawType] ?? 'offer');
+                  : (aliasMap[rawType] ?? aliasMap[rawTypeLower] ?? 'offer');
               final meta = (raw['metadata'] as Map<String, dynamic>?) ?? {};
               final data = <String, dynamic>{
                 'id': d.id,

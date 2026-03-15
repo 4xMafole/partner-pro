@@ -2,6 +2,10 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../data/models/showing_model.dart';
+import '../../data/models/saved_search_model.dart';
+import '../../data/models/favorite_model.dart';
+import '../../data/models/recently_viewed_model.dart';
 import '../../data/models/property_model.dart';
 import '../../data/repositories/property_repository.dart';
 
@@ -193,15 +197,17 @@ class LoadAgentShowings extends PropertyEvent {
 }
 
 class CreateShowing extends PropertyEvent {
-  final String userId, propertyId, date, time, requesterId;
+  final String userId, propertyId, date, time, timeZone, requesterId;
   const CreateShowing(
       {required this.userId,
       required this.propertyId,
       required this.date,
       required this.time,
+      required this.timeZone,
       required this.requesterId});
   @override
-  List<Object?> get props => [userId, propertyId, date, time, requesterId];
+  List<Object?> get props =>
+      [userId, propertyId, date, time, timeZone, requesterId];
 }
 
 class CancelShowing extends PropertyEvent {
@@ -247,10 +253,10 @@ class PropertyState extends Equatable {
   final String? error;
   final List<PropertyDataClass> allProperties;
   final List<PropertyDataClass> filteredProperties;
-  final List<Map<String, dynamic>> favorites;
-  final List<Map<String, dynamic>> savedSearches;
-  final List<Map<String, dynamic>> showings;
-  final List<Map<String, dynamic>> recentlyViewed;
+  final List<FavoriteModel> favorites;
+  final List<SavedSearchModel> savedSearches;
+  final List<ShowingModel> showings;
+  final List<RecentlyViewedModel> recentlyViewed;
   final bool isFilterActive;
 
   const PropertyState(
@@ -271,10 +277,10 @@ class PropertyState extends Equatable {
       String? error,
       List<PropertyDataClass>? allProperties,
       List<PropertyDataClass>? filteredProperties,
-      List<Map<String, dynamic>>? favorites,
-      List<Map<String, dynamic>>? savedSearches,
-      List<Map<String, dynamic>>? showings,
-      List<Map<String, dynamic>>? recentlyViewed,
+      List<FavoriteModel>? favorites,
+      List<SavedSearchModel>? savedSearches,
+      List<ShowingModel>? showings,
+      List<RecentlyViewedModel>? recentlyViewed,
       bool? isFilterActive}) {
     return PropertyState(
         isLoading: isLoading ?? this.isLoading,
@@ -450,8 +456,7 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         propertyId: event.favoriteId,
         requesterId: event.requesterId);
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
-      final u =
-          state.favorites.where((f) => f['id'] != event.favoriteId).toList();
+      final u = state.favorites.where((f) => f.id != event.favoriteId).toList();
       emit(state.copyWith(favorites: u));
     });
   }
@@ -495,7 +500,7 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
         searchId: event.searchId, requesterId: event.requesterId);
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
       final u =
-          state.savedSearches.where((s) => s['id'] != event.searchId).toList();
+          state.savedSearches.where((s) => s.id != event.searchId).toList();
       emit(state.copyWith(savedSearches: u, isSavedSearchesLoading: false));
     });
   }
@@ -538,6 +543,7 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
       'property_id': event.propertyId,
       'date': event.date,
       'time': event.time,
+      'time_zone': event.timeZone,
       'status': 'pending',
     });
     r.fold(
@@ -551,9 +557,11 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
     final r = await _repository.cancelShowing(
         showingId: event.showingId, requesterId: event.requesterId);
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
-      final u =
-          state.showings.where((s) => s['id'] != event.showingId).toList();
-      emit(state.copyWith(showings: u));
+      final updated = state.showings.map<ShowingModel>((s) {
+        if (s.id.toString() != event.showingId) return s;
+        return s.copyWith(status: 'canceled');
+      }).toList();
+      emit(state.copyWith(showings: updated));
     });
   }
 
@@ -566,14 +574,11 @@ class PropertyBloc extends Bloc<PropertyEvent, PropertyState> {
       notes: event.notes,
     );
     r.fold((f) => emit(state.copyWith(error: f.message)), (_) {
-      final updated = state.showings.map((s) {
-        if ((s['id'] ?? '').toString() != event.showingId) return s;
-        return {
-          ...s,
-          'status': event.status,
-          'updated_by': event.requesterId,
-          'updated_at': DateTime.now().toIso8601String(),
-        };
+      final updated = state.showings.map<ShowingModel>((s) {
+        if (s.id.toString() != event.showingId) return s;
+        return s.copyWith(
+          status: event.status,
+        );
       }).toList();
       emit(state.copyWith(showings: updated));
     });

@@ -1,4 +1,5 @@
 /// Unit tests for PropertyBloc — Sprint 2.4 recently viewed features
+library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -7,6 +8,7 @@ import 'package:dartz/dartz.dart';
 import 'package:partner_pro/features/property/presentation/bloc/property_bloc.dart';
 import 'package:partner_pro/features/property/data/repositories/property_repository.dart';
 import 'package:partner_pro/core/error/failures.dart';
+import 'package:partner_pro/features/property/data/models/recently_viewed_model.dart';
 
 class MockPropertyRepository extends Mock implements PropertyRepository {}
 
@@ -75,16 +77,14 @@ void main() {
 
   group('PropertyBloc - LoadRecentlyViewed', () {
     final recentItems = [
-      {
-        'propertyId': 'p1',
-        'propertyName': '123 Main St',
-        'viewedAt': '2024-01-10'
-      },
-      {
-        'propertyId': 'p2',
-        'propertyName': '456 Oak Ave',
-        'viewedAt': '2024-01-09'
-      },
+      RecentlyViewedModel(
+        propertyId: 'p1',
+        viewedAt: '2024-01-10',
+      ),
+      RecentlyViewedModel(
+        propertyId: 'p2',
+        viewedAt: '2024-01-09',
+      ),
     ];
 
     blocTest<PropertyBloc, PropertyState>(

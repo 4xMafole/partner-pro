@@ -338,11 +338,19 @@ class PropertyRemoteDataSource {
     required String userId,
     required String requesterId,
   }) async {
-    final snap = await _firestore
-        .collection(AppConstants.showingsCollection)
-        .where('user_id', isEqualTo: userId)
-        .orderBy('created_at', descending: true)
-        .get();
+    Query<Map<String, dynamic>> query =
+        _firestore.collection(AppConstants.showingsCollection).where(
+              'user_id',
+              isEqualTo: userId,
+            );
+
+    // When an agent views a buyer's showings (client detail page), constrain by
+    // agent_id so the query is authorized by participant-based security rules.
+    if (requesterId != userId) {
+      query = query.where('agent_id', isEqualTo: requesterId);
+    }
+
+    final snap = await query.orderBy('created_at', descending: true).get();
     return snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
@@ -380,30 +388,79 @@ class PropertyRemoteDataSource {
     const showingWindowMinutes = 60;
 
     final relationshipSnap = await _firestore
-      .collection(AppConstants.relationshipsCollection)
-      .where('buyerId', isEqualTo: userId)
-      .where('status', isEqualTo: 'active')
-      .limit(1)
-      .get();
+        .collection(AppConstants.relationshipsCollection)
+        .where('buyerId', isEqualTo: userId)
+        .where('status', isEqualTo: 'active')
+        .limit(1)
+        .get();
     final relationshipDoc =
-      relationshipSnap.docs.isNotEmpty ? relationshipSnap.docs.first : null;
+        relationshipSnap.docs.isNotEmpty ? relationshipSnap.docs.first : null;
     final relationship = relationshipDoc?.data() ?? <String, dynamic>{};
     final relationshipId = relationshipDoc?.id;
     final agentId = (relationship['agentId'] ??
-        relationship['agentUid'] ??
-        (relationship['relationship'] as Map<String, dynamic>?)?['agentId'] ??
-        (relationship['relationship'] as Map<String, dynamic>?)?['agentUid'] ??
-        '')
-      .toString();
-    final autoApprove = relationship['autoApproveShowings'] == true;
+            relationship['agentUid'] ??
+            (relationship['relationship']
+                as Map<String, dynamic>?)?['agentId'] ??
+            (relationship['relationship']
+                as Map<String, dynamic>?)?['agentUid'] ??
+            '')
+        .toString();
+    // Check relationship-level auto-approve first, then fall back to user profile.
+    bool autoApprove = relationship['autoApproveShowings'] == true;
+    if (!autoApprove) {
+      // Fallback: if relationship-level is off/missing, use user's default.
+      try {
+        final userDoc = await _firestore
+            .collection(AppConstants.usersCollection)
+            .doc(agentId)
+            .get();
+        autoApprove = userDoc.data()?['autoApproveShowings'] == true;
+      } catch (_) {}
+    }
+
+    Map<String, dynamic> propertySnapshot = <String, dynamic>{};
+    try {
+      final propertyDoc = await _firestore
+          .collection(AppConstants.propertiesCollection)
+          .doc(propertyId)
+          .get();
+      propertySnapshot = propertyDoc.data() ?? <String, dynamic>{};
+    } catch (_) {}
+
+    final propertyTitle =
+        (propertySnapshot['propertyName'] ?? propertySnapshot['title'] ?? '')
+            .toString();
+    final propertyAddressMap = propertySnapshot['address'] is Map
+        ? Map<String, dynamic>.from(propertySnapshot['address'] as Map)
+        : <String, dynamic>{};
+    final propertyAddress = [
+      (propertyAddressMap['streetNumber'] ??
+              propertyAddressMap['street_number'] ??
+              '')
+          .toString(),
+      (propertyAddressMap['streetName'] ??
+              propertyAddressMap['street_name'] ??
+              '')
+          .toString(),
+      (propertyAddressMap['city'] ?? '').toString(),
+      (propertyAddressMap['state'] ?? '').toString(),
+    ].where((v) => v.trim().isNotEmpty).join(', ');
 
     final existingSnap = await _firestore
         .collection(AppConstants.showingsCollection)
         .where('user_id', isEqualTo: userId)
         .get();
 
+    const inactiveStatuses = {'canceled', 'declined', 'completed'};
+
     for (final doc in existingSnap.docs) {
       final existingData = doc.data();
+
+      // Skip showings that are no longer active.
+      final existingStatus =
+          (existingData['status'] ?? '').toString().toLowerCase();
+      if (inactiveStatuses.contains(existingStatus)) continue;
+
       final existingStart = _parseShowingDateTime(
         existingData['date'],
         existingData['time'],
@@ -431,19 +488,47 @@ class PropertyRemoteDataSource {
       }
     }
 
+    final incomingStatus = (showingData['status'] ?? '').toString().trim();
+    final resolvedStatus = autoApprove
+        ? 'agent_approved'
+        : (incomingStatus.isNotEmpty ? incomingStatus : 'pending');
+
     final docRef =
         await _firestore.collection(AppConstants.showingsCollection).add({
       ...showingData,
       'agent_id': agentId,
       'relationship_id': relationshipId,
-      'approval_mode': autoApprove ? 'relationship_auto_approve' : 'agent_manual',
-      'status': showingData['status'] ?? (autoApprove ? 'agent_approved' : 'pending'),
-      'payment_status': autoApprove ? 'requires_authorization' : 'awaiting_approval',
+      'property_title': propertyTitle,
+      'property_address': propertyAddress,
+      'approval_mode':
+          autoApprove ? 'relationship_auto_approve' : 'agent_manual',
+      'status': resolvedStatus,
+      'payment_status':
+          autoApprove ? 'requires_authorization' : 'awaiting_approval',
       'provider_status': autoApprove ? 'queued_dispatch' : 'awaiting_approval',
       if (autoApprove) 'approved_at': FieldValue.serverTimestamp(),
       if (autoApprove) 'approved_by': 'system:auto_approve',
       'created_at': FieldValue.serverTimestamp(),
     });
+
+    // Sprint 3.1 Notify the agent about the new showing request
+    if (agentId.isNotEmpty && agentId != requesterId) {
+      await _firestore
+          .collection('users')
+          .doc(agentId)
+          .collection('notifications')
+          .add({
+        'recipientUserId': agentId,
+        'title': 'New Scheduled Tour',
+        'message':
+            'A client has requested a showing for $propertyTitle on ${showingData['date']}.',
+        'type': 'showing',
+        'metadata': {'showingId': docRef.id},
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
     final snap = await docRef.get();
     return {...snap.data()!, 'id': snap.id};
   }
@@ -488,7 +573,8 @@ class PropertyRemoteDataSource {
       'status': status,
       'updated_by': requesterId,
       'updated_at': FieldValue.serverTimestamp(),
-      if (notes != null && notes.trim().isNotEmpty) 'status_notes': notes.trim(),
+      if (notes != null && notes.trim().isNotEmpty)
+        'status_notes': notes.trim(),
     };
 
     if (status == 'agent_approved') {
@@ -512,6 +598,33 @@ class PropertyRemoteDataSource {
         .collection(AppConstants.showingsCollection)
         .doc(showingId)
         .update(updates);
+
+    try {
+      final doc = await _firestore
+          .collection(AppConstants.showingsCollection)
+          .doc(showingId)
+          .get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        final userId = data['user_id']?.toString() ?? '';
+        if (userId.isNotEmpty && userId != requesterId) {
+          await _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('notifications')
+              .add({
+            'recipientUserId': userId,
+            'title': 'Showing Update',
+            'message':
+                'Your scheduled tour status has been updated to $status.',
+            'type': 'showing',
+            'metadata': {'showingId': showingId},
+            'isRead': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   DateTime? _parseShowingDateTime(dynamic dateValue, dynamic timeValue) {

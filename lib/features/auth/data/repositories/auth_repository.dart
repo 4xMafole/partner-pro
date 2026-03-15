@@ -53,8 +53,9 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final cred = await _remote.signInWithEmail(email, password);
       final user = await _remote.getUserProfile(cred.user!.uid);
-      if (user == null)
+      if (user == null) {
         return Left(AuthFailure(message: 'User profile not found'));
+      }
       _cachedUser = user;
       return Right(user);
     } on AuthException catch (e) {
@@ -182,8 +183,9 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remote.updateUserProfile(uid,
           {'role': role, 'updated_time': DateTime.now().toIso8601String()});
-      if (_cachedUser?.uid == uid)
+      if (_cachedUser?.uid == uid) {
         _cachedUser = _cachedUser!.copyWith(role: role, isNewUser: false);
+      }
       return const Right(null);
     } catch (_) {
       return const Left(ServerFailure(message: 'Failed to update role'));

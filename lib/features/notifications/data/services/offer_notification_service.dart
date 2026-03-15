@@ -76,7 +76,7 @@ class OfferNotificationService {
         );
         if (smsSent) smsSentAt = DateTime.now();
       } catch (e) {
-        errorMessage = (errorMessage ?? '') + ' SMS error: $e';
+        errorMessage = '${errorMessage ?? ''} SMS error: $e';
         print('[OfferNotificationService] SMS send failed: $e');
       }
     }
@@ -99,7 +99,7 @@ class OfferNotificationService {
         pushSent = true;
         pushSentAt = DateTime.now();
       } catch (e) {
-        errorMessage = (errorMessage ?? '') + ' Push error: $e';
+        errorMessage = '${errorMessage ?? ''} Push error: $e';
         print('[OfferNotificationService] Push send failed: $e');
       }
     }

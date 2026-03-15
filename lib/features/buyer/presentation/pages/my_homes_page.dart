@@ -29,7 +29,7 @@ class _MyHomesPageState extends State<MyHomesPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final a = context.read<AuthBloc>().state;
       if (a is AuthAuthenticated) {
-        final uid = a.user.uid ?? '';
+        final uid = a.user.uid;
         context
             .read<PropertyBloc>()
             .add(LoadFavorites(userId: uid, requesterId: uid));
@@ -88,10 +88,10 @@ class _MyHomesPageState extends State<MyHomesPage>
           itemCount: state.favorites.length,
           itemBuilder: (_, index) {
             final fav = state.favorites[index];
-            final propertyId = fav['property_id'] as String? ?? '';
-            final address = fav['address'] as String? ?? 'Saved Property';
-            final price = fav['price'] ?? 0;
-            final notes = fav['notes'] as String? ?? '';
+            final propertyId = fav.propertyId;
+            final address = fav.address ?? 'Saved Property';
+            final price = fav.price ?? 0;
+            final notes = fav.notes ?? '';
             return Card(
                 margin: EdgeInsets.only(bottom: 12.h),
                 child: ListTile(
@@ -124,13 +124,13 @@ class _MyHomesPageState extends State<MyHomesPage>
                       icon: Icon(LucideIcons.heartOff,
                           size: 18.sp, color: AppColors.error),
                       onPressed: () {
-                        final favId = fav['id'] as String? ?? '';
+                        final favId = fav.id;
                         final a = context.read<AuthBloc>().state;
                         if (a is AuthAuthenticated && favId.isNotEmpty) {
                           context.read<PropertyBloc>().add(RemoveFavorite(
-                              userId: a.user.uid ?? '',
+                              userId: a.user.uid,
                               favoriteId: favId,
-                              requesterId: a.user.uid ?? ''));
+                              requesterId: a.user.uid));
                         }
                       }),
                   onTap: () {

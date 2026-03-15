@@ -4,12 +4,13 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_widgets.dart';
 
 /// Bottom sheet with a calendar and time grid for scheduling property tours.
 class ScheduleTourSheet extends StatefulWidget {
   final String propertyAddress;
-  final ValueChanged<DateTime> onDateSelected;
+  final void Function(DateTime dateTime, String timeZone) onDateSelected;
 
   const ScheduleTourSheet({
     super.key,
@@ -24,6 +25,33 @@ class ScheduleTourSheet extends StatefulWidget {
 class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
   late DateTime _selectedDate;
   int? _selectedHour;
+  late String _selectedTimeZone;
+  bool _isSubmitting = false;
+
+  static const _timeZoneOptions = <String>[
+    'UTC',
+    'Africa/Johannesburg',
+    'America/Phoenix',
+    'America/Anchorage',
+    'Pacific/Honolulu',
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Toronto',
+    'America/Vancouver',
+    'America/Mexico_City',
+    'Europe/Dublin',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Europe/Madrid',
+    'Asia/Dubai',
+    'Asia/Kolkata',
+    'Asia/Singapore',
+    'Asia/Tokyo',
+    'Australia/Sydney',
+  ];
 
   // Predefined showing hours: 8 AM – 7 PM
   static const _hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
@@ -33,6 +61,13 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
     super.initState();
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     _selectedDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+    _selectedTimeZone = _deviceTimeZoneName();
+  }
+
+  String _deviceTimeZoneName() {
+    final local = DateTime.now().timeZoneName.trim();
+    if (_timeZoneOptions.contains(local)) return local;
+    return 'UTC';
   }
 
   String _formatHour(int hour) {
@@ -70,8 +105,9 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
       return;
     }
 
-    widget.onDateSelected(scheduled);
-    Navigator.of(context).pop(scheduled);
+    widget.onDateSelected(scheduled, _selectedTimeZone);
+    setState(() => _isSubmitting = true);
+    // Let the parent class cleanly pop this sheet after success or failure
   }
 
   @override
@@ -129,9 +165,43 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
               Icon(LucideIcons.clock, color: AppColors.primary, size: 18.sp),
               SizedBox(width: 8.w),
               Text('Select Preferred Time', style: AppTypography.labelLarge),
+              const Spacer(),
+              Tooltip(
+                message:
+                    'These are preferred showing windows. Your agent will confirm the exact time.',
+                triggerMode: TooltipTriggerMode.tap,
+                child: Icon(LucideIcons.info,
+                    size: 16.sp, color: AppColors.textSecondary),
+              ),
             ],
           ),
           SizedBox(height: 10.h),
+          Row(
+            children: [
+              Icon(LucideIcons.globe2, color: AppColors.primary, size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Tooltip(
+                  message:
+                      'Select the timezone that matches your location. Showings are booked in local time.',
+                  triggerMode: TooltipTriggerMode.longPress,
+                  child: AppDropdown<String>(
+                    value: _selectedTimeZone,
+                    items: _timeZoneOptions
+                        .map((tz) =>
+                            DropdownMenuItem(value: tz, child: Text(tz)))
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _selectedTimeZone = value);
+                    },
+                    labelText: 'Time Zone',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
           // Time grid
           SizedBox(
             height: 80.h,
@@ -147,28 +217,33 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
               itemBuilder: (_, i) {
                 final hour = _hours[i];
                 final isSelected = _selectedHour == hour;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedHour = hour),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(
-                        color:
-                            isSelected ? AppColors.primary : AppColors.border,
-                        width: isSelected ? 2 : 1,
+                return Tooltip(
+                  message:
+                      'Tap to select ${_formatHour(hour)} as your preferred showing time',
+                  triggerMode: TooltipTriggerMode.longPress,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedHour = hour),
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(
+                          color:
+                              isSelected ? AppColors.primary : AppColors.border,
+                          width: isSelected ? 2 : 1,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      _formatHour(hour),
-                      style: AppTypography.labelSmall.copyWith(
-                        color:
-                            isSelected ? Colors.white : AppColors.textPrimary,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                      child: Text(
+                        _formatHour(hour),
+                        style: AppTypography.labelSmall.copyWith(
+                          color:
+                              isSelected ? Colors.white : AppColors.textPrimary,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
@@ -177,10 +252,16 @@ class _ScheduleTourSheetState extends State<ScheduleTourSheet> {
             ),
           ),
           SizedBox(height: 16.h),
-          AppButton(
-            label: 'Confirm Tour',
-            icon: LucideIcons.calendarCheck,
-            onPressed: _onConfirm,
+          Tooltip(
+            message:
+                'Submits your showing request. Your agent will be notified and confirm the time.',
+            triggerMode: TooltipTriggerMode.longPress,
+            child: AppButton(
+              label: 'Confirm Tour',
+              icon: LucideIcons.calendarCheck,
+              isLoading: _isSubmitting,
+              onPressed: _isSubmitting ? null : _onConfirm,
+            ),
           ),
         ],
       ),

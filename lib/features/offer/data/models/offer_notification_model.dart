@@ -90,7 +90,7 @@ class OfferNotificationModel with _$OfferNotificationModel {
 
   /// Returns a user-friendly string representation of the notification type
   String get typeLabel {
-    return switch (this.type) {
+    return switch (type) {
       OfferNotificationType.statusChanged => 'Status Changed',
       OfferNotificationType.revisionCreated => 'Offer Modified',
       OfferNotificationType.counterOfferReceived => 'Counter Offer Received',

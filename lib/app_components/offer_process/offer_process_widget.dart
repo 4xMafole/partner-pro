@@ -65,14 +65,14 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.closingDate = FFAppState().currentOfferDraft != null
+      _model.closingDate = true
           ? functions
               .convertToDateTime(FFAppState().currentOfferDraft.closingDate)
           : functions.offerClosingDate(getCurrentTimestamp);
       safeSetState(() {});
       safeSetState(() {
         _model.closingDaysTextController?.text = functions
-            .onDateSelected(FFAppState().currentOfferDraft != null
+            .onDateSelected(true
                 ? functions.convertToDateTime(
                     FFAppState().currentOfferDraft.closingDate)
                 : functions.offerClosingDate(getCurrentTimestamp))
@@ -2028,7 +2028,7 @@ class _OfferProcessWidgetState extends State<OfferProcessWidget> {
                                                           percentage,
                                                       String price) {
                                                 return ((double.parse(
-                                                            percentage ?? '0') /
+                                                            percentage) /
                                                         100) *
                                                     double.parse(price));
                                               }(

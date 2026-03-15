@@ -35,8 +35,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           context.showSnackBar('Password reset email sent! Check your inbox.');
           context.pop();
         }
-        if (state is AuthError)
+        if (state is AuthError) {
           context.showSnackBar(state.message, isError: true);
+        }
       },
       child: Scaffold(
         body: SafeArea(

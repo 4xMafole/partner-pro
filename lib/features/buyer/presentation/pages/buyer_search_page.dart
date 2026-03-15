@@ -21,6 +21,7 @@ import '../../../../core/widgets/app_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../property/data/models/property_model.dart';
 import '../../../property/presentation/bloc/property_bloc.dart';
+import '../../../property/data/models/saved_search_model.dart';
 import '../../../property/presentation/widgets/property_map.dart';
 import '../widgets/property_filter_sheet.dart';
 import '../widgets/saved_searches_sheet.dart';
@@ -408,9 +409,8 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
   }
 
   /// Applies a saved search by restoring all filters and triggering search.
-  void _applySavedSearch(Map<String, dynamic> savedSearch) {
-    final search =
-        savedSearch['search'] as Map<String, dynamic>? ?? savedSearch;
+  void _applySavedSearch(SavedSearchModel savedSearchModel) {
+    final search = savedSearchModel.search;
     final property = search['property'] as Map<String, dynamic>? ?? search;
 
     setState(() {
@@ -648,8 +648,8 @@ class _BuyerSearchPageState extends State<BuyerSearchPage> {
       final high = _activeMaxPrice ?? _defaultMaxPrice;
       labels.add('Price ${_fmtCompact(low)}-${_fmtCompact(high)}');
     }
-    if (_activeMinBeds != null) labels.add('Beds ${_activeMinBeds}+');
-    if (_activeMinBaths != null) labels.add('Baths ${_activeMinBaths}+');
+    if (_activeMinBeds != null) labels.add('Beds $_activeMinBeds+');
+    if (_activeMinBaths != null) labels.add('Baths $_activeMinBaths+');
     if (_activeMinSqft != null || _activeMaxSqft != null) {
       final low = _activeMinSqft ?? 0;
       final high = _activeMaxSqft ?? _defaultMaxSqft;

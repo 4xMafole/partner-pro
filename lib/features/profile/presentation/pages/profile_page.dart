@@ -24,8 +24,9 @@ class ProfilePage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is! AuthAuthenticated)
+          if (state is! AuthAuthenticated) {
             return const Center(child: CircularProgressIndicator());
+          }
           final user = state.user;
 
           return SingleChildScrollView(
@@ -90,6 +91,52 @@ class ProfilePage extends StatelessWidget {
                         onTap: () => context.push(RouteNames.security)),
                   ],
                 ),
+                if (user.role == 'agent') ...[
+                  SizedBox(height: 16.h),
+                  _SettingsSection(
+                    title: 'Agent Workflow',
+                    children: [
+                      Tooltip(
+                        message:
+                            'While ON, new offers skip your inbox and go straight to TC review. Turn off when you return.',
+                        triggerMode: TooltipTriggerMode.longPress,
+                        child: _SettingsSwitchTile(
+                          icon: LucideIcons.moon,
+                          title: 'Holiday / OOO Mode',
+                          subtitle:
+                              'Auto-route new offers to TC while you are away.',
+                          value: user.isOutOfOffice,
+                          onChanged: (val) {
+                            context.read<AuthBloc>().add(
+                                  AuthEvent.updateProfile(
+                                    user.copyWith(isOutOfOffice: val),
+                                  ),
+                                );
+                          },
+                        ),
+                      ),
+                      Tooltip(
+                        message:
+                            'When ON, all new showing requests from any buyer are approved immediately. You can still override per-client in the client detail page.',
+                        triggerMode: TooltipTriggerMode.longPress,
+                        child: _SettingsSwitchTile(
+                          icon: LucideIcons.zap,
+                          title: 'Auto-Approve Showings',
+                          subtitle:
+                              'Default for all buyers. Override per client in client settings.',
+                          value: user.autoApproveShowings,
+                          onChanged: (val) {
+                            context.read<AuthBloc>().add(
+                                  AuthEvent.updateProfile(
+                                    user.copyWith(autoApproveShowings: val),
+                                  ),
+                                );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 SizedBox(height: 16.h),
                 _SettingsSection(
                   title: 'About',
@@ -204,6 +251,35 @@ class _SettingsTile extends StatelessWidget {
       trailing: Icon(LucideIcons.chevronRight,
           size: 18.sp, color: AppColors.textTertiary),
       onTap: onTap,
+    );
+  }
+}
+
+class _SettingsSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _SettingsSwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      secondary: Icon(icon, size: 20.sp, color: AppColors.textSecondary),
+      title: Text(title, style: AppTypography.titleMedium),
+      subtitle: Text(
+        subtitle,
+        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+      ),
+      value: value,
+      onChanged: onChanged,
     );
   }
 }

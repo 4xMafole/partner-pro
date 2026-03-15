@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/schema/notifications_record.dart';
 
 import 'serialization_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';

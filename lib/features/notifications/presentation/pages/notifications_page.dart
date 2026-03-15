@@ -64,99 +64,16 @@ class NotificationsPage extends StatelessWidget {
               final descLines = notif.description.split('\n');
               final mainDesc = descLines.first;
               final contextLine =
-                  descLines.length > 1 ? descLines.sublist(1).join(' · ') : '';
+                  descLines.length > 1 ? descLines.sublist(1).join(' Â· ') : '';
 
-              return Dismissible(
+              return _ExpandableNotificationTile(
                 key: ValueKey(notif.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 20.w),
-                  color: AppColors.error,
-                  child: const Icon(LucideIcons.trash2, color: Colors.white),
-                ),
-                onDismissed: (_) {
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is! AuthAuthenticated) return;
-                  context
-                      .read<NotificationBloc>()
-                      .add(DeleteNotification(authState.user.uid, notif.id));
-                },
-                child: ListTile(
-                  tileColor: isUnread
-                      ? AppColors.primary.withValues(alpha: 0.04)
-                      : null,
-                  leading: CircleAvatar(
-                    backgroundColor: isUnread
-                        ? AppColors.primary.withValues(alpha: 0.12)
-                        : AppColors.surfaceVariant,
-                    child: Icon(
-                      _iconForType(notif.type?.name ?? ''),
-                      size: 20.sp,
-                      color:
-                          isUnread ? AppColors.primary : AppColors.textTertiary,
-                    ),
-                  ),
-                  title: Text(
-                    notif.title,
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontWeight:
-                          isUnread ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (mainDesc.isNotEmpty)
-                        Text(mainDesc,
-                            style: AppTypography.bodySmall
-                                .copyWith(color: AppColors.textSecondary),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
-                      if (contextLine.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(top: 2.h),
-                          child: Text(contextLine,
-                              style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w500),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                      if (notif.createdAt != null)
-                        Padding(
-                          padding: EdgeInsets.only(top: 4.h),
-                          child: Text(
-                            notif.createdAt!.timeAgo,
-                            style: AppTypography.labelSmall
-                                .copyWith(color: AppColors.textTertiary),
-                          ),
-                        ),
-                    ],
-                  ),
-                  trailing: isUnread
-                      ? Container(
-                          width: 8.w,
-                          height: 8.w,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary,
-                          ),
-                        )
-                      : null,
-                  onTap: () {
-                    final authState = context.read<AuthBloc>().state;
-                    if (isUnread && authState is AuthAuthenticated) {
-                      context
-                          .read<NotificationBloc>()
-                          .add(MarkAsRead(authState.user.uid, notif.id));
-                    }
-                    final targetPath = _resolveTargetPath(notif);
-                    if (targetPath != null && targetPath.isNotEmpty) {
-                      context.push(targetPath);
-                    }
-                  },
-                ),
+                notif: notif,
+                mainDesc: mainDesc,
+                contextLine: contextLine,
+                isUnread: isUnread,
+                iconData: _iconForType(notif.type?.name ?? ''),
+                targetPath: _resolveTargetPath(notif),
               );
             },
           );
@@ -266,5 +183,134 @@ class _NotificationShimmerTile extends StatelessWidget {
     )
         .animate(onPlay: (c) => c.repeat())
         .shimmer(duration: 1200.ms, color: AppColors.shimmerHighlight);
+  }
+}
+
+class _ExpandableNotificationTile extends StatefulWidget {
+  final NotificationModel notif;
+  final String mainDesc;
+  final String contextLine;
+  final bool isUnread;
+  final IconData iconData;
+  final String? targetPath;
+
+  const _ExpandableNotificationTile({
+    super.key,
+    required this.notif,
+    required this.mainDesc,
+    required this.contextLine,
+    required this.isUnread,
+    required this.iconData,
+    this.targetPath,
+  });
+
+  @override
+  State<_ExpandableNotificationTile> createState() => _ExpandableNotificationTileState();
+}
+
+class _ExpandableNotificationTileState extends State<_ExpandableNotificationTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey(widget.notif.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 20.w),
+        color: AppColors.error,
+        child: const Icon(LucideIcons.trash2, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        final authState = context.read<AuthBloc>().state;
+        if (authState is! AuthAuthenticated) return;
+        context.read<NotificationBloc>().add(DeleteNotification(authState.user.uid, widget.notif.id));
+      },
+      child: ListTile(
+        tileColor: widget.isUnread ? AppColors.primary.withValues(alpha: 0.04) : null,
+        leading: CircleAvatar(
+          backgroundColor: widget.isUnread
+              ? AppColors.primary.withValues(alpha: 0.12)
+              : AppColors.surfaceVariant,
+          child: Icon(
+            widget.iconData,
+            size: 20.sp,
+            color: widget.isUnread ? AppColors.primary : AppColors.textTertiary,
+          ),
+        ),
+        title: Text(
+          widget.notif.title,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: widget.isUnread ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.mainDesc.isNotEmpty)
+              Text(
+                widget.mainDesc,
+                style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                maxLines: _expanded ? null : 2,
+                overflow: _expanded ? null : TextOverflow.ellipsis,
+              ),
+            if (widget.contextLine.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 2.h),
+                child: Text(
+                  widget.contextLine,
+                  style: AppTypography.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w500),
+                  maxLines: _expanded ? null : 1,
+                  overflow: _expanded ? null : TextOverflow.ellipsis,
+                ),
+              ),
+            if (widget.notif.createdAt != null)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Row(
+                  children: [
+                    Text(
+                      widget.notif.createdAt!.timeAgo,
+                      style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _expanded = !_expanded;
+                        });
+                      },
+                      child: Text(
+                        _expanded ? 'Show less' : 'Show more',
+                        style: AppTypography.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        trailing: widget.isUnread
+            ? Container(
+                width: 8.w,
+                height: 8.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                ),
+              )
+            : null,
+        onTap: () {
+          final authState = context.read<AuthBloc>().state;
+          if (widget.isUnread && authState is AuthAuthenticated) {
+            context.read<NotificationBloc>().add(MarkAsRead(authState.user.uid, widget.notif.id));
+          }
+          if (widget.targetPath != null && widget.targetPath != '') {
+            context.push(widget.targetPath!);
+          }
+        },
+      ),
+    );
   }
 }

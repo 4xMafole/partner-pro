@@ -8,17 +8,19 @@ class DashboardQuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final String? tooltip;
 
   const DashboardQuickAction({
     super.key,
     required this.icon,
     required this.label,
     required this.onTap,
+    this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final child = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
       child: Column(
@@ -38,5 +40,9 @@ class DashboardQuickAction extends StatelessWidget {
         ],
       ),
     );
+    if (tooltip != null) {
+      return Tooltip(message: tooltip!, child: child);
+    }
+    return child;
   }
 }

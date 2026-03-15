@@ -75,8 +75,8 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final propState = context.read<PropertyBloc>().state;
       setState(() {
-        _isFavorite = propState.favorites
-            .any((f) => f['property_id'] == widget.propertyId);
+        _isFavorite =
+            propState.favorites.any((f) => f.propertyId == widget.propertyId);
       });
       _loadPropertyOffers();
 
@@ -136,12 +136,13 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      showDragHandle: false,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (_) => ScheduleTourSheet(
         propertyAddress: address,
-        onDateSelected: (dateTime) {
+        onDateSelected: (dateTime, timeZone) {
           final date =
               '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
           final time =
@@ -154,6 +155,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 propertyId: widget.propertyId,
                 date: date,
                 time: time,
+                timeZone: timeZone,
                 requesterId: uid,
               ));
         },
@@ -364,6 +366,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
 
         if ((state.error ?? '').trim().isNotEmpty) {
           _isSchedulingTour = false;
+          Navigator.of(context).pop(); // Close the bottom sheet
           Future.delayed(const Duration(milliseconds: 220), () {
             if (!mounted) return;
             _showStatusPopup(
@@ -378,6 +381,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
 
         if (state.showings.length > _showingsBeforeSchedule) {
           _isSchedulingTour = false;
+          Navigator.of(context).pop(); // Close the bottom sheet
           Future.delayed(const Duration(milliseconds: 220), () {
             if (!mounted) return;
             _showStatusPopup(
@@ -511,15 +515,53 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                         EdgeInsets.only(right: 12.w, top: 8.h, bottom: 8.h),
                     child: Row(children: [
                       if (!_isAgentUser) ...[
-                        GestureDetector(
-                          onTap: _toggleFavorite,
+                        Tooltip(
+                          message: _isFavorite
+                              ? 'Remove from saved homes'
+                              : 'Save this home',
+                          child: GestureDetector(
+                            onTap: _toggleFavorite,
+                            child: Container(
+                              width: 44.w,
+                              height: 44.w,
+                              decoration: BoxDecoration(
+                                color: _isFavorite
+                                    ? AppColors.error.withValues(alpha: 0.9)
+                                    : Colors.black.withValues(alpha: 0.4),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ],
+                              ),
+                              child: Icon(
+                                _isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: Colors.white,
+                                size: 22.sp,
+                              ),
+                            ),
+                          ),
+                        ), // closes Tooltip
+                        SizedBox(width: 10.w),
+                      ],
+                      Tooltip(
+                        message: 'Share this property',
+                        child: GestureDetector(
+                          onTap: () {
+                            if (p != null) {
+                              sharePropertyCard(context, p, widget.propertyId);
+                            }
+                          },
                           child: Container(
                             width: 44.w,
                             height: 44.w,
                             decoration: BoxDecoration(
-                              color: _isFavorite
-                                  ? AppColors.error.withValues(alpha: 0.9)
-                                  : Colors.black.withValues(alpha: 0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -529,41 +571,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 )
                               ],
                             ),
-                            child: Icon(
-                              _isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: Colors.white,
-                              size: 22.sp,
-                            ),
+                            child: Icon(LucideIcons.share2,
+                                color: Colors.white, size: 20.sp),
                           ),
                         ),
-                        SizedBox(width: 10.w),
-                      ],
-                      GestureDetector(
-                        onTap: () {
-                          if (p != null) {
-                            sharePropertyCard(context, p, widget.propertyId);
-                          }
-                        },
-                        child: Container(
-                          width: 44.w,
-                          height: 44.w,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Icon(LucideIcons.share2,
-                              color: Colors.white, size: 20.sp),
-                        ),
-                      ),
+                      ), // closes Tooltip(share)
                     ]),
                   ),
                 ],
@@ -889,26 +901,35 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                       : Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _scheduleTour,
-                                icon: const Icon(LucideIcons.calendar),
-                                label: const Text('Schedule Tour'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                                  side: const BorderSide(
-                                    color: AppColors.primary,
+                              child: Tooltip(
+                                message: 'Request a showing at this property',
+                                child: OutlinedButton.icon(
+                                  onPressed: _scheduleTour,
+                                  icon: const Icon(LucideIcons.calendar),
+                                  label: const Text('Schedule Tour'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    side: const BorderSide(
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                             SizedBox(width: 12.w),
                             Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _makeOffer,
-                                icon: const Icon(LucideIcons.fileText),
-                                label: const Text('Make Offer'),
-                                style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                              child: Tooltip(
+                                message:
+                                    'Submit a purchase offer on this property',
+                                child: ElevatedButton.icon(
+                                  onPressed: _makeOffer,
+                                  icon: const Icon(LucideIcons.fileText),
+                                  label: const Text('Make Offer'),
+                                  style: ElevatedButton.styleFrom(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                  ),
                                 ),
                               ),
                             ),

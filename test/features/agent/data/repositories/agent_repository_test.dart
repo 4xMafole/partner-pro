@@ -1,4 +1,5 @@
 /// Unit tests for AgentRepository — Sprint 2.4 buyer invitation & CRM methods
+library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:dartz/dartz.dart';

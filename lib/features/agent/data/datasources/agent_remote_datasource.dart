@@ -259,8 +259,9 @@ class UserAccountRemoteDataSource {
 
     final suggestionDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
     suggestionDocs.addAll(await safeDocs(_firestore
-        .collection('property_suggestions')
-        .where('client_id', isEqualTo: clientId)
+        .collection(AppConstants.usersCollection)
+        .doc(clientId)
+        .collection(AppConstants.suggestionsCollection)
         .where('agent_id', isEqualTo: agentId)
         .where('status', isEqualTo: 'active')
         .get()));

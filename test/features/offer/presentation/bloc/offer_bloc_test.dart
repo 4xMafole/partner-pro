@@ -1,6 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:partner_pro/features/auth/data/repositories/auth_repository.dart';
+
 import 'package:mocktail/mocktail.dart';
 
 import 'package:partner_pro/core/enums/app_enums.dart';
@@ -19,19 +21,24 @@ class MockOfferRepository extends Mock implements OfferRepository {}
 class MockOfferNotificationRepository extends Mock
     implements OfferNotificationRepository {}
 
+class MockAuthRepository extends Mock implements AuthRepository {}
+
 class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   late MockOfferRepository repository;
   late MockOfferNotificationRepository notificationRepository;
   late MockNotificationService notificationService;
+  late MockAuthRepository authRepository;
   late OfferBloc bloc;
 
   setUp(() {
     repository = MockOfferRepository();
     notificationRepository = MockOfferNotificationRepository();
     notificationService = MockNotificationService();
-    bloc = OfferBloc(repository, notificationRepository, notificationService);
+    authRepository = MockAuthRepository();
+    bloc = OfferBloc(repository, notificationRepository, notificationService,
+        authRepository);
   });
 
   tearDown(() {
@@ -214,8 +221,9 @@ void main() {
     blocTest<OfferBloc, OfferState>(
       'withdraws offer and notifies agent',
       build: () {
-        when(() => repository.updateOffer(
-              offerData: any(named: 'offerData'),
+        when(() => repository.updateOfferStatus(
+              offerId: 'offer_w1',
+              status: 'declined',
               requesterId: 'buyer_1',
               requestorName: 'Jane Doe',
               requestorRole: 'buyer',

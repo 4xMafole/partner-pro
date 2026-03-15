@@ -15,6 +15,7 @@ enum SellerNotification {
   transactionCoordinator,
   revisionCreated,
   propertySuggestion,
+  showing,
 }
 
 enum AppointmentType { normal, inspection }

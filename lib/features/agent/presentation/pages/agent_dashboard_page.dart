@@ -65,6 +65,87 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
     };
   }
 
+  String _activityDetailText(Map<String, dynamic> activity) {
+    final detail = (activity['details'] ??
+            activity['description'] ??
+            activity['note'] ??
+            activity['activityDetail'] ??
+            '')
+        .toString()
+        .trim();
+    if (detail.isNotEmpty) return detail;
+
+    final type = (activity['activityType'] ?? '').toString();
+    final address =
+        (activity['propertyAddress'] ?? activity['property_address'] ?? '')
+            .toString()
+            .trim();
+
+    switch (type) {
+      case 'saved_search':
+        final search = activity['search'] as Map<String, dynamic>?;
+        if (search != null) {
+          final property =
+              search['property'] as Map<String, dynamic>? ?? search;
+          final city = (property['city'] ?? search['city'] ?? '').toString();
+          final minPrice = property['min_price'] ?? search['min_price'];
+          final maxPrice = property['max_price'] ?? search['max_price'];
+          final minBeds = property['min_beds'] ?? search['min_beds'];
+          final parts = <String>[];
+          if (city.isNotEmpty) parts.add(city);
+          if (minPrice != null || maxPrice != null) {
+            parts.add('\$${minPrice ?? 0}\u2013\$${maxPrice ?? 'Any'}');
+          }
+          if (minBeds != null) parts.add('$minBeds+ beds');
+          if (parts.isNotEmpty) return parts.join(' \u2022 ');
+        }
+        return 'New search criteria saved';
+
+      case 'property_view':
+        if (address.isNotEmpty) return 'Viewed $address';
+        return 'Browsed a property listing';
+
+      case 'favorite_added':
+        if (address.isNotEmpty) return 'Saved $address to favorites';
+        return 'Added a property to favorites';
+
+      case 'favorite_removed':
+        if (address.isNotEmpty) return 'Removed $address from favorites';
+        return 'Removed a property from favorites';
+
+      case 'offer_submitted':
+        final amount =
+            activity['offerAmount'] ?? activity['amount'] ?? activity['price'];
+        final amountStr = amount != null ? '\$$amount' : '';
+        if (address.isNotEmpty && amountStr.isNotEmpty)
+          return '$amountStr offer on $address';
+        if (address.isNotEmpty) return 'Submitted offer for $address';
+        return amountStr.isNotEmpty
+            ? '$amountStr offer submitted'
+            : 'A new offer was submitted';
+
+      case 'offer_accepted':
+        if (address.isNotEmpty) return 'Offer accepted for $address';
+        return 'An offer was accepted';
+
+      case 'offer_declined':
+        if (address.isNotEmpty) return 'Offer declined for $address';
+        return 'An offer was declined';
+
+      case 'offer_withdrawn':
+        if (address.isNotEmpty) return 'Offer withdrawn for $address';
+        return 'An offer was withdrawn';
+
+      case 'offer_revision_requested':
+        if (address.isNotEmpty) return 'Revision requested for $address';
+        return 'An offer revision was requested';
+
+      default:
+        if (address.isNotEmpty) return address;
+        return 'Client timeline update';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -211,21 +292,26 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                   DashboardQuickAction(
                     icon: LucideIcons.userPlus,
                     label: 'Invite Buyer',
+                    tooltip: 'Send an invitation link to a new buyer client',
                     onTap: () => context.push(RouteNames.agentInvite),
                   ),
                   DashboardQuickAction(
                     icon: LucideIcons.search,
                     label: 'Search Property',
+                    tooltip: 'Search the property listings for your clients',
                     onTap: () => context.go(RouteNames.agentSearch),
                   ),
                   DashboardQuickAction(
                     icon: LucideIcons.calendarCheck,
                     label: 'Showing Requests',
+                    tooltip:
+                        'View and approve or decline pending showing requests',
                     onTap: () => context.push(RouteNames.scheduledShowings),
                   ),
                   DashboardQuickAction(
                     icon: LucideIcons.crown,
                     label: 'Subscription',
+                    tooltip: 'Manage your Partner Pro subscription plan',
                     onTap: () => context.push(RouteNames.agentSubscription),
                   ),
                 ],
@@ -267,11 +353,10 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                     activity['memberName'] as String? ?? 'Unknown';
                 final activityLabel =
                     activity['activityLabel'] as String? ?? 'Activity';
-                final propertyAddress =
-                    (activity['propertyAddress'] as String?) ?? '';
                 final createdAt = activity['created_at'] as String?;
                 final timeStr =
                     createdAt != null ? timeAgoFromDynamic(createdAt) : '';
+                final detailText = _activityDetailText(activity);
 
                 return Container(
                   margin: EdgeInsets.only(bottom: 10.h),
@@ -345,24 +430,13 @@ class _AgentDashboardPageState extends State<AgentDashboardPage> {
                                 ),
                               ],
                             ),
-                            if (propertyAddress.isNotEmpty) ...[
+                            if (detailText.isNotEmpty) ...[
                               SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Icon(LucideIcons.mapPin,
-                                      size: 12.sp,
-                                      color: AppColors.textTertiary),
-                                  SizedBox(width: 4.w),
-                                  Expanded(
-                                    child: Text(propertyAddress,
-                                        style: AppTypography.labelSmall
-                                            .copyWith(
-                                                color: AppColors.textTertiary),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis),
-                                  ),
-                                ],
-                              ),
+                              Text(detailText,
+                                  style: AppTypography.bodySmall
+                                      .copyWith(color: AppColors.textSecondary),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis),
                             ],
                             if (timeStr.isNotEmpty) ...[
                               SizedBox(height: 4.h),

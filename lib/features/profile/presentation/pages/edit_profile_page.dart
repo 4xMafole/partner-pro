@@ -110,8 +110,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
             userData: {'photo_url': uploaded.downloadUrl},
           ));
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         context.showSnackBar('Failed to upload image', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
     }

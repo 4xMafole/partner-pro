@@ -421,11 +421,9 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
       return;
     }
 
-    final offerData = offer.toJson();
-    offerData['status'] = 'accepted';
-
-    final r = await _repository.updateOffer(
-      offerData: offerData,
+    final r = await _repository.updateOfferStatus(
+      offerId: e.offerId,
+      status: 'accepted',
       requesterId: e.requesterId,
       requestorName: e.requesterName,
       requestorRole: 'agent',
@@ -494,11 +492,9 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
       return;
     }
 
-    final offerData = offer.toJson();
-    offerData['status'] = 'declined';
-
-    final r = await _repository.updateOffer(
-      offerData: offerData,
+    final r = await _repository.updateOfferStatus(
+      offerId: e.offerId,
+      status: 'declined',
       requesterId: e.requesterId,
       requestorName: e.requesterName,
       requestorRole: 'agent',
@@ -565,11 +561,9 @@ class OfferBloc extends Bloc<OfferEvent, OfferState> {
       return;
     }
 
-    final offerData = offer.toJson();
-    offerData['status'] = 'declined';
-
-    final r = await _repository.updateOffer(
-      offerData: offerData,
+    final r = await _repository.updateOfferStatus(
+      offerId: e.offerId,
+      status: 'declined', // withdrawn goes to declined in db state
       requesterId: e.requesterId,
       requestorName: e.requesterName,
       requestorRole: 'buyer',

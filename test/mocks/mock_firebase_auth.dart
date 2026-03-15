@@ -2,7 +2,7 @@
 ///
 /// Provides mock classes for testing Firebase Auth functionality
 /// without requiring actual Firebase connections.
-library mock_firebase_auth;
+library;
 
 import 'dart:async';
 
